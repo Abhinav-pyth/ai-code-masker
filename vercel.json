@@ -1,13 +1,13 @@
 {
     "version": 2,
-    "routes": [
+    "rewrites": [
         {
-            "src": "/(.*)",
-            "dest": "app.py"
+            "source": "/(.*)",
+            "destination": "/api/index"
         }
     ],
     "functions": {
-        "app.py": {
+        "api/index.py": {
             "includeFiles": ".agents/**"
         }
     }

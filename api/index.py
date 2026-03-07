@@ -3,11 +3,13 @@ import sys
 import os
 import json
 
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Add scripts dir to path to import the masker
-sys.path.append(os.path.join(os.path.dirname(__file__), '.agents', 'skills', 'ai-code-masker', 'scripts'))
+sys.path.append(os.path.join(root_dir, '.agents', 'skills', 'ai-code-masker', 'scripts'))
 from masker import mask_content, unmask_content
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.join(root_dir, 'templates'))
 
 @app.route('/')
 def index():
