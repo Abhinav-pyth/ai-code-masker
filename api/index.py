@@ -1,13 +1,25 @@
-from flask import Flask, request, jsonify, render_template
+import sys
 import os
 import json
-from .masker_logic import mask_content, unmask_content
+from flask import Flask, request, jsonify, render_template
+
+# Local directory addition for module discovery
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    import masker_logic
+except ImportError:
+    # Handle Vercel's package structure variant
+    from . import masker_logic
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/json-editor')
+def json_editor():
+    return render_template('json_editor.html')
 
 @app.route('/api/mask', methods=['POST'])
 def api_mask():
@@ -19,7 +31,7 @@ def api_mask():
         return jsonify({"error": "No code provided"}), 400
         
     try:
-        masked_code, mapping = mask_content(code, lang)
+        masked_code, mapping = masker_logic.mask_content(code, lang)
         return jsonify({
             "masked_code": masked_code,
             "mapping": mapping
@@ -38,7 +50,7 @@ def api_unmask():
         return jsonify({"error": "Code and mapping are required"}), 400
         
     try:
-        unmasked_code = unmask_content(code, mapping, lang)
+        unmasked_code = masker_logic.unmask_content(code, mapping, lang)
         return jsonify({
             "unmasked_code": unmasked_code
         })
