@@ -7,7 +7,7 @@ try:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(current_dir)
 except NameError:
-    # Fallback for Vercel/lambda execution where __file__ might not be properly populated
+    # Fallback for Vercel/lambda execution where __file__ might not be properly  populated
     root_dir = os.getcwd()
 
 # Add scripts dir to path to import the masker
