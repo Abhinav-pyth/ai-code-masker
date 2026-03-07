@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Masker</title>
+    <!-- Using Tailwind via CDN for simplicity since local NPM policies blocked installation -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+
+    <header class="bg-gray-900 border-b border-gray-800 p-6 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <h1 class="text-2xl font-bold tracking-tight text-white">AI Code <span class="text-indigo-400">Masker</span></h1>
+        </div>
+        <div class="flex bg-gray-800 p-1 rounded-lg">
+            <button id="tab-mask" class="px-4 py-2 rounded-md bg-indigo-600 text-white font-medium text-sm transition-colors duration-200" onclick="switchTab('mask')">Mask Code</button>
+            <button id="tab-unmask" class="px-4 py-2 rounded-md text-gray-400 hover:text-white font-medium text-sm transition-colors duration-200" onclick="switchTab('unmask')">Restore Code</button>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 flex flex-col gap-6 max-w-[1600px] w-full mx-auto">
+        
+        <!-- Controls Bar -->
+        <div class="flex items-center justify-between bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-md">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Language</label>
+                    <select id="lang-select" class="bg-gray-800 border border-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2">
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="js">JavaScript / React</option>
+                    </select>
+                </div>
+            </div>
+            <button id="action-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2 transform active:scale-95" onclick="executeAction()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span>Mask Identifiers</span>
+            </button>
+        </div>
+
+        <!-- Mask View -->
+        <div id="view-mask" class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <label class="font-medium text-gray-300">Original Source Code</label>
+                </div>
+                <textarea id="src-input" class="flex-1 w-full bg-[#1e1e1e] text-blue-100 font-mono text-sm p-4 rounded-xl border border-gray-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none shadow-inner" placeholder="Paste your sensitive code here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <label class="font-medium text-indigo-400">Masked Safe Output</label>
+                    <button class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded border border-gray-700 transition" onclick="copyToClipboard('res-masked')">Copy Code</button>
+                </div>
+                <textarea id="res-masked" readonly class="flex-1 w-full bg-[#0d0d0d] text-green-300 font-mono text-sm p-4 rounded-xl border border-gray-800 focus:outline-none resize-none shadow-inner" placeholder="Masked code will appear here..."></textarea>
+                
+                <div class="flex justify-between items-center mt-2">
+                    <label class="font-medium text-gray-400 text-sm">Key Map (JSON)</label>
+                    <button class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded border border-gray-700 transition" onclick="copyToClipboard('res-map')">Copy Map</button>
+                </div>
+                <textarea id="res-map" readonly class="h-32 w-full bg-[#0d0d0d] text-yellow-400 font-mono text-xs p-3 rounded-lg border border-gray-800 focus:outline-none resize-none" placeholder="Mapping generated here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Unmask View (Hidden by default) -->
+        <div id="view-unmask" class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px] hidden">
+            <div class="flex flex-col gap-2">
+                <label class="font-medium text-indigo-400">Masked Source Code</label>
+                <textarea id="src-masked" class="flex-1 w-full bg-[#1e1e1e] text-blue-100 font-mono text-sm p-4 rounded-xl border border-gray-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none shadow-inner" placeholder="Paste masked code returned from AI..."></textarea>
+                
+                <label class="font-medium text-gray-400 text-sm mt-2">Restoration Map (JSON)</label>
+                <textarea id="src-map" class="h-32 w-full bg-[#1e1e1e] text-yellow-400 font-mono text-sm p-4 rounded-xl border border-gray-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none shadow-inner" placeholder='{ "OriginalName": "var_1" }'></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <label class="font-medium text-green-400">Restored Source Code</label>
+                    <button class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded border border-gray-700 transition" onclick="copyToClipboard('res-unmasked')">Copy Code</button>
+                </div>
+                <textarea id="res-unmasked" readonly class="flex-1 w-full bg-[#0d0d0d] text-gray-100 font-mono text-sm p-4 rounded-xl border border-gray-800 focus:outline-none resize-none shadow-inner" placeholder="Original identifiers will be restored here..."></textarea>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMode = 'mask';
+
+        function switchTab(mode) {
+            currentMode = mode;
+            
+            // UI Toggle
+            document.getElementById('view-mask').classList.toggle('hidden', mode !== 'mask');
+            document.getElementById('view-unmask').classList.toggle('hidden', mode !== 'unmask');
+            
+            // Button Styling
+            const tabMask = document.getElementById('tab-mask');
+            const tabUnmask = document.getElementById('tab-unmask');
+            const actionBtn = document.getElementById('action-btn');
+            
+            if(mode === 'mask') {
+                tabMask.className = "px-4 py-2 rounded-md bg-indigo-600 text-white font-medium text-sm transition-colors duration-200";
+                tabUnmask.className = "px-4 py-2 rounded-md text-gray-400 hover:text-white font-medium text-sm transition-colors duration-200";
+                actionBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><span>Mask Identifiers</span>`;
+                actionBtn.className = "bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2 transform active:scale-95";
+            } else {
+                tabUnmask.className = "px-4 py-2 rounded-md bg-emerald-600 text-white font-medium text-sm transition-colors duration-200";
+                tabMask.className = "px-4 py-2 rounded-md text-gray-400 hover:text-white font-medium text-sm transition-colors duration-200";
+                actionBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span>Restore Code</span>`;
+                actionBtn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2 transform active:scale-95";
+            }
+        }
+
+        async function executeAction() {
+            const lang = document.getElementById('lang-select').value;
+            const btn = document.getElementById('action-btn');
+            
+            // UI Loading state
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
+            btn.disabled = true;
+
+            try {
+                if(currentMode === 'mask') {
+                    const code = document.getElementById('src-input').value;
+                    const res = await fetch('/api/mask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code, lang })
+                    });
+                    const data = await res.json();
+                    
+                    if(data.error) throw new Error(data.error);
+                    
+                    document.getElementById('res-masked').value = data.masked_code;
+                    document.getElementById('res-map').value = JSON.stringify(data.mapping, null, 2);
+                } else {
+                    const code = document.getElementById('src-masked').value;
+                    const mapStr = document.getElementById('src-map').value;
+                    
+                    if(!mapStr.trim()) throw new Error("JSON Mapping is required to restore code.");
+                    const mapping = JSON.parse(mapStr);
+
+                    const res = await fetch('/api/unmask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code, mapping, lang })
+                    });
+                    const data = await res.json();
+                    
+                    if(data.error) throw new Error(data.error);
+                    document.getElementById('res-unmasked').value = data.unmasked_code;
+                }
+            } catch(e) {
+                alert("Error: " + e.message);
+            } finally {
+                btn.innerHTML = origHTML;
+                btn.disabled = false;
+            }
+        }
+        
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            navigator.clipboard.writeText(el.value).then(() => {
+                // Flash green outline briefly
+                el.classList.add('border-green-500', 'ring-1', 'ring-green-500');
+                setTimeout(() => {
+                    el.classList.remove('border-green-500', 'ring-1', 'ring-green-500');
+                }, 500);
+            });
+        }
+    </script>
+</body>
+</html>
