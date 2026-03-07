@@ -3,11 +3,21 @@ import sys
 import os
 import json
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+try:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(current_dir)
+except NameError:
+    # Fallback for Vercel/lambda execution where __file__ might not be properly populated
+    root_dir = os.getcwd()
 
 # Add scripts dir to path to import the masker
-sys.path.append(os.path.join(root_dir, '.agents', 'skills', 'ai-code-masker', 'scripts'))
-from masker import mask_content, unmask_content
+masker_path = os.path.join(root_dir, '.agents', 'skills', 'ai-code-masker', 'scripts')
+sys.path.append(masker_path)
+try:
+    from masker import mask_content, unmask_content
+except ImportError as e:
+    # Throwing specifically so we can see it in logs if the bundle missed the folder
+    raise RuntimeError(f"Could not import masker from {masker_path}. sys.path is: {sys.path}") from e
 
 app = Flask(__name__, template_folder=os.path.join(root_dir, 'templates'))
 
