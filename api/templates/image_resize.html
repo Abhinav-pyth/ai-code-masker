@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Image Resize{% endblock %}
+
+{% block content %}
+<style>
+  .glass-card {
+    background: rgba(30, 27, 75, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .toolbar {
+    background: rgba(30, 27, 75, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(129, 140, 248, 0.25);
+    border-radius: 12px;
+    padding: 14px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .toolbar-title {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #a5b4fc;
+    text-transform: uppercase;
+  }
+
+  .code-font {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  input[type="file"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button {
+    background: rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    border-radius: 6px;
+    color: #a5b4fc;
+    padding: 6px 14px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: rgba(129, 140, 248, 0.5);
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    accent-color: #6366f1;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .checkbox-row label {
+    margin-bottom: 0;
+    color: #c7d2fe;
+    font-size: 13px;
+    cursor: pointer;
+    text-transform: none;
+  }
+
+  .dimensions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    border-radius: 8px;
+    color: #c7d2fe;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn:hover {
+    background: rgba(99, 102, 241, 0.5);
+    border-color: rgba(129, 140, 248, 0.5);
+    color: #ffffff;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: rgba(99, 102, 241, 0.5);
+    border-color: rgba(129, 140, 248, 0.4);
+  }
+
+  .preview-area {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .preview-area img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    border: 1px solid rgba(129, 140, 248, 0.2);
+  }
+
+  .info-text {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 8px;
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+  }
+
+  canvas { display: none; }
+</style>
+
+<div class="container">
+  <div class="toolbar">
+    <span class="toolbar-title">Image Resize</span>
+    <span class="code-font" style="font-size: 12px; color: #64748b;" id="imageDimensions"></span>
+  </div>
+
+  <div class="glass-card">
+    <label>Upload Image</label>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="glass-card" id="controlsCard" style="display: none;">
+    <div class="dimensions-row">
+      <div>
+        <label>Width (px)</label>
+        <input type="number" id="widthInput" min="1" max="10000" placeholder="Width">
+      </div>
+      <div>
+        <label>Height (px)</label>
+        <input type="number" id="heightInput" min="1" max="10000" placeholder="Height">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="aspectRatio" checked>
+      <label for="aspectRatio">Maintain aspect ratio</label>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" id="resizeBtn" onclick="resizeImage()">Resize</button>
+      <button class="btn" id="downloadBtn" onclick="downloadImage()" disabled>Download</button>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="glass-card preview-area" id="previewCard" style="display: none;">
+    <label>Preview</label>
+    <img id="preview" alt="Resized preview">
+    <p class="info-text" id="outputInfo"></p>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const widthInput = document.getElementById('widthInput');
+  const heightInput = document.getElementById('heightInput');
+  const aspectRatio = document.getElementById('aspectRatio');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const preview = document.getElementById('preview');
+  const controlsCard = document.getElementById('controlsCard');
+  const previewCard = document.getElementById('previewCard');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const imageDimensions = document.getElementById('imageDimensions');
+  const outputInfo = document.getElementById('outputInfo');
+
+  let originalImage = null;
+  let originalWidth = 0;
+  let originalHeight = 0;
+  let ratio = 1;
+  let updatingDimension = false;
+
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onload = function() {
+        originalImage = img;
+        originalWidth = img.width;
+        originalHeight = img.height;
+        ratio = originalWidth / originalHeight;
+
+        widthInput.value = originalWidth;
+        heightInput.value = originalHeight;
+        imageDimensions.textContent = originalWidth + ' x ' + originalHeight + ' px';
+
+        controlsCard.style.display = 'block';
+        previewCard.style.display = 'none';
+        downloadBtn.disabled = true;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  widthInput.addEventListener('input', function() {
+    if (updatingDimension) return;
+    if (aspectRatio.checked && originalImage) {
+      updatingDimension = true;
+      const w = parseInt(widthInput.value) || 0;
+      heightInput.value = Math.round(w / ratio);
+      updatingDimension = false;
+    }
+  });
+
+  heightInput.addEventListener('input', function() {
+    if (updatingDimension) return;
+    if (aspectRatio.checked && originalImage) {
+      updatingDimension = true;
+      const h = parseInt(heightInput.value) || 0;
+      widthInput.value = Math.round(h * ratio);
+      updatingDimension = false;
+    }
+  });
+
+  function resizeImage() {
+    if (!originalImage) return;
+
+    const targetW = parseInt(widthInput.value);
+    const targetH = parseInt(heightInput.value);
+    if (!targetW || !targetH || targetW < 1 || targetH < 1) return;
+
+    canvas.width = targetW;
+    canvas.height = targetH;
+    ctx.clearRect(0, 0, targetW, targetH);
+    ctx.drawImage(originalImage, 0, 0, targetW, targetH);
+
+    const dataURL = canvas.toDataURL('image/png');
+    preview.src = dataURL;
+    previewCard.style.display = 'block';
+    downloadBtn.disabled = false;
+    outputInfo.textContent = 'Output: ' + targetW + ' x ' + targetH + ' px';
+  }
+
+  function downloadImage() {
+    const dataURL = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'resized_image.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Hex/RGB Converter{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 p-4 md:p-8">
+  <!-- Top Toolbar -->
+  <div class="max-w-5xl mx-auto mb-8">
+    <div class="glass-card rounded-2xl px-6 py-4 flex items-center gap-3"
+         style="background: rgba(30,27,75,0.45); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.15);">
+      <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <h1 class="code-font text-sm tracking-[0.25em] text-indigo-300 font-semibold uppercase">HEX / RGB CONVERTER</h1>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left: Inputs -->
+    <div class="glass-card rounded-2xl p-6 space-y-6"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+
+      <!-- Hex Input -->
+      <div>
+        <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-2 block">Hex Color</label>
+        <div class="flex items-center gap-2">
+          <span class="text-indigo-400 code-font text-lg">#</span>
+          <input id="hexInput" type="text" maxlength="6" placeholder="RRGGBB" value="6366F1"
+                 class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 text-lg tracking-widest focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600 uppercase" />
+        </div>
+      </div>
+
+      <!-- RGB Inputs -->
+      <div>
+        <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-2 block">RGB Values</label>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="code-font text-[10px] text-red-400 mb-1 block">R</label>
+            <input id="rInput" type="number" min="0" max="255" value="99"
+                   class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-3 text-slate-100 text-center text-lg focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30" />
+          </div>
+          <div>
+            <label class="code-font text-[10px] text-green-400 mb-1 block">G</label>
+            <input id="gInput" type="number" min="0" max="255" value="102"
+                   class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-3 text-slate-100 text-center text-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/30" />
+          </div>
+          <div>
+            <label class="code-font text-[10px] text-blue-400 mb-1 block">B</label>
+            <input id="bInput" type="number" min="0" max="255" value="241"
+                   class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-3 text-slate-100 text-center text-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30" />
+          </div>
+        </div>
+      </div>
+
+      <!-- HSL Display -->
+      <div>
+        <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-2 block">HSL Values</label>
+        <div id="hslDisplay" class="code-font text-sm text-indigo-300 bg-slate-800/40 rounded-lg px-4 py-3 border border-slate-700/30">
+          hsl(239, 84%, 67%)
+        </div>
+      </div>
+
+      <!-- CSS Output -->
+      <div>
+        <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-2 block">CSS / Tailwind</label>
+        <div id="cssOutput" class="code-font text-xs text-slate-300 bg-slate-800/40 rounded-lg px-4 py-3 border border-slate-700/30 space-y-1">
+          <div>color: #6366F1;</div>
+          <div>color: rgb(99, 102, 241);</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button onclick="copyHex()" class="flex-1 code-font text-xs tracking-wider uppercase bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 rounded-lg py-3 transition-all duration-200">
+          Copy Hex
+        </button>
+        <button onclick="copyRgb()" class="flex-1 code-font text-xs tracking-wider uppercase bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 rounded-lg py-3 transition-all duration-200">
+          Copy RGB
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Color Preview -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-4 block">Color Preview</label>
+      <div id="colorPreview" class="flex-1 min-h-[320px] rounded-xl border border-slate-700/30 transition-colors duration-200"
+           style="background-color: #6366F1;">
+      </div>
+      <div id="previewLabel" class="code-font text-center text-sm text-slate-400 mt-4">#6366F1</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const hexInput = document.getElementById('hexInput');
+  const rInput = document.getElementById('rInput');
+  const gInput = document.getElementById('gInput');
+  const bInput = document.getElementById('bInput');
+  const colorPreview = document.getElementById('colorPreview');
+  const previewLabel = document.getElementById('previewLabel');
+  const hslDisplay = document.getElementById('hslDisplay');
+  const cssOutput = document.getElementById('cssOutput');
+
+  let updating = false;
+
+  function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+  }
+
+  function updatePreview(r, g, b, hex) {
+    const color = '#' + hex;
+    colorPreview.style.backgroundColor = color;
+    previewLabel.textContent = color.toUpperCase();
+    const [h, s, l] = rgbToHsl(r, g, b);
+    hslDisplay.textContent = `hsl(${h}, ${s}%, ${l}%)`;
+    cssOutput.innerHTML = `<div>color: ${color.toUpperCase()};</div><div>color: rgb(${r}, ${g}, ${b});</div><div>color: hsl(${h}, ${s}%, ${l}%);</div>`;
+  }
+
+  hexInput.addEventListener('input', function() {
+    if (updating) return;
+    updating = true;
+    let val = this.value.replace(/[^0-9a-fA-F]/g, '').substring(0, 6);
+    this.value = val.toUpperCase();
+    if (val.length === 6) {
+      const r = parseInt(val.substring(0, 2), 16);
+      const g = parseInt(val.substring(2, 4), 16);
+      const b = parseInt(val.substring(4, 6), 16);
+      rInput.value = r;
+      gInput.value = g;
+      bInput.value = b;
+      updatePreview(r, g, b, val.toUpperCase());
+    }
+    updating = false;
+  });
+
+  function onRgbChange() {
+    if (updating) return;
+    updating = true;
+    const r = clamp(parseInt(rInput.value) || 0, 0, 255);
+    const g = clamp(parseInt(gInput.value) || 0, 0, 255);
+    const b = clamp(parseInt(bInput.value) || 0, 0, 255);
+    const hex = [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+    hexInput.value = hex;
+    updatePreview(r, g, b, hex);
+    updating = false;
+  }
+
+  rInput.addEventListener('input', onRgbChange);
+  gInput.addEventListener('input', onRgbChange);
+  bInput.addEventListener('input', onRgbChange);
+
+  function copyHex() {
+    navigator.clipboard.writeText('#' + hexInput.value);
+    showToast('Hex copied!');
+  }
+
+  function copyRgb() {
+    navigator.clipboard.writeText(`rgb(${rInput.value}, ${gInput.value}, ${bInput.value})`);
+    showToast('RGB copied!');
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+  }
+
+  // Init
+  updatePreview(99, 102, 241, '6366F1');
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Spell Checker{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 p-4 md:p-8">
+  <!-- Top Toolbar -->
+  <div class="max-w-5xl mx-auto mb-8">
+    <div class="glass-card rounded-2xl px-6 py-4 flex items-center gap-3"
+         style="background: rgba(30,27,75,0.45); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.15);">
+      <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <h1 class="code-font text-sm tracking-[0.25em] text-indigo-300 font-semibold uppercase">SPELL CHECKER</h1>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left: Text Input -->
+    <div class="lg:col-span-2 glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-3 block">Input Text</label>
+      <textarea id="textInput" spellcheck="true" rows="14"
+                placeholder="Type or paste your text here..."
+                class="code-font flex-1 w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-5 py-4 text-slate-100 text-sm leading-relaxed resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600"></textarea>
+
+      <!-- Stats Bar -->
+      <div class="flex items-center gap-6 mt-4 code-font text-xs text-slate-500">
+        <span>Words: <span id="wordCount" class="text-indigo-400">0</span></span>
+        <span>Characters: <span id="charCount" class="text-indigo-400">0</span></span>
+        <span>Sentences: <span id="sentenceCount" class="text-indigo-400">0</span></span>
+      </div>
+
+      <!-- Check Button -->
+      <button onclick="checkSpelling()" class="mt-4 code-font text-xs tracking-wider uppercase bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/30 text-indigo-300 rounded-lg py-3 px-6 transition-all duration-200 self-start">
+        Check Spelling
+      </button>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-3 block">Issues Found</label>
+      <div id="resultsPanel" class="flex-1 space-y-3 overflow-y-auto max-h-[500px] pr-1">
+        <div class="text-center text-slate-600 code-font text-xs py-8">No issues found yet. Click "Check Spelling" to scan your text.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MISSPELLINGS = {
+    "accomodate": "accommodate", "acheive": "achieve", "accross": "across", "agressive": "aggressive",
+    "apparantly": "apparently", "arguement": "argument", "basicly": "basically", "begining": "beginning",
+    "beleive": "believe", "buisness": "business", "calender": "calendar", "catagory": "category",
+    "cemetary": "cemetery", "collegue": "colleague", "comming": "coming", "committment": "commitment",
+    "concious": "conscious", "definately": "definitely", "dilemna": "dilemma", "dissapear": "disappear",
+    "dissapoint": "disappoint", "embarass": "embarrass", "enviroment": "environment", "existance": "existence",
+    "familar": "familiar", "foriegn": "foreign", "freind": "friend", "goverment": "government",
+    "grammer": "grammar", "harrass": "harass", "hygeine": "hygiene", "immediatly": "immediately",
+    "independant": "independent", "intresting": "interesting", "knowlege": "knowledge", "liason": "liaison",
+    "libary": "library", "maintenence": "maintenance", "millenium": "millennium", "neccessary": "necessary",
+    "noticable": "noticeable", "occassion": "occasion", "occured": "occurred", "parliment": "parliament",
+    "persistant": "persistent", "posession": "possession", "priviledge": "privilege", "publically": "publicly",
+    "recieve": "receive", "recomend": "recommend", "refered": "referred", "relevent": "relevant",
+    "seperate": "separate", "succesful": "successful", "suprise": "surprise", "tommorow": "tomorrow",
+    "truely": "truly", "untill": "until", "wierd": "weird"
+  };
+
+  const textInput = document.getElementById('textInput');
+  const wordCountEl = document.getElementById('wordCount');
+  const charCountEl = document.getElementById('charCount');
+  const sentenceCountEl = document.getElementById('sentenceCount');
+  const resultsPanel = document.getElementById('resultsPanel');
+
+  textInput.addEventListener('input', updateCounts);
+
+  function updateCounts() {
+    const text = textInput.value;
+    const words = text.trim() ? text.trim().split(/\s+/) : [];
+    wordCountEl.textContent = words.length;
+    charCountEl.textContent = text.length;
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    sentenceCountEl.textContent = sentences.length;
+  }
+
+  function checkSpelling() {
+    const text = textInput.value;
+    if (!text.trim()) {
+      resultsPanel.innerHTML = '<div class="text-center text-slate-600 code-font text-xs py-8">Please enter some text first.</div>';
+      return;
+    }
+
+    const words = text.split(/\b/);
+    const issues = [];
+
+    words.forEach((word, idx) => {
+      const lower = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (lower && MISSPELLINGS[lower]) {
+        issues.push({ original: word, cleaned: lower, correction: MISSPELLINGS[lower], index: idx });
+      }
+    });
+
+    if (issues.length === 0) {
+      resultsPanel.innerHTML = '<div class="text-center text-green-400 code-font text-xs py-8">No spelling issues found. Your text looks good!</div>';
+      return;
+    }
+
+    resultsPanel.innerHTML = issues.map((issue, i) => `
+      <div class="bg-slate-800/50 border border-slate-700/40 rounded-lg p-3" id="issue-${i}">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="code-font text-xs text-red-400 line-through">${escapeHtml(issue.original)}</span>
+            <svg class="w-3 h-3 text-slate-600 inline mx-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            <span class="code-font text-xs text-green-400">${escapeHtml(issue.correction)}</span>
+          </div>
+          <button onclick="replaceWord(${i}, '${issue.cleaned}', '${issue.correction}')"
+                  class="code-font text-[10px] tracking-wider uppercase bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 rounded px-2 py-1 transition-all duration-200 whitespace-nowrap">
+            Replace
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function replaceWord(issueIdx, misspelled, correction) {
+    const text = textInput.value;
+    const regex = new RegExp('\\b' + escapeRegex(misspelled) + '\\b', 'gi');
+    textInput.value = text.replace(regex, function(match) {
+      if (match[0] === match[0].toUpperCase()) {
+        return correction.charAt(0).toUpperCase() + correction.slice(1);
+      }
+      return correction;
+    });
+    updateCounts();
+    const el = document.getElementById('issue-' + issueIdx);
+    if (el) {
+      el.style.opacity = '0.3';
+      el.querySelector('button').disabled = true;
+      el.querySelector('button').textContent = 'Replaced';
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  updateCounts();
+</script>
+{% endblock %}

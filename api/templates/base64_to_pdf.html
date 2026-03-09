@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Base64 to PDF{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:0;margin:0;">
+
+  <!-- Toolbar -->
+  <div style="backdrop-filter:blur(16px);background:rgba(30,41,59,0.7);border-bottom:1px solid rgba(99,102,241,0.2);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:700;letter-spacing:0.15em;color:#c7d2fe;font-family:'Segoe UI',system-ui,sans-serif;">BASE64 TO PDF</h1>
+    <div style="display:flex;gap:10px;">
+      <button onclick="previewPDF()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Preview PDF</button>
+      <button onclick="downloadPDF()" id="downloadBtn" style="padding:8px 20px;border:none;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Download PDF</button>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px;height:calc(100vh - 72px);box-sizing:border-box;">
+
+    <!-- Left: Base64 Input -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Base64 Input</label>
+      <textarea id="b64Input" placeholder="Paste base64-encoded PDF here (with or without data:application/pdf;base64, prefix)..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.85rem;line-height:1.6;outline:none;transition:border-color 0.2s;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
+    </div>
+
+    <!-- Right: PDF Preview -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">PDF Preview</label>
+      <div id="previewPlaceholder" style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(99,102,241,0.2);border-radius:10px;color:#475569;font-size:0.9rem;">
+        Paste base64 and click "Preview PDF"
+      </div>
+      <iframe id="pdfFrame" style="flex:1;border:none;border-radius:10px;background:#1e293b;display:none;" title="PDF Preview"></iframe>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentBlobUrl = null;
+
+  function stripDataUriPrefix(str) {
+    const prefixPattern = /^data:[^;]+;base64,/i;
+    return str.replace(prefixPattern, '').trim();
+  }
+
+  function base64ToBlob(b64, mimeType) {
+    const byteChars = atob(b64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) {
+      byteNumbers[i] = byteChars.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  }
+
+  function previewPDF() {
+    const raw = document.getElementById('b64Input').value.trim();
+    if (!raw) return;
+
+    try {
+      if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+      }
+
+      const b64 = stripDataUriPrefix(raw);
+      const blob = base64ToBlob(b64, 'application/pdf');
+      currentBlobUrl = URL.createObjectURL(blob);
+
+      const frame = document.getElementById('pdfFrame');
+      const placeholder = document.getElementById('previewPlaceholder');
+      placeholder.style.display = 'none';
+      frame.style.display = 'block';
+      frame.src = currentBlobUrl;
+    } catch (e) {
+      alert('Error creating PDF preview: ' + e.message);
+    }
+  }
+
+  function downloadPDF() {
+    const raw = document.getElementById('b64Input').value.trim();
+    if (!raw) return;
+
+    try {
+      const b64 = stripDataUriPrefix(raw);
+      const blob = base64ToBlob(b64, 'application/pdf');
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Error downloading PDF: ' + e.message);
+    }
+  }
+</script>
+{% endblock %}

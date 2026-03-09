@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Sentence Formation{% endblock %}
+{% block content %}
+<style>
+  .sf-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .sf-toolbar {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .sf-toolbar h1 {
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #c7d2fe;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .glass-card {
+    background: rgba(30, 27, 75, 0.45);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .glass-card label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .sf-textarea {
+    width: 100%;
+    min-height: 160px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.85rem 1rem;
+    resize: vertical;
+    transition: border-color 0.25s;
+    box-sizing: border-box;
+  }
+
+  .sf-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  .sf-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .sf-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    text-transform: none;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-bottom: 0;
+  }
+
+  .sf-options input[type="checkbox"] {
+    accent-color: #6366f1;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .sf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.7rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.25s;
+    margin-top: 1rem;
+  }
+
+  .sf-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .sf-btn:active {
+    transform: translateY(0);
+  }
+
+  .sf-btn-secondary {
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+  }
+
+  .sf-btn-secondary:hover {
+    background: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+  }
+
+  .sf-output-area {
+    width: 100%;
+    min-height: 140px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.85rem 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+  }
+
+  .sf-output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .sf-copy-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(99, 102, 241, 0.9);
+    color: #fff;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 100;
+  }
+
+  .sf-copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<div class="sf-container">
+  <div class="sf-toolbar">
+    <h1>Sentence Formation</h1>
+  </div>
+
+  <!-- Input Card -->
+  <div class="glass-card">
+    <label for="sf-input">Input Fragments <span style="font-weight:400;color:#64748b;">(one per line)</span></label>
+    <textarea id="sf-input" class="sf-textarea code-font" placeholder="Type sentence fragments or rough text here, one per line...&#10;&#10;example: the quick brown fox&#10;jumped over the lazy dog&#10;it was a sunny day"></textarea>
+
+    <label style="margin-top:1rem;">Options</label>
+    <div class="sf-options">
+      <label><input type="checkbox" id="opt-capitalize" checked> Capitalize first letter</label>
+      <label><input type="checkbox" id="opt-period" checked> Add missing periods</label>
+      <label><input type="checkbox" id="opt-spaces" checked> Remove extra spaces</label>
+      <label><input type="checkbox" id="opt-join" checked> Join fragments</label>
+    </div>
+
+    <button class="sf-btn" id="sf-format-btn" onclick="formatSentences()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Format Sentences
+    </button>
+  </div>
+
+  <!-- Output Card -->
+  <div class="glass-card">
+    <div class="sf-output-header">
+      <label style="margin-bottom:0;">Formatted Output</label>
+      <button class="sf-btn sf-btn-secondary" style="margin-top:0;padding:0.45rem 1rem;font-size:0.8rem;" onclick="copyOutput()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+    <div id="sf-output" class="sf-output-area code-font">Formatted text will appear here...</div>
+  </div>
+</div>
+
+<div class="sf-copy-toast" id="sf-toast">Copied to clipboard!</div>
+
+<script>
+  function formatSentences() {
+    const raw = document.getElementById('sf-input').value.trim();
+    if (!raw) {
+      document.getElementById('sf-output').textContent = '';
+      return;
+    }
+
+    const capitalize = document.getElementById('opt-capitalize').checked;
+    const addPeriod  = document.getElementById('opt-period').checked;
+    const trimSpaces = document.getElementById('opt-spaces').checked;
+    const join       = document.getElementById('opt-join').checked;
+
+    let lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    lines = lines.map(line => {
+      // Remove extra whitespace
+      if (trimSpaces) {
+        line = line.replace(/\s+/g, ' ').trim();
+      }
+
+      // Capitalize first letter
+      if (capitalize && line.length > 0) {
+        line = line.charAt(0).toUpperCase() + line.slice(1);
+      }
+
+      // Add period if missing punctuation at end
+      if (addPeriod && line.length > 0) {
+        const lastChar = line.charAt(line.length - 1);
+        if (!/[.!?;:,]/.test(lastChar)) {
+          line += '.';
+        }
+      }
+
+      return line;
+    });
+
+    let result;
+    if (join) {
+      result = lines.join(' ');
+    } else {
+      result = lines.join('\n');
+    }
+
+    document.getElementById('sf-output').textContent = result;
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('sf-output').textContent;
+    if (!text || text === 'Formatted text will appear here...') return;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showToast();
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast();
+    });
+  }
+
+  function showToast() {
+    const toast = document.getElementById('sf-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  // Allow Ctrl+Enter to trigger format
+  document.getElementById('sf-input').addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+      formatSentences();
+    }
+  });
+</script>
+{% endblock %}
