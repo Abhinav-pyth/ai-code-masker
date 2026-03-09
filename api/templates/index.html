@@ -108,6 +108,19 @@
 
         function switchTab(mode) {
             if (mode === currentMode) return;
+
+            if (mode === 'unmask') {
+                const maskedResult = document.getElementById('result-output').innerText;
+                const mapData = document.getElementById('map-output').innerText;
+                if (maskedResult && maskedResult !== 'Waiting for operation...') {
+                    document.getElementById('src-input').value = maskedResult;
+                    updateStats();
+                }
+                if (mapData && mapData !== 'Restoration keys appear here.') {
+                    document.getElementById('map-input').value = mapData;
+                }
+            }
+
             currentMode = mode;
 
             document.getElementById('tab-mask').classList.toggle('active', mode === 'mask');
