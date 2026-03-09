@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Email Formation{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 p-4 md:p-8">
+  <!-- Top Toolbar -->
+  <div class="max-w-5xl mx-auto mb-8">
+    <div class="glass-card rounded-2xl px-6 py-4 flex items-center gap-3"
+         style="background: rgba(30,27,75,0.45); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.15);">
+      <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      <h1 class="code-font text-sm tracking-[0.25em] text-indigo-300 font-semibold uppercase">EMAIL FORMATION</h1>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left: Form Inputs -->
+    <div class="glass-card rounded-2xl p-6 space-y-5"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <h2 class="code-font text-xs tracking-wider text-slate-400 uppercase mb-1">Email Details</h2>
+
+      <!-- Recipient Name -->
+      <div>
+        <label class="code-font text-[10px] tracking-wider text-slate-500 uppercase mb-1.5 block">Recipient Name</label>
+        <input id="recipientName" type="text" placeholder="e.g. John Smith"
+               class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600" />
+      </div>
+
+      <!-- Subject -->
+      <div>
+        <label class="code-font text-[10px] tracking-wider text-slate-500 uppercase mb-1.5 block">Subject</label>
+        <input id="emailSubject" type="text" placeholder="e.g. Project Update - Q1 Review"
+               class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600" />
+      </div>
+
+      <!-- Tone -->
+      <div>
+        <label class="code-font text-[10px] tracking-wider text-slate-500 uppercase mb-1.5 block">Tone</label>
+        <select id="emailTone"
+                class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 cursor-pointer">
+          <option value="formal">Formal</option>
+          <option value="semi-formal" selected>Semi-Formal</option>
+          <option value="casual">Casual</option>
+          <option value="friendly">Friendly</option>
+        </select>
+      </div>
+
+      <!-- Key Points -->
+      <div>
+        <label class="code-font text-[10px] tracking-wider text-slate-500 uppercase mb-1.5 block">Key Points <span class="text-slate-600">(one per line)</span></label>
+        <textarea id="keyPoints" rows="5"
+                  placeholder="Schedule a meeting for next week&#10;Discuss budget allocation&#10;Review team assignments"
+                  class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-100 text-sm leading-relaxed resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600"></textarea>
+      </div>
+
+      <!-- Sender Name -->
+      <div>
+        <label class="code-font text-[10px] tracking-wider text-slate-500 uppercase mb-1.5 block">Sender Name</label>
+        <input id="senderName" type="text" placeholder="e.g. Jane Doe"
+               class="code-font w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600" />
+      </div>
+
+      <!-- Generate Button -->
+      <button onclick="generateEmail()" class="w-full code-font text-xs tracking-wider uppercase bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/30 text-indigo-300 rounded-lg py-3.5 transition-all duration-200">
+        Generate Email
+      </button>
+    </div>
+
+    <!-- Right: Output Panel -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <div class="flex items-center justify-between mb-4">
+        <label class="code-font text-xs tracking-wider text-slate-400 uppercase">Generated Email</label>
+        <button onclick="copyEmail()" class="code-font text-[10px] tracking-wider uppercase bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 rounded px-3 py-1.5 transition-all duration-200">
+          Copy Email
+        </button>
+      </div>
+
+      <!-- Subject Preview -->
+      <div id="subjectPreview" class="hidden mb-3">
+        <span class="code-font text-[10px] text-slate-500 uppercase">Subject:</span>
+        <div id="subjectLine" class="code-font text-sm text-indigo-300 mt-0.5"></div>
+        <div class="border-b border-slate-700/30 mt-3"></div>
+      </div>
+
+      <!-- Email Body -->
+      <div id="emailOutput" class="flex-1 bg-slate-800/40 border border-slate-700/30 rounded-xl px-5 py-4 text-slate-200 text-sm leading-relaxed min-h-[400px] overflow-y-auto whitespace-pre-wrap code-font">
+        <span class="text-slate-600 italic">Your generated email will appear here...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TONE_CONFIG = {
+    formal: {
+      greetings: ['Dear', 'Dear Mr./Ms.'],
+      closings: ['Sincerely,', 'Respectfully,', 'Best regards,'],
+      transitions: ['I am writing to inform you that', 'Please be advised that', 'I would like to bring to your attention that', 'Furthermore,', 'Additionally,', 'Moreover,'],
+      opener: 'I hope this message finds you well.',
+      actionLine: 'Please do not hesitate to reach out should you require any further information or clarification.',
+    },
+    'semi-formal': {
+      greetings: ['Dear', 'Hello'],
+      closings: ['Best regards,', 'Kind regards,', 'Warm regards,'],
+      transitions: ['I wanted to let you know that', 'I\'d like to share that', 'On another note,', 'Also,', 'In addition,'],
+      opener: 'I hope you\'re doing well.',
+      actionLine: 'Please feel free to reach out if you have any questions or need further details.',
+    },
+    casual: {
+      greetings: ['Hi', 'Hey'],
+      closings: ['Thanks,', 'Best,', 'Cheers,'],
+      transitions: ['Just wanted to mention that', 'Also,', 'One more thing -', 'By the way,', 'Quick update:'],
+      opener: 'Hope you\'re having a good day!',
+      actionLine: 'Let me know if you have any questions!',
+    },
+    friendly: {
+      greetings: ['Hey', 'Hi there'],
+      closings: ['Talk soon!', 'Cheers!', 'Take care!', 'All the best!'],
+      transitions: ['Just a heads up -', 'Oh, and', 'Also wanted to mention -', 'Quick thing:', 'And hey,'],
+      opener: 'Hope everything\'s going great on your end!',
+      actionLine: 'Don\'t hesitate to ping me if you need anything at all!',
+    },
+  };
+
+  function generateEmail() {
+    const recipient = document.getElementById('recipientName').value.trim();
+    const subject = document.getElementById('emailSubject').value.trim();
+    const tone = document.getElementById('emailTone').value;
+    const points = document.getElementById('keyPoints').value.trim().split('\n').filter(p => p.trim());
+    const sender = document.getElementById('senderName').value.trim();
+
+    if (!recipient) {
+      document.getElementById('emailOutput').innerHTML = '<span class="text-yellow-400">Please enter a recipient name.</span>';
+      return;
+    }
+
+    if (points.length === 0) {
+      document.getElementById('emailOutput').innerHTML = '<span class="text-yellow-400">Please enter at least one key point.</span>';
+      return;
+    }
+
+    const config = TONE_CONFIG[tone];
+    const greeting = config.greetings[0];
+
+    // Build subject preview
+    if (subject) {
+      document.getElementById('subjectPreview').classList.remove('hidden');
+      document.getElementById('subjectLine').textContent = subject;
+    } else {
+      document.getElementById('subjectPreview').classList.add('hidden');
+    }
+
+    // Build email body
+    let email = '';
+
+    // Greeting
+    email += `${greeting} ${recipient},\n\n`;
+
+    // Opener
+    email += `${config.opener}\n\n`;
+
+    // Key points as paragraphs with transitions
+    points.forEach((point, idx) => {
+      const trimmedPoint = point.trim();
+      if (idx === 0) {
+        email += `${config.transitions[0]} ${trimmedPoint.charAt(0).toLowerCase() + trimmedPoint.slice(1)}.\n\n`;
+      } else {
+        const transIdx = Math.min(idx, config.transitions.length - 1);
+        email += `${config.transitions[transIdx]} ${trimmedPoint.charAt(0).toLowerCase() + trimmedPoint.slice(1)}.\n\n`;
+      }
+    });
+
+    // Action line
+    email += `${config.actionLine}\n\n`;
+
+    // Closing
+    const closing = config.closings[0];
+    email += `${closing}\n${sender || 'Your Name'}`;
+
+    document.getElementById('emailOutput').textContent = email;
+  }
+
+  function copyEmail() {
+    const text = document.getElementById('emailOutput').textContent;
+    if (text && !text.includes('will appear here')) {
+      const subject = document.getElementById('emailSubject').value.trim();
+      const fullEmail = subject ? `Subject: ${subject}\n\n${text}` : text;
+      navigator.clipboard.writeText(fullEmail);
+      showToast('Email copied!');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+  }
+</script>
+{% endblock %}

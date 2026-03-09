@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% block title %}SQL Optimizer{% endblock %}
+{% block content %}
+<style>
+    .glass-card {
+        background: rgba(30, 27, 75, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 12px;
+        padding: 24px;
+    }
+    .code-font {
+        font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+    .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(30, 27, 75, 0.6);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+        margin-bottom: 24px;
+        border-radius: 12px;
+    }
+    .toolbar h1 {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: #a5b4fc;
+        margin: 0;
+    }
+    .main-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        min-height: 70vh;
+    }
+    @media (max-width: 900px) {
+        .main-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    .panel-header {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+    textarea#sql-input {
+        width: 100%;
+        min-height: 400px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        color: #e2e8f0;
+        padding: 16px;
+        font-size: 0.875rem;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    textarea#sql-input::placeholder {
+        color: #475569;
+    }
+    textarea#sql-input:focus {
+        border-color: rgba(99, 102, 241, 0.5);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        letter-spacing: 0.05em;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .btn-secondary {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+        background: rgba(99, 102, 241, 0.25);
+    }
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .suggestions-panel {
+        min-height: 400px;
+        max-height: 70vh;
+        overflow-y: auto;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        padding: 16px;
+    }
+    .finding {
+        background: rgba(30, 27, 75, 0.5);
+        border-left: 3px solid;
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+    .finding.warning {
+        border-left-color: #f59e0b;
+    }
+    .finding.info {
+        border-left-color: #6366f1;
+    }
+    .finding.suggestion {
+        border-left-color: #22c55e;
+    }
+    .finding-severity {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    .finding.warning .finding-severity {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+    }
+    .finding.info .finding-severity {
+        background: rgba(99, 102, 241, 0.2);
+        color: #a5b4fc;
+    }
+    .finding.suggestion .finding-severity {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+    .finding-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin-bottom: 6px;
+    }
+    .finding-detail {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        line-height: 1.5;
+    }
+    .no-findings {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: #475569;
+        font-size: 0.875rem;
+    }
+</style>
+
+<div class="toolbar">
+    <h1 class="code-font">SQL OPTIMIZER</h1>
+</div>
+
+<div class="main-container">
+    <div class="glass-card">
+        <div class="panel-header">SQL Input</div>
+        <textarea id="sql-input" class="code-font" placeholder="Paste your SQL query here..."></textarea>
+        <div class="btn-row">
+            <button class="btn-primary" onclick="analyzeSql()">Analyze</button>
+        </div>
+    </div>
+    <div class="glass-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="panel-header" style="margin-bottom:0;">Suggestions &amp; Optimizations</div>
+            <button class="btn-secondary" onclick="copySuggestions()">Copy Suggestions</button>
+        </div>
+        <div style="margin-top:12px;">
+            <div id="suggestions-panel" class="suggestions-panel">
+                <div class="no-findings" id="no-findings">Enter a SQL query and click Analyze</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const patterns = [
+        {
+            regex: /SELECT\s+\*/i,
+            severity: 'suggestion',
+            title: 'Avoid SELECT *',
+            detail: 'Specify only the columns you need instead of using SELECT *. This reduces I/O, network transfer, and can enable covering index usage.'
+        },
+        {
+            test: function(sql) {
+                return /\b(UPDATE|DELETE)\b/i.test(sql) && !/\bWHERE\b/i.test(sql);
+            },
+            severity: 'warning',
+            title: 'Missing WHERE clause on UPDATE/DELETE',
+            detail: 'Your UPDATE or DELETE statement has no WHERE clause. This will affect ALL rows in the table. Add a WHERE clause to target specific rows.'
+        },
+        {
+            regex: /LIKE\s+['"]%[^'"]+%['"]/i,
+            severity: 'suggestion',
+            title: 'Leading wildcard in LIKE pattern',
+            detail: 'LIKE \'%value%\' cannot use indexes and causes full table scans. Consider using full-text search (FULLTEXT index in MySQL, tsvector in PostgreSQL) for better performance.'
+        },
+        {
+            regex: /NOT\s+IN\s*\(\s*SELECT/i,
+            severity: 'suggestion',
+            title: 'NOT IN with subquery',
+            detail: 'NOT IN with a subquery can be slow and produces unexpected results with NULLs. Use NOT EXISTS or a LEFT JOIN / IS NULL pattern instead.'
+        },
+        {
+            regex: /WHERE\s+[\s\S]*?\bOR\b/i,
+            severity: 'info',
+            title: 'OR condition in WHERE clause',
+            detail: 'OR conditions can prevent index usage. Consider rewriting with UNION ALL or the IN operator for better query plan optimization.'
+        },
+        {
+            regex: /WHERE\s+[\s\S]*?\b(UPPER|LOWER|TRIM|CAST|CONVERT|COALESCE|IFNULL|SUBSTRING|DATE|YEAR|MONTH)\s*\(/i,
+            severity: 'warning',
+            title: 'Function on indexed column in WHERE',
+            detail: 'Applying functions to columns in WHERE clauses prevents index usage (non-sargable). Move the function to the comparison value side, or create a computed/functional index.'
+        },
+        {
+            test: function(sql) {
+                return /\bSELECT\b/i.test(sql) && !/\bLIMIT\b/i.test(sql) && !/\bTOP\b/i.test(sql) && !/\bCOUNT\s*\(/i.test(sql);
+            },
+            severity: 'info',
+            title: 'No LIMIT clause on SELECT',
+            detail: 'Large result sets without LIMIT can cause memory and performance issues. Add a LIMIT clause to restrict the number of returned rows, especially during development or on large tables.'
+        },
+        {
+            regex: /\(\s*SELECT[\s\S]+?\(\s*SELECT/i,
+            severity: 'suggestion',
+            title: 'Nested subqueries detected',
+            detail: 'Deeply nested subqueries can be hard to read and optimize. Consider refactoring using Common Table Expressions (CTEs with WITH clause) or JOINs for better readability and potentially better performance.'
+        }
+    ];
+
+    function analyzeSql() {
+        const sql = document.getElementById('sql-input').value.trim();
+        const panel = document.getElementById('suggestions-panel');
+        const noFindings = document.getElementById('no-findings');
+
+        if (!sql) {
+            panel.innerHTML = '<div class="no-findings">Please enter a SQL query first</div>';
+            return;
+        }
+
+        const findings = [];
+
+        patterns.forEach(function(p) {
+            let matched = false;
+            if (p.regex) {
+                matched = p.regex.test(sql);
+            } else if (p.test) {
+                matched = p.test(sql);
+            }
+            if (matched) {
+                findings.push({
+                    severity: p.severity,
+                    title: p.title,
+                    detail: p.detail
+                });
+            }
+        });
+
+        if (findings.length === 0) {
+            panel.innerHTML = '<div class="no-findings">No anti-patterns detected. Your SQL looks good!</div>';
+            return;
+        }
+
+        let html = '';
+        findings.forEach(function(f) {
+            html += '<div class="finding ' + f.severity + '">';
+            html += '<div class="finding-severity">' + f.severity + '</div>';
+            html += '<div class="finding-title">' + f.title + '</div>';
+            html += '<div class="finding-detail">' + f.detail + '</div>';
+            html += '</div>';
+        });
+
+        panel.innerHTML = html;
+    }
+
+    function copySuggestions() {
+        const panel = document.getElementById('suggestions-panel');
+        const findings = panel.querySelectorAll('.finding');
+        if (findings.length === 0) {
+            return;
+        }
+        let text = 'SQL Optimization Suggestions\n' + '='.repeat(30) + '\n\n';
+        findings.forEach(function(f) {
+            const severity = f.querySelector('.finding-severity').textContent.toUpperCase();
+            const title = f.querySelector('.finding-title').textContent;
+            const detail = f.querySelector('.finding-detail').textContent;
+            text += '[' + severity + '] ' + title + '\n' + detail + '\n\n';
+        });
+        navigator.clipboard.writeText(text).then(function() {
+            const btn = document.querySelector('.btn-secondary');
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = original; }, 1500);
+        });
+    }
+</script>
+{% endblock %}

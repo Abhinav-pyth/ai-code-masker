@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Base64{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:0;margin:0;">
+
+  <!-- Toolbar -->
+  <div style="backdrop-filter:blur(16px);background:rgba(30,41,59,0.7);border-bottom:1px solid rgba(99,102,241,0.2);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:700;letter-spacing:0.15em;color:#c7d2fe;font-family:'Segoe UI',system-ui,sans-serif;">BASE64 ENCODE / DECODE</h1>
+    <div style="display:flex;gap:10px;">
+      <button onclick="doEncode()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Encode</button>
+      <button onclick="doDecode()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Decode</button>
+      <button onclick="copyOutput()" style="padding:8px 20px;border:none;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Copy Output</button>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px;height:calc(100vh - 72px);box-sizing:border-box;">
+
+    <!-- Left: Input -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Input</label>
+      <textarea id="inputArea" placeholder="Paste text or base64 string here..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.9rem;line-height:1.6;outline:none;transition:border-color 0.2s;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
+    </div>
+
+    <!-- Right: Output -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Output</label>
+      <textarea id="outputArea" readonly placeholder="Result will appear here..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.9rem;line-height:1.6;outline:none;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function doEncode() {
+    const input = document.getElementById('inputArea').value;
+    try {
+      const encoded = btoa(unescape(encodeURIComponent(input)));
+      document.getElementById('outputArea').value = encoded;
+    } catch (e) {
+      document.getElementById('outputArea').value = 'Error encoding: ' + e.message;
+    }
+  }
+
+  function doDecode() {
+    const input = document.getElementById('inputArea').value.trim();
+    try {
+      const decoded = decodeURIComponent(escape(atob(input)));
+      document.getElementById('outputArea').value = decoded;
+    } catch (e) {
+      document.getElementById('outputArea').value = 'Error decoding: ' + e.message;
+    }
+  }
+
+  function copyOutput() {
+    const output = document.getElementById('outputArea');
+    if (!output.value) return;
+    navigator.clipboard.writeText(output.value).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'rgba(34,197,94,0.25)';
+      btn.style.borderColor = 'rgba(34,197,94,0.4)';
+      btn.style.color = '#86efac';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = 'rgba(99,102,241,0.15)';
+        btn.style.borderColor = 'rgba(99,102,241,0.3)';
+        btn.style.color = '#a5b4fc';
+      }, 1500);
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}Image Converter{% endblock %}
+
+{% block content %}
+<style>
+  .glass-card {
+    background: rgba(30, 27, 75, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .toolbar {
+    background: rgba(30, 27, 75, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(129, 140, 248, 0.25);
+    border-radius: 12px;
+    padding: 14px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .toolbar-title {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #a5b4fc;
+    text-transform: uppercase;
+  }
+
+  .code-font {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    min-height: 100vh;
+    color: #e2e8f0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  input[type="file"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button {
+    background: rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    border-radius: 6px;
+    color: #a5b4fc;
+    padding: 6px 14px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(129, 140, 248, 0.2);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a5b4fc' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+
+  select option {
+    background: #1e1b4b;
+    color: #e2e8f0;
+  }
+
+  select:focus {
+    border-color: rgba(129, 140, 248, 0.5);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 3px;
+    outline: none;
+    margin-top: 4px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: 2px solid #a5b4fc;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: 2px solid #a5b4fc;
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(129, 140, 248, 0.3);
+    border-radius: 8px;
+    color: #c7d2fe;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn:hover {
+    background: rgba(99, 102, 241, 0.5);
+    border-color: rgba(129, 140, 248, 0.5);
+    color: #ffffff;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: rgba(99, 102, 241, 0.5);
+    border-color: rgba(129, 140, 248, 0.4);
+  }
+
+  .options-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .quality-group {
+    margin-top: 16px;
+  }
+
+  .quality-value {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    color: #a5b4fc;
+    float: right;
+  }
+
+  .preview-area {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .preview-area img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    border: 1px solid rgba(129, 140, 248, 0.2);
+  }
+
+  .info-text {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 8px;
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+  }
+
+  canvas { display: none; }
+</style>
+
+<div class="container">
+  <div class="toolbar">
+    <span class="toolbar-title">Image Converter</span>
+    <span class="code-font" style="font-size: 12px; color: #64748b;" id="fileInfo"></span>
+  </div>
+
+  <div class="glass-card">
+    <label>Upload Image</label>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="glass-card" id="optionsCard" style="display: none;">
+    <div class="options-row">
+      <div>
+        <label>Target Format</label>
+        <select id="formatSelect" onchange="onFormatChange()">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPEG</option>
+          <option value="image/webp">WebP</option>
+          <option value="image/bmp">BMP</option>
+        </select>
+      </div>
+      <div>
+        <label>Original Format</label>
+        <div class="code-font" style="padding: 10px 14px; font-size: 14px; color: #a5b4fc;" id="originalFormat">-</div>
+      </div>
+    </div>
+
+    <div class="quality-group" id="qualityGroup">
+      <label>Quality <span class="quality-value" id="qualityValue">0.92</span></label>
+      <input type="range" id="qualitySlider" min="0.1" max="1.0" step="0.05" value="0.92" oninput="updateQuality()">
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" onclick="convertImage()">Convert</button>
+      <button class="btn" id="downloadBtn" onclick="downloadImage()" disabled>Download</button>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="glass-card preview-area" id="previewCard" style="display: none;">
+    <label>Preview</label>
+    <img id="preview" alt="Converted preview">
+    <p class="info-text" id="outputInfo"></p>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const formatSelect = document.getElementById('formatSelect');
+  const qualitySlider = document.getElementById('qualitySlider');
+  const qualityValue = document.getElementById('qualityValue');
+  const qualityGroup = document.getElementById('qualityGroup');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const preview = document.getElementById('preview');
+  const optionsCard = document.getElementById('optionsCard');
+  const previewCard = document.getElementById('previewCard');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const fileInfo = document.getElementById('fileInfo');
+  const originalFormat = document.getElementById('originalFormat');
+  const outputInfo = document.getElementById('outputInfo');
+
+  let loadedImage = null;
+  let convertedDataURL = null;
+
+  const formatExtensions = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+    'image/bmp': 'bmp'
+  };
+
+  const formatNames = {
+    'image/png': 'PNG',
+    'image/jpeg': 'JPEG',
+    'image/webp': 'WebP',
+    'image/bmp': 'BMP'
+  };
+
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const img = new Image();
+      img.onload = function() {
+        loadedImage = img;
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        fileInfo.textContent = img.width + ' x ' + img.height + ' px';
+        originalFormat.textContent = file.type || 'unknown';
+
+        optionsCard.style.display = 'block';
+        previewCard.style.display = 'none';
+        downloadBtn.disabled = true;
+        convertedDataURL = null;
+        onFormatChange();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function onFormatChange() {
+    const fmt = formatSelect.value;
+    if (fmt === 'image/jpeg' || fmt === 'image/webp') {
+      qualityGroup.style.display = 'block';
+    } else {
+      qualityGroup.style.display = 'none';
+    }
+  }
+
+  function updateQuality() {
+    qualityValue.textContent = parseFloat(qualitySlider.value).toFixed(2);
+  }
+
+  function convertImage() {
+    if (!loadedImage) return;
+
+    const fmt = formatSelect.value;
+    const quality = parseFloat(qualitySlider.value);
+
+    canvas.width = loadedImage.width;
+    canvas.height = loadedImage.height;
+
+    if (fmt === 'image/jpeg') {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    ctx.drawImage(loadedImage, 0, 0);
+
+    if (fmt === 'image/jpeg' || fmt === 'image/webp') {
+      convertedDataURL = canvas.toDataURL(fmt, quality);
+    } else {
+      convertedDataURL = canvas.toDataURL(fmt);
+    }
+
+    preview.src = convertedDataURL;
+    previewCard.style.display = 'block';
+    downloadBtn.disabled = false;
+
+    const sizeBytes = Math.round((convertedDataURL.length - convertedDataURL.indexOf(',') - 1) * 3 / 4);
+    let sizeStr;
+    if (sizeBytes > 1024 * 1024) {
+      sizeStr = (sizeBytes / (1024 * 1024)).toFixed(2) + ' MB';
+    } else {
+      sizeStr = (sizeBytes / 1024).toFixed(1) + ' KB';
+    }
+
+    outputInfo.textContent = 'Format: ' + formatNames[fmt] + ' | Size: ~' + sizeStr;
+  }
+
+  function downloadImage() {
+    if (!convertedDataURL) return;
+
+    const fmt = formatSelect.value;
+    const ext = formatExtensions[fmt];
+    const a = document.createElement('a');
+    a.href = convertedDataURL;
+    a.download = 'converted_image.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+{% endblock %}

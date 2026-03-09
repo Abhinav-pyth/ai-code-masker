@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Base64 to Image{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:0;margin:0;">
+
+  <!-- Toolbar -->
+  <div style="backdrop-filter:blur(16px);background:rgba(30,41,59,0.7);border-bottom:1px solid rgba(99,102,241,0.2);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;">
+    <h1 style="margin:0;font-size:1.25rem;font-weight:700;letter-spacing:0.15em;color:#c7d2fe;font-family:'Segoe UI',system-ui,sans-serif;">BASE64 TO IMAGE</h1>
+    <div style="display:flex;gap:10px;">
+      <button onclick="showImage()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Show Image</button>
+      <button onclick="downloadImage()" id="downloadBtn" style="padding:8px 20px;border:none;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Download Image</button>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px;height:calc(100vh - 72px);box-sizing:border-box;">
+
+    <!-- Left: Base64 Input -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Base64 Input</label>
+      <textarea id="b64Input" placeholder="Paste base64-encoded image here (with or without data:image/...;base64, prefix)..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.85rem;line-height:1.6;outline:none;transition:border-color 0.2s;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
+    </div>
+
+    <!-- Right: Image Preview -->
+    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Image Preview</label>
+      <div id="previewContainer" style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(99,102,241,0.2);border-radius:10px;overflow:auto;position:relative;">
+        <span id="previewPlaceholder" style="color:#475569;font-size:0.9rem;">Paste base64 and click "Show Image"</span>
+        <img id="previewImg" style="max-width:100%;max-height:100%;object-fit:contain;display:none;border-radius:6px;" alt="Preview" />
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentImageType = 'png';
+
+  function detectImageType(b64) {
+    const header = b64.substring(0, 16);
+    if (header.startsWith('/9j/') || header.startsWith('/9j+')) return 'jpeg';
+    if (header.startsWith('iVBOR')) return 'png';
+    if (header.startsWith('R0lGO')) return 'gif';
+    if (header.startsWith('UklGR')) return 'webp';
+    if (header.startsWith('AAABA')) return 'x-icon';
+    if (header.startsWith('PHN2Z') || header.startsWith('PD94b')) return 'svg+xml';
+    return 'png';
+  }
+
+  function extractDataUri(raw) {
+    const match = raw.match(/^data:image\/([^;]+);base64,(.+)$/i);
+    if (match) {
+      return { type: match[1], data: match[2] };
+    }
+    return null;
+  }
+
+  function showImage() {
+    const raw = document.getElementById('b64Input').value.trim();
+    if (!raw) return;
+
+    try {
+      let b64Data, imgType;
+      const parsed = extractDataUri(raw);
+
+      if (parsed) {
+        imgType = parsed.type;
+        b64Data = parsed.data;
+      } else {
+        b64Data = raw;
+        imgType = detectImageType(b64Data);
+      }
+
+      currentImageType = imgType;
+      const dataUri = 'data:image/' + imgType + ';base64,' + b64Data;
+
+      const img = document.getElementById('previewImg');
+      const placeholder = document.getElementById('previewPlaceholder');
+
+      img.onload = function () {
+        placeholder.style.display = 'none';
+        img.style.display = 'block';
+      };
+
+      img.onerror = function () {
+        placeholder.textContent = 'Failed to load image. Check your base64 input.';
+        placeholder.style.color = '#f87171';
+        placeholder.style.display = 'block';
+        img.style.display = 'none';
+      };
+
+      img.src = dataUri;
+    } catch (e) {
+      alert('Error displaying image: ' + e.message);
+    }
+  }
+
+  function downloadImage() {
+    const raw = document.getElementById('b64Input').value.trim();
+    if (!raw) return;
+
+    try {
+      let b64Data, imgType;
+      const parsed = extractDataUri(raw);
+
+      if (parsed) {
+        imgType = parsed.type;
+        b64Data = parsed.data;
+      } else {
+        b64Data = raw;
+        imgType = detectImageType(b64Data);
+      }
+
+      const mimeType = 'image/' + imgType;
+      const byteChars = atob(b64Data);
+      const byteNumbers = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteNumbers[i] = byteChars.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const ext = imgType.replace('svg+xml', 'svg').replace('x-icon', 'ico');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'image.' + ext;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Error downloading image: ' + e.message);
+    }
+  }
+</script>
+{% endblock %}

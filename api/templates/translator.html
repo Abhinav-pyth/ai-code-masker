@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Translator{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 p-4 md:p-8">
+  <!-- Top Toolbar -->
+  <div class="max-w-5xl mx-auto mb-8">
+    <div class="glass-card rounded-2xl px-6 py-4 flex items-center gap-3"
+         style="background: rgba(30,27,75,0.45); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.15);">
+      <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+      <h1 class="code-font text-sm tracking-[0.25em] text-indigo-300 font-semibold uppercase">TRANSLATOR</h1>
+    </div>
+  </div>
+
+  <!-- Language Selectors -->
+  <div class="max-w-5xl mx-auto mb-6">
+    <div class="glass-card rounded-2xl px-6 py-4 flex items-center justify-center gap-4 flex-wrap"
+         style="background: rgba(30,27,75,0.3); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.1);">
+      <select id="sourceLang" class="code-font text-xs bg-slate-800/70 border border-slate-700/50 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+        <option value="ru">Russian</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="hi">Hindi</option>
+        <option value="ar">Arabic</option>
+      </select>
+
+      <button onclick="swapLanguages()" class="p-2 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 transition-all duration-200" title="Swap languages">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+      </button>
+
+      <select id="targetLang" class="code-font text-xs bg-slate-800/70 border border-slate-700/50 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+        <option value="en">English</option>
+        <option value="es" selected>Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+        <option value="ru">Russian</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="hi">Hindi</option>
+        <option value="ar">Arabic</option>
+      </select>
+
+      <button onclick="translateText()" class="code-font text-xs tracking-wider uppercase bg-indigo-600/40 hover:bg-indigo-600/60 border border-indigo-500/30 text-indigo-300 rounded-lg py-2.5 px-6 transition-all duration-200">
+        Translate
+      </button>
+    </div>
+  </div>
+
+  <!-- Two-Pane Layout -->
+  <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Source Text -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-3 block">Source Text</label>
+      <textarea id="sourceText" rows="12"
+                placeholder="Enter text to translate..."
+                class="code-font flex-1 w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-5 py-4 text-slate-100 text-sm leading-relaxed resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 placeholder-slate-600"></textarea>
+      <div class="flex items-center justify-between mt-3">
+        <span id="sourceCharCount" class="code-font text-[10px] text-slate-600">0 characters</span>
+        <button onclick="clearSource()" class="code-font text-[10px] tracking-wider uppercase text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+      </div>
+    </div>
+
+    <!-- Translated Text -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col"
+         style="background: rgba(30,27,75,0.35); backdrop-filter: blur(18px); border: 1px solid rgba(99,102,241,0.12);">
+      <label class="code-font text-xs tracking-wider text-slate-400 uppercase mb-3 block">Translation</label>
+      <div id="translatedText" class="code-font flex-1 w-full bg-slate-800/40 border border-slate-700/30 rounded-xl px-5 py-4 text-slate-200 text-sm leading-relaxed min-h-[280px] overflow-y-auto">
+        <span class="text-slate-600 italic">Translation will appear here...</span>
+      </div>
+      <div class="flex items-center justify-between mt-3">
+        <div id="statusMsg" class="code-font text-[10px] text-slate-600"></div>
+        <button onclick="copyTranslation()" class="code-font text-[10px] tracking-wider uppercase bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/30 text-indigo-300 rounded px-3 py-1.5 transition-all duration-200">
+          Copy Translation
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const sourceLang = document.getElementById('sourceLang');
+  const targetLang = document.getElementById('targetLang');
+  const sourceText = document.getElementById('sourceText');
+  const translatedText = document.getElementById('translatedText');
+  const statusMsg = document.getElementById('statusMsg');
+  const sourceCharCount = document.getElementById('sourceCharCount');
+
+  sourceText.addEventListener('input', () => {
+    sourceCharCount.textContent = sourceText.value.length + ' characters';
+  });
+
+  function swapLanguages() {
+    const srcVal = sourceLang.value;
+    const tgtVal = targetLang.value;
+    sourceLang.value = tgtVal;
+    targetLang.value = srcVal;
+
+    const srcText = sourceText.value;
+    const tgtText = translatedText.textContent;
+    if (tgtText && !tgtText.includes('Translation will appear')) {
+      sourceText.value = tgtText;
+      translatedText.innerHTML = `<span class="text-slate-300">${escapeHtml(srcText)}</span>`;
+      sourceCharCount.textContent = sourceText.value.length + ' characters';
+    }
+  }
+
+  async function translateText() {
+    const text = sourceText.value.trim();
+    if (!text) {
+      translatedText.innerHTML = '<span class="text-slate-600 italic">Please enter some text to translate.</span>';
+      return;
+    }
+
+    const src = sourceLang.value;
+    const tgt = targetLang.value;
+
+    if (src === tgt) {
+      translatedText.innerHTML = `<span class="text-yellow-400 text-xs">Source and target languages are the same.</span>`;
+      return;
+    }
+
+    translatedText.innerHTML = '<span class="text-indigo-400 animate-pulse">Translating...</span>';
+    statusMsg.textContent = '';
+
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${tgt}&de=devtools@workspace.com`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.responseData && data.responseData.translatedText && data.responseData.translatedText !== text) {
+        translatedText.innerHTML = `<span class="text-slate-100">${escapeHtml(data.responseData.translatedText)}</span>`;
+        statusMsg.textContent = 'Translation complete';
+        statusMsg.className = 'code-font text-[10px] text-green-400';
+      } else {
+        translatedText.innerHTML = `<span class="text-red-400 text-xs">Translation failed: ${data.responseDetails || 'Unknown error'}</span>`;
+        statusMsg.textContent = 'Error occurred';
+        statusMsg.className = 'code-font text-[10px] text-red-400';
+      }
+    } catch (err) {
+      translatedText.innerHTML = `<span class="text-red-400 text-xs">Network error. Please check your connection and try again.</span>`;
+      statusMsg.textContent = 'Network error';
+      statusMsg.className = 'code-font text-[10px] text-red-400';
+    }
+  }
+
+  function copyTranslation() {
+    const text = translatedText.textContent;
+    if (text && !text.includes('Translation will appear')) {
+      navigator.clipboard.writeText(text);
+      showToast('Translation copied!');
+    }
+  }
+
+  function clearSource() {
+    sourceText.value = '';
+    sourceCharCount.textContent = '0 characters';
+    translatedText.innerHTML = '<span class="text-slate-600 italic">Translation will appear here...</span>';
+    statusMsg.textContent = '';
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+  }
+</script>
+{% endblock %}
+
