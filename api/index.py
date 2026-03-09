@@ -86,6 +86,38 @@ def domain_to_ip():
 def api_tester():
     return render_template('api_tester.html', active_page='api_tester')
 
+@app.route('/url-encoder')
+def url_encoder():
+    return render_template('url_encoder.html', active_page='url_encoder')
+
+@app.route('/case-converter')
+def case_converter():
+    return render_template('case_converter.html', active_page='case_converter')
+
+@app.route('/qr-generator')
+def qr_generator():
+    return render_template('qr_generator.html', active_page='qr_generator')
+
+@app.route('/jwt-tool')
+def jwt_tool():
+    return render_template('jwt_tool.html', active_page='jwt_tool')
+
+@app.route('/html-preview')
+def html_preview():
+    return render_template('html_preview.html', active_page='html_preview')
+
+@app.route('/js-executor')
+def js_executor():
+    return render_template('js_executor.html', active_page='js_executor')
+
+@app.route('/lorem-ipsum')
+def lorem_ipsum():
+    return render_template('lorem_ipsum.html', active_page='lorem_ipsum')
+
+@app.route('/dummy-data')
+def dummy_data():
+    return render_template('dummy_data.html', active_page='dummy_data')
+
 @app.route('/api/mask', methods=['POST'])
 def api_mask():
     data = request.json
