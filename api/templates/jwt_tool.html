@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}JWT Tool{% endblock %}
+
+{% block extra_styles %}
+        .jwt-tab.active { color: white; background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4); }
+{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JWT Tool</h2>
+            <div class="flex gap-1 p-1 bg-white/5 rounded-xl">
+                <button onclick="switchJwtTab('decode')" id="jwt-tab-decode"
+                    class="jwt-tab active px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-transparent transition-all">Decode</button>
+                <button onclick="switchJwtTab('encode')" id="jwt-tab-encode"
+                    class="jwt-tab px-5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent transition-all">Encode</button>
+            </div>
+        </div>
+
+        <!-- Decode Section -->
+        <div id="section-decode" class="flex-grow p-8 flex flex-col gap-6 overflow-auto">
+            <div>
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase block mb-2">Paste JWT Token</span>
+                <textarea id="jwt-input" rows="4"
+                    class="w-full glass-card rounded-2xl p-5 code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                    placeholder="eyJhbGciOiJIUzI1NiIs..." oninput="decodeJwt()"></textarea>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-red-400 tracking-widest uppercase">Header</span>
+                    </div>
+                    <pre id="jwt-header" class="code-font text-xs text-red-300/80 whitespace-pre-wrap break-words">—</pre>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-purple-400 tracking-widest uppercase">Payload</span>
+                    </div>
+                    <pre id="jwt-payload" class="code-font text-xs text-purple-300/80 whitespace-pre-wrap break-words">—</pre>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-cyan-400 tracking-widest uppercase">Signature</span>
+                    </div>
+                    <pre id="jwt-sig" class="code-font text-xs text-cyan-300/80 break-all">—</pre>
+                    <div id="jwt-expiry" class="mt-4 text-xs code-font"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encode Section -->
+        <div id="section-encode" class="flex-grow p-8 flex flex-col gap-6 overflow-auto hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <span class="text-[10px] font-black text-red-400 tracking-[3px] uppercase block mb-2">Header JSON</span>
+                    <textarea id="enc-header" rows="4"
+                        class="w-full glass-card rounded-2xl p-5 code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                        placeholder='{"alg":"HS256","typ":"JWT"}'>{"alg":"HS256","typ":"JWT"}</textarea>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black text-purple-400 tracking-[3px] uppercase block mb-2">Payload JSON</span>
+                    <textarea id="enc-payload" rows="4"
+                        class="w-full glass-card rounded-2xl p-5 code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                        placeholder='{"sub":"1234567890","name":"John Doe","iat":1516239022}'></textarea>
+                </div>
+            </div>
+            <div>
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase block mb-2">Secret (for demo only - not cryptographically secure in browser)</span>
+                <input id="enc-secret" type="text" value="secret"
+                    class="w-full glass-card rounded-xl px-5 py-3 code-font text-sm text-slate-100 placeholder-slate-700 outline-none">
+            </div>
+            <button onclick="encodeJwt()"
+                class="btn-premium py-4 rounded-xl text-[10px] font-black uppercase tracking-[3px]">Generate Token</button>
+            <div>
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase block mb-2">Generated Token</span>
+                <div id="enc-output"
+                    class="glass-card rounded-2xl p-5 code-font text-sm text-indigo-300/80 break-all min-h-[60px] cursor-pointer"
+                    onclick="navigator.clipboard.writeText(this.textContent);showToast('Copied!')">Click Generate to create token...</div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let currentJwtTab = 'decode';
+
+        function switchJwtTab(tab) {
+            document.getElementById('section-' + currentJwtTab).classList.add('hidden');
+            document.getElementById('jwt-tab-' + currentJwtTab).classList.remove('active');
+            document.getElementById('jwt-tab-' + currentJwtTab).classList.add('text-slate-500');
+            currentJwtTab = tab;
+            document.getElementById('section-' + tab).classList.remove('hidden');
+            document.getElementById('jwt-tab-' + tab).classList.add('active');
+            document.getElementById('jwt-tab-' + tab).classList.remove('text-slate-500');
+        }
+
+        function b64UrlDecode(str) {
+            str = str.replace(/-/g, '+').replace(/_/g, '/');
+            const pad = str.length % 4;
+            if (pad) str += '='.repeat(4 - pad);
+            return atob(str);
+        }
+
+        function b64UrlEncode(str) {
+            return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        function decodeJwt() {
+            const token = document.getElementById('jwt-input').value.trim();
+            const hdr = document.getElementById('jwt-header');
+            const pay = document.getElementById('jwt-payload');
+            const sig = document.getElementById('jwt-sig');
+            const exp = document.getElementById('jwt-expiry');
+
+            if (!token) { hdr.textContent = pay.textContent = sig.textContent = '—'; exp.innerHTML = ''; return; }
+
+            const parts = token.split('.');
+            if (parts.length !== 3) { hdr.textContent = 'Invalid JWT format (need 3 parts)'; pay.textContent = sig.textContent = '—'; exp.innerHTML = ''; return; }
+
+            try {
+                const header = JSON.parse(b64UrlDecode(parts[0]));
+                hdr.textContent = JSON.stringify(header, null, 2);
+            } catch(e) { hdr.textContent = 'Error decoding header'; }
+
+            try {
+                const payload = JSON.parse(b64UrlDecode(parts[1]));
+                pay.textContent = JSON.stringify(payload, null, 2);
+
+                if (payload.exp) {
+                    const expDate = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    if (expDate < now) {
+                        exp.innerHTML = '<span class="text-red-400">Expired: ' + expDate.toLocaleString() + '</span>';
+                    } else {
+                        const diff = expDate - now;
+                        const hours = Math.floor(diff / 3600000);
+                        const mins = Math.floor((diff % 3600000) / 60000);
+                        exp.innerHTML = '<span class="text-emerald-400">Valid until: ' + expDate.toLocaleString() + ' (' + hours + 'h ' + mins + 'm remaining)</span>';
+                    }
+                } else {
+                    exp.innerHTML = '<span class="text-slate-500">No expiry (exp) claim</span>';
+                }
+
+                if (payload.iat) {
+                    const iatDate = new Date(payload.iat * 1000);
+                    exp.innerHTML += '<br><span class="text-slate-500">Issued: ' + iatDate.toLocaleString() + '</span>';
+                }
+            } catch(e) { pay.textContent = 'Error decoding payload'; }
+
+            sig.textContent = parts[2];
+        }
+
+        async function encodeJwt() {
+            const output = document.getElementById('enc-output');
+            try {
+                const header = document.getElementById('enc-header').value.trim();
+                const payload = document.getElementById('enc-payload').value.trim();
+                const secret = document.getElementById('enc-secret').value;
+
+                JSON.parse(header);
+                JSON.parse(payload);
+
+                const h = b64UrlEncode(header);
+                const p = b64UrlEncode(payload);
+                const data = h + '.' + p;
+
+                const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+                const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+                const sigB64 = b64UrlEncode(String.fromCharCode(...new Uint8Array(signature)));
+
+                output.textContent = data + '.' + sigB64;
+            } catch(e) {
+                output.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Case Converter{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Case Converter</h2>
+        </div>
+        <div class="p-8 flex flex-col gap-6 flex-grow overflow-hidden">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="convert('upper')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">UPPER</button>
+                <button onclick="convert('lower')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">lower</button>
+                <button onclick="convert('title')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">Title Case</button>
+                <button onclick="convert('sentence')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">Sentence case</button>
+                <button onclick="convert('toggle')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">tOGGLE</button>
+                <button onclick="convert('camel')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">camelCase</button>
+                <button onclick="convert('snake')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">snake_case</button>
+                <button onclick="convert('kebab')" class="px-4 py-2 rounded-lg text-[10px] font-bold tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">kebab-case</button>
+            </div>
+            <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+                <div class="flex flex-col gap-2 overflow-hidden">
+                    <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input</span>
+                    <textarea id="case-input"
+                        class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                        placeholder="Type or paste text here..."></textarea>
+                </div>
+                <div class="flex flex-col gap-2 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Output</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('case-output').value);showToast('Copied!')"
+                            class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                    </div>
+                    <textarea id="case-output" readonly
+                        class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function tokenize(str) {
+            return str.replace(/([a-z])([A-Z])/g, '$1 $2')
+                      .replace(/[_\-]+/g, ' ')
+                      .split(/\s+/).filter(Boolean);
+        }
+        function convert(type) {
+            const input = document.getElementById('case-input').value;
+            let result = '';
+            switch(type) {
+                case 'upper': result = input.toUpperCase(); break;
+                case 'lower': result = input.toLowerCase(); break;
+                case 'title': result = input.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase()); break;
+                case 'sentence': result = input.toLowerCase().replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, p, c) => p + c.toUpperCase()); break;
+                case 'toggle': result = [...input].map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join(''); break;
+                case 'camel': { const t = tokenize(input); result = t.map((w,i) => i===0 ? w.toLowerCase() : w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(''); break; }
+                case 'snake': result = tokenize(input).map(w => w.toLowerCase()).join('_'); break;
+                case 'kebab': result = tokenize(input).map(w => w.toLowerCase()).join('-'); break;
+            }
+            document.getElementById('case-output').value = result;
+        }
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+    </script>
+{% endblock %}

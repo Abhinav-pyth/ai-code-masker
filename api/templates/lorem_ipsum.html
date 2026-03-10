@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Lorem Ipsum{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Lorem Ipsum Generator</h2>
+        </div>
+        <div class="p-8 flex flex-col gap-6 overflow-auto flex-grow">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-wrap items-end gap-5">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Count</label>
+                        <input type="number" id="lip-count" value="3" min="1" max="20"
+                            class="w-24 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm code-font text-slate-200 outline-none focus:border-indigo-500/50">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Type</label>
+                        <select id="lip-type" class="bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none cursor-pointer">
+                            <option value="paragraphs">Paragraphs</option>
+                            <option value="sentences">Sentences</option>
+                            <option value="words">Words</option>
+                        </select>
+                    </div>
+                    <label class="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+                        <input type="checkbox" id="lip-start" checked class="accent-indigo-500">
+                        <span class="text-[10px]">Start with "Lorem ipsum..."</span>
+                    </label>
+                    <button onclick="generate()"
+                        class="btn-premium px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[3px]">Generate</button>
+                </div>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Output</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('lip-output').textContent);showToast('Copied!')"
+                    class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <div id="lip-output" class="glass-card rounded-2xl p-6 text-sm text-slate-300 leading-relaxed min-h-[200px]">
+                <span class="text-slate-600 italic">Click Generate to create text...</span>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const SENTENCES = [
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.",
+            "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.",
+            "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
+            "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.",
+            "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit.",
+            "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse.",
+            "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.",
+            "Praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias.",
+            "Nam libero tempore cum soluta nobis est eligendi optio cumque nihil impedit.",
+            "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus.",
+            "Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis.",
+            "Voluptatibus maiores alias consequatur aut perferendis doloribus asperiores.",
+            "Curabitur pretium tincidunt lacus nulla gravida orci a odio tristique.",
+            "Fusce dapibus tellus ac cursus commodo tortor mauris condimentum nibh.",
+            "Donec id elit non mi porta gravida at eget metus vestibulum.",
+            "Praesent commodo cursus magna vel scelerisque nisl consectetur et.",
+            "Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.",
+            "Cras mattis consectetur purus sit amet fermentum donec ullamcorper.",
+            "Maecenas sed diam eget risus varius blandit sit amet non magna.",
+            "Integer posuere erat a ante venenatis dapibus posuere velit aliquet.",
+            "Aenean lacinia bibendum nulla sed consectetur praesent commodo cursus.",
+            "Nullam quis risus eget urna mollis ornare vel eu leo vestibulum.",
+            "Etiam porta sem malesuada magna mollis euismod aenean lacinia.",
+            "Morbi leo risus porta ac consectetur ac vestibulum at eros.",
+            "Cum sociis natoque penatibus et magnis dis parturient montes nascetur.",
+            "Pellentesque habitant morbi tristique senectus et netus et malesuada fames.",
+            "Vestibulum tortor quam feugiat vitae ultricies eget tempor sit amet ante.",
+            "Donec eu libero sit amet quam egestas semper aenean ultricies mi.",
+            "Mauris placerat eleifend leo quisque sit amet est et sapien ullamcorper.",
+            "Aenean eu leo quam pellentesque ornare sem lacinia quam venenatis.",
+            "Nullam id dolor id nibh ultricies vehicula ut id elit.",
+            "Duis mollis est non commodo luctus nisi erat porttitor ligula.",
+            "Maecenas faucibus mollis interdum sed posuere consectetur est at lobortis.",
+            "Fusce dapibus tellus ac cursus commodo tortor mauris condimentum nibh.",
+            "Cras justo odio dapibus ut facilisis in egestas eget quam.",
+            "Nulla vitae elit libero a pharetra augue nulla porttitor accumsan.",
+            "Praesent blandit laoreet nibh fusce dapibus tellus ac cursus commodo.",
+            "Suspendisse potenti donec rutrum congue leo eget malesuada vestibulum.",
+            "Phasellus iaculis neque purus sodales ultricies et vehicula augue semper.",
+            "Quisque cursus quam sed mauris molestie accumsan ipsa quae molestias.",
+            "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere.",
+            "Aliquam erat volutpat nunc nec porttitor turpis sed eu augue."
+        ];
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function pickN(arr, n) {
+            const result = [];
+            for (let i = 0; i < n; i++) result.push(pick(arr));
+            return result;
+        }
+
+        function generate() {
+            const count = parseInt(document.getElementById('lip-count').value) || 3;
+            const type = document.getElementById('lip-type').value;
+            const startWithLorem = document.getElementById('lip-start').checked;
+            const out = document.getElementById('lip-output');
+            let text = '';
+
+            if (type === 'paragraphs') {
+                const paras = [];
+                for (let i = 0; i < count; i++) {
+                    const sCount = 4 + Math.floor(Math.random() * 4);
+                    let para = pickN(SENTENCES, sCount).join(' ');
+                    if (i === 0 && startWithLorem) para = SENTENCES[0] + ' ' + para;
+                    paras.push(para);
+                }
+                text = paras.join('\n\n');
+            } else if (type === 'sentences') {
+                const sents = pickN(SENTENCES, count);
+                if (startWithLorem) sents[0] = SENTENCES[0];
+                text = sents.join(' ');
+            } else {
+                const allWords = SENTENCES.join(' ').split(/\s+/);
+                const words = pickN(allWords, count);
+                if (startWithLorem) { words[0] = 'Lorem'; if(count > 1) words[1] = 'ipsum'; }
+                text = words.join(' ');
+            }
+            out.textContent = text;
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+    </script>
+{% endblock %}

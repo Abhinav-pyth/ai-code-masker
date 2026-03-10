@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}JS Executor{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JavaScript Executor</h2>
+            <div class="flex gap-3">
+                <button onclick="runCode()"
+                    class="px-5 py-1.5 btn-premium rounded-lg text-[10px] font-bold uppercase tracking-wider">Run</button>
+                <button onclick="clearConsole()"
+                    class="px-4 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold text-red-400 hover:bg-red-500/20 transition-all uppercase">Clear Console</button>
+            </div>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+            <div class="flex flex-col border-r border-white/5 overflow-hidden">
+                <div class="px-6 py-3 text-[10px] font-black text-indigo-400 tracking-[3px] uppercase border-b border-white/5">Code</div>
+                <textarea id="js-input"
+                    class="flex-grow bg-transparent p-6 code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                    placeholder="// Write JavaScript here
+console.log('Hello World');
+
+const sum = (a, b) => a + b;
+console.log(sum(2, 3));"></textarea>
+            </div>
+            <div class="flex flex-col overflow-hidden">
+                <div class="px-6 py-3 text-[10px] font-black text-slate-500 tracking-[3px] uppercase border-b border-white/5">Console Output</div>
+                <div id="console-output" class="flex-grow p-6 code-font text-sm overflow-auto bg-slate-950/60"></div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const output = document.getElementById('console-output');
+
+        function appendLine(text, color) {
+            const line = document.createElement('div');
+            line.className = color + ' whitespace-pre-wrap break-words mb-1';
+            line.textContent = typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text);
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function runCode() {
+            const code = document.getElementById('js-input').value;
+            if (!code.trim()) return;
+
+            // Separator
+            const sep = document.createElement('div');
+            sep.className = 'text-slate-700 border-t border-white/5 pt-2 mt-2 mb-2 text-[10px]';
+            sep.textContent = '--- ' + new Date().toLocaleTimeString() + ' ---';
+            output.appendChild(sep);
+
+            // Override console methods
+            const origLog = console.log;
+            const origError = console.error;
+            const origWarn = console.warn;
+            const origInfo = console.info;
+
+            console.log = (...args) => { args.forEach(a => appendLine(a, 'text-slate-200')); origLog.apply(console, args); };
+            console.error = (...args) => { args.forEach(a => appendLine(a, 'text-red-400')); origError.apply(console, args); };
+            console.warn = (...args) => { args.forEach(a => appendLine(a, 'text-yellow-400')); origWarn.apply(console, args); };
+            console.info = (...args) => { args.forEach(a => appendLine(a, 'text-blue-400')); origInfo.apply(console, args); };
+
+            try {
+                const result = new Function(code)();
+                if (result !== undefined) {
+                    appendLine('← ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : result), 'text-emerald-400');
+                }
+            } catch(e) {
+                appendLine('Error: ' + e.message, 'text-red-400');
+            }
+
+            // Restore
+            console.log = origLog;
+            console.error = origError;
+            console.warn = origWarn;
+            console.info = origInfo;
+        }
+
+        function clearConsole() {
+            output.innerHTML = '';
+        }
+
+        document.getElementById('js-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') runCode();
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = this.selectionStart;
+                this.value = this.value.substring(0, s) + '  ' + this.value.substring(this.selectionEnd);
+                this.selectionStart = this.selectionEnd = s + 2;
+            }
+        });
+    </script>
+{% endblock %}

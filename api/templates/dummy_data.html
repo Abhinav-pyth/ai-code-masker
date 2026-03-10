@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Dummy Patient Data{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Dummy Patient Generator</h2>
+            <div class="flex gap-2">
+                <button onclick="copyJSON()" class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-indigo-400 hover:bg-white/5 transition-all uppercase">Copy JSON</button>
+                <button onclick="copyCSV()" class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-slate-400 hover:bg-white/5 transition-all uppercase">Copy CSV</button>
+            </div>
+        </div>
+        <div class="p-8 flex flex-col gap-6 overflow-auto flex-grow">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex flex-wrap items-end gap-5 mb-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Count</label>
+                        <input type="number" id="dd-count" value="5" min="1" max="50"
+                            class="w-24 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm code-font text-slate-200 outline-none focus:border-indigo-500/50">
+                    </div>
+                    <button onclick="generateData()"
+                        class="btn-premium px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[3px]">Generate</button>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="name" checked> Name</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="dob" checked> DOB</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="age" checked> Age</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="gender" checked> Gender</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="ethnicity" checked> Ethnicity</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="mrn" checked> MRN</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="phone"> Phone</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="email"> Email</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="address"> Address</label>
+                    <label class="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer"><input type="checkbox" class="accent-indigo-500 dd-field" data-field="insurance"> Insurance</label>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl overflow-auto">
+                <table id="dd-table" class="w-full text-sm">
+                    <thead id="dd-thead"><tr><th class="p-4 text-left text-[10px] font-black text-slate-500 tracking-widest uppercase">Generate data to see results...</th></tr></thead>
+                    <tbody id="dd-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const FIRST = ['John','Maria','Wei','Priya','Ahmed','Fatima','Carlos','Yuki','Olga','Kwame','Aisha','Raj','Sofia','Hiroshi','Ingrid','Mohammed','Elena','Dmitri','Suki','Kofi','Liam','Mei','Arjun','Amara','Hassan','Yolanda','Takeshi','Ananya','Boris','Chioma','James','Sarah','David','Emma','Robert','Lisa','Michael','Jennifer','William','Jessica','Daniel','Emily','Joshua','Ashley','Andrew','Amanda','Ryan','Stephanie','Nathan','Lauren'];
+        const LAST = ['Smith','Garcia','Chen','Patel','Kim','Johnson','Williams','Rodriguez','Nakamura','Singh','Brown','Martinez','Liu','Okafor','Mueller','Petrov','Tanaka','Ali','Thompson','Andersson','Lee','Morales','Gupta','Osei','Hansen','Cruz','Yamamoto','Rao','Volkov','Okonkwo','Davis','Wilson','Taylor','Thomas','Moore','Jackson','White','Harris','Clark','Lewis'];
+        const ETHNICITY = ['White','Black/African American','Hispanic/Latino','Asian','Native American','Pacific Islander','Middle Eastern','Mixed/Multi-racial'];
+        const GENDER = ['Male','Female','Non-binary'];
+        const INSURANCE = ['Medicare','Medicaid','Blue Cross','Aetna','UnitedHealth','Cigna','Humana','Kaiser','Self-Pay'];
+        const STREETS = ['Main St','Oak Ave','Elm Dr','Pine Rd','Maple Ln','Cedar Blvd','Park Way','Lake Dr','River Rd','Hill St','Forest Ave','Valley Dr','Sunset Blvd','Spring St','Church Rd'];
+        const CITIES = ['New York, NY','Los Angeles, CA','Chicago, IL','Houston, TX','Phoenix, AZ','Philadelphia, PA','Dallas, TX','Austin, TX','Denver, CO','Seattle, WA','Boston, MA','Atlanta, GA','Miami, FL','Portland, OR','Minneapolis, MN'];
+
+        let generatedData = [];
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function getFields() {
+            return [...document.querySelectorAll('.dd-field:checked')].map(c => c.dataset.field);
+        }
+
+        function generatePatient(fields) {
+            const p = {};
+            const first = pick(FIRST);
+            const last = pick(LAST);
+            if (fields.includes('name')) p.name = first + ' ' + last;
+            if (fields.includes('dob') || fields.includes('age')) {
+                const year = randInt(1940, 2010);
+                const month = randInt(1, 12);
+                const day = randInt(1, 28);
+                const dob = new Date(year, month - 1, day);
+                if (fields.includes('dob')) p.dob = dob.toLocaleDateString('en-US', {year:'numeric',month:'2-digit',day:'2-digit'});
+                if (fields.includes('age')) {
+                    const today = new Date();
+                    let age = today.getFullYear() - dob.getFullYear();
+                    if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+                    p.age = age;
+                }
+            }
+            if (fields.includes('gender')) p.gender = pick(GENDER);
+            if (fields.includes('ethnicity')) p.ethnicity = pick(ETHNICITY);
+            if (fields.includes('mrn')) p.mrn = 'MRN' + String(randInt(1000000, 9999999));
+            if (fields.includes('phone')) p.phone = `(${randInt(200,999)}) ${randInt(200,999)}-${String(randInt(1000,9999))}`;
+            if (fields.includes('email')) p.email = (first + '.' + last).toLowerCase().replace(/\s/g,'') + '@example.com';
+            if (fields.includes('address')) p.address = randInt(100, 9999) + ' ' + pick(STREETS) + ', ' + pick(CITIES) + ' ' + randInt(10000, 99999);
+            if (fields.includes('insurance')) p.insurance = pick(INSURANCE);
+            return p;
+        }
+
+        function generateData() {
+            const count = parseInt(document.getElementById('dd-count').value) || 5;
+            const fields = getFields();
+            if (!fields.length) return;
+
+            generatedData = [];
+            for (let i = 0; i < count; i++) generatedData.push(generatePatient(fields));
+
+            const labels = {name:'Name',dob:'DOB',age:'Age',gender:'Gender',ethnicity:'Ethnicity',mrn:'MRN',phone:'Phone',email:'Email',address:'Address',insurance:'Insurance'};
+            const thead = document.getElementById('dd-thead');
+            const tbody = document.getElementById('dd-tbody');
+
+            thead.innerHTML = '<tr>' + fields.map(f => `<th class="p-3 text-left text-[10px] font-black text-indigo-400 tracking-widest uppercase border-b border-white/5">${labels[f]}</th>`).join('') + '</tr>';
+            tbody.innerHTML = generatedData.map(p =>
+                '<tr class="border-b border-white/5 hover:bg-white/5 transition-all">' +
+                fields.map(f => `<td class="p-3 code-font text-xs text-slate-300 whitespace-nowrap">${p[f] ?? ''}</td>`).join('') +
+                '</tr>'
+            ).join('');
+        }
+
+        function copyJSON() {
+            if (!generatedData.length) return;
+            navigator.clipboard.writeText(JSON.stringify(generatedData, null, 2));
+            showToast('JSON copied!');
+        }
+
+        function copyCSV() {
+            if (!generatedData.length) return;
+            const fields = getFields();
+            const header = fields.join(',');
+            const rows = generatedData.map(p => fields.map(f => '"' + String(p[f] ?? '').replace(/"/g, '""') + '"').join(','));
+            navigator.clipboard.writeText(header + '\n' + rows.join('\n'));
+            showToast('CSV copied!');
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+    </script>
+{% endblock %}

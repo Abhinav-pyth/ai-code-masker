@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}QR Generator{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">QR Code Generator</h2>
+        </div>
+        <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+            <!-- Controls -->
+            <div class="lg:w-1/2 flex flex-col gap-5">
+                <div class="glass-card rounded-2xl p-6 space-y-5">
+                    <div>
+                        <label class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase block mb-2">Text or URL</label>
+                        <textarea id="qr-input" rows="4"
+                            class="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 code-font text-sm text-slate-100 placeholder-slate-600 outline-none resize-none focus:border-indigo-500/50"
+                            placeholder="https://example.com"></textarea>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Size</label>
+                            <select id="qr-size" class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none cursor-pointer">
+                                <option value="128">128px</option>
+                                <option value="256" selected>256px</option>
+                                <option value="512">512px</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Color</label>
+                            <input type="color" id="qr-fg" value="#6366f1" class="w-full h-9 bg-transparent border border-slate-700/50 rounded-lg cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Background</label>
+                            <input type="color" id="qr-bg" value="#0f172a" class="w-full h-9 bg-transparent border border-slate-700/50 rounded-lg cursor-pointer">
+                        </div>
+                    </div>
+                    <button onclick="generateQR()"
+                        class="w-full btn-premium py-3 rounded-xl text-[10px] font-black uppercase tracking-[3px]">Generate QR Code</button>
+                </div>
+            </div>
+            <!-- Preview -->
+            <div class="lg:w-1/2 flex flex-col gap-4">
+                <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center flex-grow min-h-[300px]">
+                    <canvas id="qr-canvas" class="rounded-xl hidden"></canvas>
+                    <p id="qr-placeholder" class="text-slate-600 italic text-sm">QR code will appear here...</p>
+                </div>
+                <button onclick="downloadQR()" id="download-btn"
+                    class="hidden py-3 rounded-xl text-[10px] font-black uppercase tracking-[3px] border border-indigo-500/30 text-indigo-400 hover:bg-indigo-600/10 transition-all text-center">Download PNG</button>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        function generateQR() {
+            const text = document.getElementById('qr-input').value.trim();
+            if (!text) return;
+            const size = parseInt(document.getElementById('qr-size').value);
+            const fg = document.getElementById('qr-fg').value;
+            const bg = document.getElementById('qr-bg').value;
+            const canvas = document.getElementById('qr-canvas');
+            QRCode.toCanvas(canvas, text, {
+                width: size,
+                margin: 2,
+                color: { dark: fg, light: bg }
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                canvas.classList.remove('hidden');
+                document.getElementById('qr-placeholder').classList.add('hidden');
+                document.getElementById('download-btn').classList.remove('hidden');
+            });
+        }
+        function downloadQR() {
+            const canvas = document.getElementById('qr-canvas');
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+{% endblock %}
