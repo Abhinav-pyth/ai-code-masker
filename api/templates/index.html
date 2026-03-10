@@ -3,191 +3,188 @@
 {% block title %}AI Code Masker{% endblock %}
 
 {% block extra_styles %}
-        .tab-btn.active {
-            color: white;
-            background: rgba(99, 102, 241, 0.15);
-            border-color: rgba(99, 102, 241, 0.4);
-        }
+.tab-btn.active {
+color: white;
+background: rgba(99, 102, 241, 0.15);
+border-color: rgba(99, 102, 241, 0.4);
+}
 {% endblock %}
 
 {% block content %}
-        <!-- Top Toolbar -->
-        <div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
-            <div class="flex space-x-1 p-1 bg-white/5 rounded-xl">
-                <button id="tab-mask" onclick="switchTab('mask')"
-                    class="tab-btn active px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent">MASK</button>
-                <button id="tab-unmask" onclick="switchTab('unmask')"
-                    class="tab-btn px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent text-slate-500 hover:text-slate-300">RESTORE</button>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Language:</span>
-                <select id="lang-select"
-                    class="bg-indigo-600/10 text-indigo-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-500/20 uppercase tracking-widest outline-none cursor-pointer">
-                    <option value="java" selected>Java</option>
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                </select>
-            </div>
+<!-- Top Toolbar -->
+<div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
+    <div class="flex space-x-1 p-1 bg-white/5 rounded-xl">
+        <button id="tab-mask" onclick="switchTab('mask')"
+            class="tab-btn active px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent">MASK</button>
+        <button id="tab-unmask" onclick="switchTab('unmask')"
+            class="tab-btn px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent text-slate-500 hover:text-slate-300">RESTORE</button>
+    </div>
+    <div class="flex items-center space-x-4">
+        <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Language:</span>
+        <select id="lang-select"
+            class="bg-indigo-600/10 text-indigo-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-500/20 uppercase tracking-widest outline-none cursor-pointer">
+            <option value="java" selected>Java</option>
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+        </select>
+    </div>
+</div>
+
+<!-- Editor Area -->
+<div class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch">
+    <!-- Left Pane (Input) -->
+    <div id="input-pane" class="flex flex-col space-y-4 min-h-0">
+        <div class="flex justify-between items-center text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">
+            <span id="field-label">Original Source</span>
+            <span id="char-count" class="text-slate-600">0 chars</span>
         </div>
+        <div class="flex-grow glass-card rounded-3xl p-6 flex flex-col relative group min-h-0">
+            <textarea id="src-input"
+                class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-100 placeholder-slate-700 outline-none resize-none px-2 overflow-y-auto"
+                placeholder="Paste your code..." oninput="updateStats()"></textarea>
 
-        <!-- Editor Area -->
-        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch">
-            <!-- Left Pane (Input) -->
-            <div id="input-pane" class="flex flex-col space-y-4">
+            <div id="map-input-container"
+                class="hidden absolute inset-x-0 bottom-0 p-6 pt-0 animate-in slide-in-from-bottom duration-300">
                 <div
-                    class="flex justify-between items-center text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">
-                    <span id="field-label">Original Source</span>
-                    <span id="char-count" class="text-slate-600">0 chars</span>
-                </div>
-                <div class="flex-grow glass-card rounded-3xl p-6 flex flex-col relative group">
-                    <textarea id="src-input"
-                        class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-100 placeholder-slate-700 outline-none resize-none px-2"
-                        placeholder="Paste your code..." oninput="updateStats()"></textarea>
-
-                    <div id="map-input-container"
-                        class="hidden absolute inset-x-0 bottom-0 p-6 pt-0 animate-in slide-in-from-bottom duration-300">
-                        <div
-                            class="bg-slate-900/80 backdrop-blur-xl border-t border-white/10 p-5 rounded-t-3xl -mx-6 mb-[-24px]">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-[9px] font-black text-indigo-400 tracking-widest uppercase">Restore
-                                    Map (JSON)</span>
-                            </div>
-                            <textarea id="map-input"
-                                class="h-[120px] w-full bg-black/40 rounded-xl p-4 code-font text-[11px] text-slate-400 border border-white/5 outline-none focus:border-indigo-500/30 transition-all"
-                                placeholder='{"method_1": "actualName", ...}'></textarea>
-                        </div>
+                    class="bg-slate-900/80 backdrop-blur-xl border-t border-white/10 p-5 rounded-t-3xl -mx-6 mb-[-24px]">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-indigo-400 tracking-widest uppercase">Restore
+                            Map (JSON)</span>
                     </div>
-                </div>
-                <button id="action-btn" onclick="execute()"
-                    class="btn-premium py-5 rounded-2xl text-[11px] font-black uppercase tracking-[4px] shadow-2xl flex justify-center items-center group relative overflow-hidden">
-                    <span id="btn-text">Protect Logic</span>
-                    <svg class="w-4 h-4 ml-3 group-hover:translate-x-1 transition-transform" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Right Pane (Output) -->
-            <div id="output-pane" class="flex flex-col space-y-4">
-                <div
-                    class="flex justify-between items-center text-[10px] font-black text-slate-500 tracking-[3px] uppercase">
-                    <span>Result Preview</span>
-                    <button onclick="copyResults()"
-                        class="text-indigo-400 hover:text-white transition-all underline underline-offset-4">Copy
-                        All</button>
-                </div>
-                <div
-                    class="flex-grow bg-slate-950/60 rounded-3xl p-8 overflow-hidden flex flex-col border border-white/5">
-                    <div id="result-output"
-                        class="flex-grow code-font text-sm text-indigo-300/80 whitespace-pre overflow-auto scroll-smooth">
-                        Waiting for operation...</div>
-                </div>
-
-                <div id="map-output-container"
-                    class="h-1/4 glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col">
-                    <div
-                        class="flex justify-between items-center mb-3 text-[9px] font-black text-slate-500 tracking-widest uppercase">
-                        <span>Restoration Map</span>
-                        <button onclick="copyMap()" class="text-indigo-400 hover:text-white italic lowercase">Copy
-                            Map</button>
-                    </div>
-                    <div id="map-output"
-                        class="flex-grow text-[10px] code-font text-slate-500 break-all overflow-y-auto italic">
-                        Restoration keys appear here.
-                    </div>
+                    <textarea id="map-input"
+                        class="h-[120px] w-full bg-black/40 rounded-xl p-4 code-font text-[11px] text-slate-400 border border-white/5 outline-none focus:border-indigo-500/30 transition-all"
+                        placeholder='{"method_1": "actualName", ...}'></textarea>
                 </div>
             </div>
         </div>
+        <button id="action-btn" onclick="execute()"
+            class="btn-premium py-5 rounded-2xl text-[11px] font-black uppercase tracking-[4px] shadow-2xl flex justify-center items-center group relative overflow-hidden">
+            <span id="btn-text">Protect Logic</span>
+            <svg class="w-4 h-4 ml-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
+                </path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Right Pane (Output) -->
+    <div id="output-pane" class="flex flex-col space-y-4 min-h-0">
+        <div class="flex justify-between items-center text-[10px] font-black text-slate-500 tracking-[3px] uppercase">
+            <span>Result Preview</span>
+            <button onclick="copyResults()"
+                class="text-indigo-400 hover:text-white transition-all underline underline-offset-4">Copy
+                All</button>
+        </div>
+        <div
+            class="flex-grow bg-slate-950/60 rounded-3xl p-8 overflow-hidden flex flex-col border border-white/5 min-h-0">
+            <div id="result-output"
+                class="flex-grow code-font text-sm text-indigo-300/80 whitespace-pre overflow-auto scroll-smooth">
+                Waiting for operation...</div>
+        </div>
+
+        <div id="map-output-container" class="h-1/4 glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col">
+            <div
+                class="flex justify-between items-center mb-3 text-[9px] font-black text-slate-500 tracking-widest uppercase">
+                <span>Restoration Map</span>
+                <button onclick="copyMap()" class="text-indigo-400 hover:text-white italic lowercase">Copy
+                    Map</button>
+            </div>
+            <div id="map-output"
+                class="flex-grow text-[10px] code-font text-slate-500 break-all overflow-y-auto italic">
+                Restoration keys appear here.
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        let currentMode = 'mask';
+<script>
+    let currentMode = 'mask';
 
-        function switchTab(mode) {
-            if (mode === currentMode) return;
+    function switchTab(mode) {
+        if (mode === currentMode) return;
 
-            if (mode === 'unmask') {
-                const maskedResult = document.getElementById('result-output').innerText;
-                const mapData = document.getElementById('map-output').innerText;
-                if (maskedResult && maskedResult !== 'Waiting for operation...') {
-                    document.getElementById('src-input').value = maskedResult;
-                    updateStats();
-                }
-                if (mapData && mapData !== 'Restoration keys appear here.') {
-                    document.getElementById('map-input').value = mapData;
-                }
+        if (mode === 'unmask') {
+            const maskedResult = document.getElementById('result-output').innerText;
+            const mapData = document.getElementById('map-output').innerText;
+            if (maskedResult && maskedResult !== 'Waiting for operation...') {
+                document.getElementById('src-input').value = maskedResult;
+                updateStats();
             }
-
-            currentMode = mode;
-
-            document.getElementById('tab-mask').classList.toggle('active', mode === 'mask');
-            document.getElementById('tab-mask').classList.toggle('text-slate-500', mode !== 'mask');
-            document.getElementById('tab-unmask').classList.toggle('active', mode === 'unmask');
-            document.getElementById('tab-unmask').classList.toggle('text-slate-500', mode !== 'unmask');
-
-            document.getElementById('field-label').innerText = mode === 'mask' ? 'Original Source' : 'Masked AI Input';
-            document.getElementById('btn-text').innerText = mode === 'mask' ? 'Protect Logic' : 'Restore Original';
-            document.getElementById('map-input-container').classList.toggle('hidden', mode === 'mask');
-            document.getElementById('map-output-container').classList.toggle('hidden', mode === 'unmask');
-
-            gsap.from("#input-pane, #output-pane", { opacity: 0, y: 10, duration: 0.3, stagger: 0.05 });
-        }
-
-        function updateStats() {
-            const count = document.getElementById('src-input').value.length;
-            document.getElementById('char-count').innerText = `${count} chars`;
-        }
-
-        async function execute() {
-            const code = document.getElementById('src-input').value;
-            const lang = document.getElementById('lang-select').value;
-            const output = document.getElementById('result-output');
-            const mapOutput = document.getElementById('map-output');
-
-            if (!code) return;
-
-            output.innerText = "Processing Logic...";
-
-            try {
-                if (currentMode === 'mask') {
-                    const res = await fetch('/api/mask', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, lang })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw data.error;
-                    output.innerText = data.masked_code;
-                    mapOutput.innerText = JSON.stringify(data.mapping);
-                } else {
-                    const mapVal = document.getElementById('map-input').value;
-                    const mapping = JSON.parse(mapVal || '{}');
-                    const res = await fetch('/api/unmask', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, mapping, lang })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw data.error;
-                    output.innerText = data.unmasked_code;
-                }
-                gsap.from(output, { opacity: 0, duration: 0.5 });
-            } catch (err) {
-                output.innerText = "ERROR: " + err;
+            if (mapData && mapData !== 'Restoration keys appear here.') {
+                document.getElementById('map-input').value = mapData;
             }
         }
 
-        function copyResults() {
-            navigator.clipboard.writeText(document.getElementById('result-output').innerText);
-            alert("Results copied!");
-        }
+        currentMode = mode;
 
-        function copyMap() {
-            navigator.clipboard.writeText(document.getElementById('map-output').innerText);
-            alert("Map copied!");
+        document.getElementById('tab-mask').classList.toggle('active', mode === 'mask');
+        document.getElementById('tab-mask').classList.toggle('text-slate-500', mode !== 'mask');
+        document.getElementById('tab-unmask').classList.toggle('active', mode === 'unmask');
+        document.getElementById('tab-unmask').classList.toggle('text-slate-500', mode !== 'unmask');
+
+        document.getElementById('field-label').innerText = mode === 'mask' ? 'Original Source' : 'Masked AI Input';
+        document.getElementById('btn-text').innerText = mode === 'mask' ? 'Protect Logic' : 'Restore Original';
+        document.getElementById('map-input-container').classList.toggle('hidden', mode === 'mask');
+        document.getElementById('map-output-container').classList.toggle('hidden', mode === 'unmask');
+
+        gsap.from("#input-pane, #output-pane", { opacity: 0, y: 10, duration: 0.3, stagger: 0.05 });
+    }
+
+    function updateStats() {
+        const count = document.getElementById('src-input').value.length;
+        document.getElementById('char-count').innerText = `${count} chars`;
+    }
+
+    async function execute() {
+        const code = document.getElementById('src-input').value;
+        const lang = document.getElementById('lang-select').value;
+        const output = document.getElementById('result-output');
+        const mapOutput = document.getElementById('map-output');
+
+        if (!code) return;
+
+        output.innerText = "Processing Logic...";
+
+        try {
+            if (currentMode === 'mask') {
+                const res = await fetch('/api/mask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, lang })
+                });
+                const data = await res.json();
+                if (data.error) throw data.error;
+                output.innerText = data.masked_code;
+                mapOutput.innerText = JSON.stringify(data.mapping);
+            } else {
+                const mapVal = document.getElementById('map-input').value;
+                const mapping = JSON.parse(mapVal || '{}');
+                const res = await fetch('/api/unmask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, mapping, lang })
+                });
+                const data = await res.json();
+                if (data.error) throw data.error;
+                output.innerText = data.unmasked_code;
+            }
+            gsap.from(output, { opacity: 0, duration: 0.5 });
+        } catch (err) {
+            output.innerText = "ERROR: " + err;
         }
-    </script>
+    }
+
+    function copyResults() {
+        navigator.clipboard.writeText(document.getElementById('result-output').innerText);
+        alert("Results copied!");
+    }
+
+    function copyMap() {
+        navigator.clipboard.writeText(document.getElementById('map-output').innerText);
+        alert("Map copied!");
+    }
+</script>
 {% endblock %}
