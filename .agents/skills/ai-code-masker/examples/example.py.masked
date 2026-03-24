@@ -1,0 +1,12 @@
+import var_1
+
+class Class_1:
+    """Class to process user data"""
+    def method_1(self, var_2):
+        self.var_2 = var_2
+        
+    def method_2(self, var_3):
+        # make request
+        var_4 = {"status": "success", "val": 42}
+        print(var_5"Fetched for {self.user_id}")
+        return var_4

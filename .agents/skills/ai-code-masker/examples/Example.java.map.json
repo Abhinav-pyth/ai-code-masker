@@ -1,0 +1,8 @@
+{
+  "BankingService": "Class_1",
+  "calculateAmount": "method_1",
+  "price": "var_1",
+  "tax": "var_2",
+  "total": "var_3",
+  "logMessage": "var_4"
+}

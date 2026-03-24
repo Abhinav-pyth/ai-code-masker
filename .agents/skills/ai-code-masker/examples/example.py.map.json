@@ -1,0 +1,10 @@
+{
+  "sys": "var_1",
+  "DataProcessor": "Class_1",
+  "__init__": "method_1",
+  "user_id": "var_2",
+  "fetch_data": "method_2",
+  "api_endpoint": "var_3",
+  "response_data": "var_4",
+  "f": "var_5"
+}

@@ -1,57 +1,36 @@
-# AI Code Masker
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-![AI Code Masker Screenshot](screenshot.png)
+## Getting Started
 
-A privacy-first developer tool that allows engineers to safely use AI tools for debugging, optimization, and feature generation without exposing sensitive identifiers.
+First, run the development server:
 
-The system masks identifiers (like variable names, class names, method names) before sharing code with an AI, and mathematically restores them after AI processing by keeping a local, decoupled mapping cache.
-
-## Supported Languages
-
-- Python
-- Java
-- JavaScript / React / TypeScript
-
-## Features
-
-- **Local-only execution:** No internet access required for masking.
-- **Dynamic Web UI:** Built-in web application to simply paste and copy.
-- **Irreversible protection:** The actual code identifiers are turned into generic placeholders (`method_1`, `var_2`). The AI model physically cannot see your business logic terminology.
-- **Zero-Copy Optimised:** The masking engine leverages direct regex offset scanning and precompiled constants, keeping the memory footprint incredibly low for mono-repo parsing.
-
-## Installation
-
-1. Requires Python 3.8+
-2. Install the Flask dependency:
-   ```bash
-   pip install flask
-   ```
-
-## Usage
-
-### Using the Graphical Interface (Recommended)
-
-1. Start the Flask server:
-   ```bash
-   python app.py
-   ```
-2. Navigate your browser to [http://127.0.0.1:3000](http://127.0.0.1:3000)
-3. **To Mask:** Paste your sensitive code into the "Original Source Code" panel. Select your language, and click "Mask Identifiers". Copy the resulting safe code and the JSON Map.
-4. **To Restore:** Switch to the "Restore Code" tab. Provide the AI's response in the "Masked Source Code" panel, paste your JSON map, and hit "Restore Code".
-
-### Using the CLI
-
-You can bypass the GUI and process entire files via the command line.
-The engine scripts are located in `.agents/skills/ai-code-masker/scripts/masker.py`.
-
-**To Mask a file:**
 ```bash
-python .agents/skills/ai-code-masker/scripts/masker.py mask path/to/your/file.py
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
-*Outputs: `file.py.masked` (the safe code) and `file.py.map.json` (the recovery map)*
 
-**To Restore a file:**
-```bash
-python .agents/skills/ai-code-masker/scripts/masker.py unmask path/to/your/file.py.masked
-```
-*Outputs: `file.py.unmasked` (the fully restored file)*
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

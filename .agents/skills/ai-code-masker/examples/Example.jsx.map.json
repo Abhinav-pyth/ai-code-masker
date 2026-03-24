@@ -1,0 +1,17 @@
+{
+  "UserProfile": "Class_1",
+  "username": "var_1",
+  "age": "var_2",
+  "isEditing": "var_3",
+  "setIsEditing": "var_4",
+  "handleSave": "var_5",
+  "div": "var_6",
+  "className": "var_7",
+  "h1": "var_8",
+  "s": "var_9",
+  "Profile": "Class_2",
+  "button": "var_10",
+  "onClick": "var_11",
+  "Save": "Class_3",
+  "Edit": "Class_4"
+}
