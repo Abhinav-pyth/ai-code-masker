@@ -36,10 +36,18 @@ def get_language(filepath):
     if ext in ['.js', '.jsx', '.ts', '.tsx']: return 'js'
     return 'js' # fallback
 
-def mask_content(content, lang='python'):
+def mask_content(content, lang='python', custom_rules=None):
     mapping = {}
-    counters = {'var': 1, 'Class': 1, 'method': 1, 'CONST': 1}
+    counters = {'var': 1, 'Class': 1, 'method': 1, 'CONST': 1, 'CUSTOM': 1, 'STRING': 1}
+    rules = custom_rules or []
     
+    # Pre-process custom rules to avoid them being partially masked by standard logic
+    for rule in rules:
+        if rule and rule not in mapping:
+            masked_name = f"CUSTOM_{counters['CUSTOM']}"
+            counters['CUSTOM'] += 1
+            mapping[rule] = masked_name
+
     def replacer(match):
         if match.group('string') is not None:
             return match.group('string')
@@ -47,6 +55,11 @@ def mask_content(content, lang='python'):
             return match.group('comment')
         
         ident = match.group('identifier')
+        
+        # Check custom rules first
+        if ident in mapping:
+            return mapping[ident]
+
         if ident in KEYWORDS[lang]:
             return ident
             
@@ -95,6 +108,9 @@ def mask_file(filepath):
         content = f.read()
     
     masked_content, mapping = mask_content(content, lang)    
+    masked_filepath = filepath + '.masked'
+    map_filepath = filepath + '.map.json'
+    
     with open(masked_filepath, 'w', encoding='utf-8') as f:
         f.write(masked_content)
         

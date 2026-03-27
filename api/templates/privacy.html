@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="flex-grow relative overflow-hidden flex flex-col items-center justify-center py-20 px-10">
+    <!-- Animated Mesh Background -->
+    <div class="mesh-circle w-[500px] h-[500px] bg-indigo-600/10 absolute -top-64 -right-32 animate-pulse"></div>
+    <div class="mesh-circle w-[400px] h-[400px] bg-blue-600/5 absolute bottom-0 -left-32"></div>
+
+    <div class="max-w-4xl w-full glass-card rounded-[3rem] p-12 lg:p-16 relative z-10 border border-white/10 shadow-2xl">
+        <h1 class="text-5xl font-black text-white mb-10 tracking-tighter uppercase">Privacy Architecture</h1>
+        
+        <div class="space-y-8 text-slate-300 leading-relaxed">
+            <section>
+                <h2 class="text-xl font-bold text-indigo-400 mb-3 uppercase tracking-widest text-[13px]">Zero-Retention Policy</h2>
+                <p>We take your code's privacy seriously. Our "Hero" promise is simple: <strong>We do NOT store your code.</strong> Every piece of data you paste into our editor is processed in-memory and discarded as soon as the request is complete.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-indigo-400 mb-3 uppercase tracking-widest text-[13px]">How Processing Works</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/5">
+                        <h3 class="text-white font-bold mb-2">Client-Side Stats</h3>
+                        <p class="text-sm text-slate-400">Basic statistics like character count and local UI state are handled entirely in your browser.</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/5">
+                        <h3 class="text-white font-bold mb-2">In-Memory Masking</h3>
+                        <p class="text-sm text-slate-400">The masking logic runs on our secure, ephemeral server. No logs are kept, and no databases are used to store your snippets.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-indigo-400 mb-3 uppercase tracking-widest text-[13px]">Encryption & Transit</h2>
+                <p>All communication between your browser and our server is encrypted via SSL/TLS. Your code never travels "in the clear".</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-indigo-400 mb-3 uppercase tracking-widest text-[13px]">Why Trust Us?</h2>
+                <p>Most AI tools require you to trust their data handling. <strong>AI Code Masker</strong> acts as a physical barrier. By masking your identifiers <em>before</em> they reach an AI, you eliminate the risk of leaking trade secrets or proprietary logic names.</p>
+            </section>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-white/5">
+            <a href="/" class="text-indigo-400 hover:text-white transition-all flex items-center font-bold">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Masker
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
