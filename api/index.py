@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import socket
+import requests
 from flask import Flask, request, jsonify, render_template
 
 # Local directory addition for module discovery
@@ -19,105 +20,105 @@ def index():
     return render_template('index.html', active_page='masker')
 
 # Commented out other tool routes as per user request to focus on Masker
-# @app.route('/json-editor')
-# def json_editor():
-#     return render_template('json_editor.html', active_page='json_editor')
-# 
-# @app.route('/base64')
-# def base64_tool():
-#     return render_template('base64.html', active_page='base64')
-# 
-# @app.route('/base64-to-pdf')
-# def base64_to_pdf():
-#     return render_template('base64_to_pdf.html', active_page='base64_to_pdf')
-# 
-# @app.route('/base64-to-image')
-# def base64_to_image():
-#     return render_template('base64_to_image.html', active_page='base64_to_image')
-# 
-# @app.route('/image-resize')
-# def image_resize():
-#     return render_template('image_resize.html', active_page='image_resize')
-# 
-# @app.route('/pixel-editor')
-# def pixel_editor():
-#     return render_template('image_pixels.html', active_page='image_pixels')
-# 
-# @app.route('/image-converter')
-# def image_converter():
-#     return render_template('image_converter.html', active_page='image_converter')
-# 
-# @app.route('/hex-rgb')
-# def hex_rgb():
-#     return render_template('hex_rgb.html', active_page='hex_rgb')
-# 
-# @app.route('/spell-checker')
-# def spell_checker():
-#     return render_template('spell_checker.html', active_page='spell_checker')
-# 
-# @app.route('/translator')
-# def translator():
-#     return render_template('translator.html', active_page='translator')
-# 
-# @app.route('/email-formation')
-# def email_formation():
-#     return render_template('email_formation.html', active_page='email_formation')
-# 
-# @app.route('/sentence-formation')
-# def sentence_formation():
-#     return render_template('sentence_formation.html', active_page='sentence_formation')
-# 
-# @app.route('/naming-suggestions')
-# def naming_suggestions():
-#     return render_template('naming_suggestions.html', active_page='naming_suggestions')
-# 
-# @app.route('/sql-optimizer')
-# def sql_optimizer():
-#     return render_template('sql_optimizer.html', active_page='sql_optimizer')
-# 
-# @app.route('/my-ip')
-# def my_ip():
-#     return render_template('my_ip.html', active_page='my_ip')
-# 
-# @app.route('/domain-to-ip')
-# def domain_to_ip():
-#     return render_template('domain_to_ip.html', active_page='domain_to_ip')
-# 
-# @app.route('/api-tester')
-# def api_tester():
-#     return render_template('api_tester.html', active_page='api_tester')
-# 
-# @app.route('/url-encoder')
-# def url_encoder():
-#     return render_template('url_encoder.html', active_page='url_encoder')
-# 
-# @app.route('/case-converter')
-# def case_converter():
-#     return render_template('case_converter.html', active_page='case_converter')
-# 
-# @app.route('/qr-generator')
-# def qr_generator():
-#     return render_template('qr_generator.html', active_page='qr_generator')
-# 
-# @app.route('/jwt-tool')
-# def jwt_tool():
-#     return render_template('jwt_tool.html', active_page='jwt_tool')
-# 
-# @app.route('/html-preview')
-# def html_preview():
-#     return render_template('html_preview.html', active_page='html_preview')
-# 
-# @app.route('/js-executor')
-# def js_executor():
-#     return render_template('js_executor.html', active_page='js_executor')
-# 
-# @app.route('/lorem-ipsum')
-# def lorem_ipsum():
-#     return render_template('lorem_ipsum.html', active_page='lorem_ipsum')
-# 
-# @app.route('/dummy-data')
-# def dummy_data():
-#     return render_template('dummy_data.html', active_page='dummy_data')
+@app.route('/json-editor')
+def json_editor():
+    return render_template('json_editor.html', active_page='json_editor')
+
+@app.route('/base64')
+def base64_tool():
+    return render_template('base64.html', active_page='base64')
+
+@app.route('/base64-to-pdf')
+def base64_to_pdf():
+    return render_template('base64_to_pdf.html', active_page='base64_to_pdf')
+
+@app.route('/base64-to-image')
+def base64_to_image():
+    return render_template('base64_to_image.html', active_page='base64_to_image')
+
+@app.route('/image-resize')
+def image_resize():
+    return render_template('image_resize.html', active_page='image_resize')
+
+@app.route('/pixel-editor')
+def pixel_editor():
+    return render_template('image_pixels.html', active_page='image_pixels')
+
+@app.route('/image-converter')
+def image_converter():
+    return render_template('image_converter.html', active_page='image_converter')
+
+@app.route('/hex-rgb')
+def hex_rgb():
+    return render_template('hex_rgb.html', active_page='hex_rgb')
+
+@app.route('/spell-checker')
+def spell_checker():
+    return render_template('spell_checker.html', active_page='spell_checker')
+
+@app.route('/translator')
+def translator():
+    return render_template('translator.html', active_page='translator')
+
+@app.route('/email-formation')
+def email_formation():
+    return render_template('email_formation.html', active_page='email_formation')
+
+@app.route('/sentence-formation')
+def sentence_formation():
+    return render_template('sentence_formation.html', active_page='sentence_formation')
+
+@app.route('/naming-suggestions')
+def naming_suggestions():
+    return render_template('naming_suggestions.html', active_page='naming_suggestions')
+
+@app.route('/sql-optimizer')
+def sql_optimizer():
+    return render_template('sql_optimizer.html', active_page='sql_optimizer')
+
+@app.route('/my-ip')
+def my_ip():
+    return render_template('my_ip.html', active_page='my_ip')
+
+@app.route('/domain-to-ip')
+def domain_to_ip():
+    return render_template('domain_to_ip.html', active_page='domain_to_ip')
+
+@app.route('/api-tester')
+def api_tester():
+    return render_template('api_tester.html', active_page='api_tester')
+
+@app.route('/url-encoder')
+def url_encoder():
+    return render_template('url_encoder.html', active_page='url_encoder')
+
+@app.route('/case-converter')
+def case_converter():
+    return render_template('case_converter.html', active_page='case_converter')
+
+@app.route('/qr-generator')
+def qr_generator():
+    return render_template('qr_generator.html', active_page='qr_generator')
+
+@app.route('/jwt-tool')
+def jwt_tool():
+    return render_template('jwt_tool.html', active_page='jwt_tool')
+
+@app.route('/html-preview')
+def html_preview():
+    return render_template('html_preview.html', active_page='html_preview')
+
+@app.route('/js-executor')
+def js_executor():
+    return render_template('js_executor.html', active_page='js_executor')
+
+@app.route('/lorem-ipsum')
+def lorem_ipsum():
+    return render_template('lorem_ipsum.html', active_page='lorem_ipsum')
+
+@app.route('/dummy-data')
+def dummy_data():
+    return render_template('dummy_data.html', active_page='dummy_data')
 
 @app.route('/privacy')
 def privacy():
@@ -174,6 +175,64 @@ def api_resolve_domain():
     except socket.gaierror:
         return jsonify({"error": f"Could not resolve domain: {domain}"}), 400
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/universal-converter')
+def universal_converter():
+    return render_template('universal_converter.html', active_page='universal_converter')
+
+@app.route('/java-to-json')
+def java_to_json():
+    return render_template('java_to_json.html', active_page='java_to_json')
+
+@app.route('/aws-cloudwatch')
+def aws_cloudwatch():
+    return render_template('aws_cloudwatch.html', active_page='aws_cloudwatch')
+
+@app.route('/api/proxy', methods=['POST'])
+def api_proxy():
+    try:
+        data = request.json
+        url = data.get('url')
+        method = data.get('method', 'GET')
+        headers = data.get('headers', {})
+        body = data.get('body')
+
+        if not url:
+            from flask import jsonify
+            return jsonify({"error": "No URL provided"}), 400
+        
+        headers.pop('Host', None)
+        headers.pop('host', None)
+        
+        if method.upper() == 'GET':
+            resp = requests.get(url, headers=headers)
+        elif method.upper() == 'POST':
+            resp = requests.post(url, headers=headers, data=body)
+        elif method.upper() == 'PUT':
+            resp = requests.put(url, headers=headers, data=body)
+        elif method.upper() == 'PATCH':
+            resp = requests.patch(url, headers=headers, data=body)
+        elif method.upper() == 'DELETE':
+            resp = requests.delete(url, headers=headers)
+        else:
+            from flask import jsonify
+            return jsonify({"error": f"Unsupported method {method}"}), 400
+
+        resp_headers = dict(resp.headers)
+        resp_headers.pop('Content-Encoding', None)
+        resp_headers.pop('Transfer-Encoding', None)
+        
+        from flask import jsonify
+        return jsonify({
+            "status": resp.status_code,
+            "statusText": resp.reason,
+            "headers": resp_headers,
+            "text": resp.text
+        })
+    except Exception as e:
+        from flask import jsonify
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
