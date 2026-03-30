@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}AWS CloudWatch Log Formatter{% endblock %}
+
+{% block extra_styles %}
+    .log-entry {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 0.75rem 1rem;
+        font-family: 'Fira Code', monospace;
+        font-size: 11px;
+        transition: background 0.2s;
+    }
+    .log-entry:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .level-info { border-left: 2px solid #4ade80; color: #4ade80; }
+    .level-warn { border-left: 2px solid #fbbf24; color: #fbbf24; }
+    .level-error { border-left: 2px solid #ef4444; color: #ef4444; }
+    .level-none { border-left: 2px solid #6366f1; color: #6366f1; }
+    
+    .timestamp { color: #64748b; margin-right: 1rem; }
+    .message { color: #e2e8f0; word-break: break-all; }
+{% endblock %}
+
+{% block content %}
+<div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+    <h2 class="text-xs font-black text-white tracking-[4px] uppercase">AWS CloudWatch Formatter</h2>
+</div>
+
+<div class="flex-grow p-6 flex flex-col gap-6 overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <!-- Input -->
+        <div class="flex flex-col gap-4 h-full overflow-hidden">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-500 tracking-widest uppercase">Raw CloudWatch Logs</span>
+                <div class="flex gap-4">
+                    <button onclick="loadDemo()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest hover:text-white transition-all">Demo</button>
+                    <button onclick="clearLogs()" class="text-[10px] text-slate-500 hover:text-white transition-colors">Clear</button>
+                </div>
+            </div>
+            <textarea id="raw-logs" 
+                class="flex-grow bg-slate-800/40 border border-slate-700/30 rounded-2xl p-6 code-font text-xs text-slate-200 placeholder-slate-600 outline-none resize-none focus:border-indigo-500/30"
+                placeholder='Paste CloudWatch JSON here or raw lines...'></textarea>
+        </div>
+
+        <!-- Output -->
+        <div class="flex flex-col gap-4 h-full overflow-hidden">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-500 tracking-widest uppercase">Formatted Logs</span>
+                <div class="flex gap-4">
+                    <button onclick="copyFormatted()" class="text-[10px] text-indigo-400 hover:text-indigo-300">Copy Result</button>
+                </div>
+            </div>
+            <div id="formatted-container" class="flex-grow bg-slate-900/60 border border-slate-700/30 rounded-2xl overflow-auto p-2">
+                <div class="text-[10px] text-slate-600 italic p-4">Paste logs to begin formatting...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex justify-center shrink-0">
+        <button onclick="processLogs()" 
+            class="btn-premium px-12 py-4 rounded-2xl text-xs font-black uppercase tracking-[4px]">
+            Format Logs
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function clearLogs() {
+        document.getElementById('raw-logs').value = '';
+        document.getElementById('formatted-container').innerHTML = '<div class="text-[10px] text-slate-600 italic p-4">Paste logs to begin formatting...</div>';
+    }
+
+    function loadDemo() {
+        const demo = [
+            { timestamp: Date.now() - 5000, message: "INFO: Application started successfully on port 8080" },
+            { timestamp: Date.now() - 4000, message: "DEBUG: Initializing database connection pool..." },
+            { timestamp: Date.now() - 3000, message: "WARN: High memory usage detected: 85%" },
+            { timestamp: Date.now() - 2000, message: "ERROR: Failed to connect to Redis at 10.0.1.4:6379" },
+            { timestamp: Date.now() - 1000, message: "FATAL: Unhandled exception in main thread: Connection refused" }
+        ];
+        document.getElementById('raw-logs').value = JSON.stringify({ logEvents: demo }, null, 2);
+        processLogs();
+        
+        const t = document.createElement('div');
+        t.textContent = 'Demo logs loaded!';
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+
+    function processLogs() {
+        const input = document.getElementById('raw-logs').value.trim();
+        if (!input) return;
+
+        let entries = [];
+        try {
+            const parsed = JSON.parse(input);
+            if (Array.isArray(parsed)) {
+                entries = parsed;
+            } else if (parsed.logEvents) {
+                entries = parsed.logEvents;
+            } else {
+                entries = [parsed];
+            }
+        } catch (e) {
+            // Try line by line processing
+            entries = input.split('\n').map(l => ({ message: l.trim() }));
+        }
+
+        renderLogs(entries);
+    }
+
+    function renderLogs(entries) {
+        const container = document.getElementById('formatted-container');
+        container.innerHTML = '';
+
+        entries.forEach(entry => {
+            const msg = entry.message || entry.msg || JSON.stringify(entry);
+            const ts = entry.timestamp ? new Date(entry.timestamp).toISOString() : '';
+            const level = detectLevel(msg);
+            
+            const div = document.createElement('div');
+            div.className = `log-entry level-${level.toLowerCase()}`;
+            div.innerHTML = `
+                <span class="timestamp">${ts}</span>
+                <span class="font-bold mr-2 level-${level.toLowerCase()}">[${level}]</span>
+                <span class="message">${msg}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function detectLevel(msg) {
+        if (msg.match(/error|fatal|fail/i)) return 'ERROR';
+        if (msg.match(/warn|warning/i)) return 'WARN';
+        if (msg.match(/info|success/i)) return 'INFO';
+        return 'LOG';
+    }
+
+    function copyFormatted() {
+        const container = document.getElementById('formatted-container');
+        const text = Array.from(container.children).map(c => c.innerText).join('\n');
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = originalText, 2000);
+    }
+</script>
+{% endblock %}

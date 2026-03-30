@@ -50,10 +50,15 @@
                 <input id="url-input" type="text" placeholder="https://api.example.com/endpoint"
                     class="flex-grow bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm code-font text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500/50">
                 <!-- Send Button -->
-                <button onclick="sendRequest()" id="send-btn"
-                    class="btn-premium px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[3px] shrink-0">
-                    Send
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="loadDemo()" class="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all">
+                        Demo
+                    </button>
+                    <button onclick="sendRequest()" id="send-btn"
+                        class="btn-premium px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[3px] shrink-0">
+                        Send
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -342,23 +347,41 @@
 
             const startTime = performance.now();
 
+            // Backend Proxy fetch
             try {
-                const resp = await fetch(url, fetchOpts);
+                const proxyBody = {
+                    url: url,
+                    method: currentMethod,
+                    headers: headers,
+                    body: ['POST','PUT','PATCH'].includes(currentMethod) ? document.getElementById('body-input').value : null
+                };
+
+                const resp = await fetch('/api/proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proxyBody)
+                });
+                
+                const data = await resp.json();
                 const elapsed = Math.round(performance.now() - startTime);
                 respTime.textContent = elapsed + 'ms';
 
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
                 // Status
-                const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-3xx' : resp.status < 500 ? 'status-4xx' : 'status-5xx';
+                const statusClass = data.status < 300 ? 'status-2xx' : data.status < 400 ? 'status-3xx' : data.status < 500 ? 'status-4xx' : 'status-5xx';
                 respStatus.className = 'code-font text-xs font-bold ' + statusClass;
-                respStatus.textContent = resp.status + ' ' + resp.statusText;
+                respStatus.textContent = data.status + ' ' + (data.statusText || '');
 
                 // Response headers
                 const hdrs = [];
-                resp.headers.forEach((v, k) => hdrs.push(k + ': ' + v));
+                Object.entries(data.headers).forEach(([k, v]) => hdrs.push(k + ': ' + v));
                 responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
 
                 // Response body
-                const text = await resp.text();
+                const text = data.text;
                 respSize.textContent = formatSize(new Blob([text]).size);
 
                 try {
@@ -373,8 +396,8 @@
                 respStatus.className = 'code-font text-xs font-bold status-5xx';
                 respStatus.textContent = 'Error';
                 respSize.textContent = '';
-                responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message) + '</span>\n\n<span class="text-slate-500 text-[10px]">This may be a CORS error. If testing third-party APIs, consider using a CORS proxy or running this locally.</span>';
-                responseHeaders.textContent = 'No headers (request failed)';
+                responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message) + '</span>';
+                responseHeaders.textContent = 'Request failed';
             } finally {
                 sendBtn.textContent = 'Send';
                 sendBtn.disabled = false;
@@ -409,5 +432,19 @@
         document.getElementById('url-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') sendRequest();
         });
+
+        function loadDemo() {
+            setMethod('GET');
+            document.getElementById('url-input').value = 'https://reqres.in/api/users?page=2';
+            document.getElementById('section-params').querySelector('.param-key').value = 'page';
+            document.getElementById('section-params').querySelector('.param-value').value = '2';
+            
+            // Notification
+            const t = document.createElement('div');
+            t.textContent = 'Demo data loaded!';
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
     </script>
 {% endblock %}

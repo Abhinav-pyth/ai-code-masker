@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Java toString to JSON Converter{% endblock %}
+
+{% block extra_styles %}
+    .editor-container {
+        height: calc(100vh - 12rem);
+    }
+{% endblock %}
+
+{% block content %}
+<div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+    <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Java toString to JSON</h2>
+</div>
+
+<div class="flex-grow p-6 flex flex-col gap-6 overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <!-- Input -->
+        <div class="flex flex-col gap-4 h-full">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-500 tracking-widest uppercase">Input (Java toString or Text)</span>
+                <div class="flex gap-4">
+                    <button onclick="loadDemo()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest hover:text-white transition-all">Demo</button>
+                    <button onclick="clearInput()" class="text-[10px] text-slate-500 hover:text-white transition-colors">Clear</button>
+                </div>
+            </div>
+            <textarea id="input-text" 
+                class="flex-grow bg-slate-800/40 border border-slate-700/30 rounded-2xl p-6 code-font text-sm text-slate-200 placeholder-slate-600 outline-none resize-none focus:border-indigo-500/30"
+                placeholder="User(id=1, name='John Doe', roles=[ADMIN, USER])"></textarea>
+        </div>
+
+        <!-- Output -->
+        <div class="flex flex-col gap-4 h-full">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-slate-500 tracking-widest uppercase">JSON Output</span>
+                <div class="flex gap-4">
+                    <button onclick="copyOutput()" class="text-[10px] text-indigo-400 hover:text-indigo-300">Copy JSON</button>
+                </div>
+            </div>
+            <div class="flex-grow bg-slate-900/60 border border-slate-700/30 rounded-2xl overflow-hidden relative">
+                <pre id="output-json" class="absolute inset-0 p-6 code-font text-sm text-indigo-300 overflow-auto whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex justify-center shrink-0">
+        <button onclick="convert()" 
+            class="btn-premium px-12 py-4 rounded-2xl text-xs font-black uppercase tracking-[4px]">
+            Convert to JSON
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function clearInput() {
+        document.getElementById('input-text').value = '';
+        document.getElementById('output-json').textContent = '';
+    }
+
+    function loadDemo() {
+        const demo = `Order(id=10234, customer=User(name="Jane Doe", email='jane@example.com'), items=[Item(sku="SKU-1", price=99.99), Item(sku="SKU-2", price=45.00)], status=PENDING, metadata={priority="high", tags=["urgent", "express"]})`;
+        document.getElementById('input-text').value = demo;
+        convert();
+        
+        const t = document.createElement('div');
+        t.textContent = 'Complex Demo loaded!';
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+
+    function convert() {
+        const input = document.getElementById('input-text').value.trim();
+        if (!input) return;
+
+        try {
+            const result = parseJavaToString(input);
+            document.getElementById('output-json').textContent = JSON.stringify(result, null, 4);
+        } catch (e) {
+            document.getElementById('output-json').innerHTML = `<span class="text-red-400">Error: ${e.message}</span>`;
+            console.error(e);
+        }
+    }
+
+    function parseJavaToString(str) {
+        str = str.trim();
+        // Remove outer class name if present
+        const outerMatch = str.match(/^([a-zA-Z0-9_.$]+)\s*[\(\{\[](.*)[\)\}\]]$/s);
+        if (outerMatch) {
+            return parseObjectContent(outerMatch[2]);
+        }
+        return parseObjectContent(str);
+    }
+
+    function parseObjectContent(content) {
+        const result = {};
+        let i = 0;
+
+        while (i < content.length) {
+            // Skip whitespace and separators
+            while (i < content.length && /[\s,;]/.test(content[i])) i++;
+            if (i >= content.length) break;
+
+            // Extract key
+            let keyStart = i;
+            while (i < content.length && content[i] !== '=' && content[i] !== ':') i++;
+            let key = content.substring(keyStart, i).trim();
+            i++; // skip = or :
+
+            // Extract value
+            while (i < content.length && /\s/.test(content[i])) i++;
+            let valResult = extractValue(content, i);
+            result[key] = valResult.value;
+            i = valResult.nextIndex;
+        }
+        return result;
+    }
+
+    function extractValue(content, start) {
+        let i = start;
+        while (i < content.length && /\s/.test(content[i])) i++;
+        
+        let char = content[i];
+        
+        // Nested Object
+        const objMatch = content.substring(i).match(/^([a-zA-Z0-9_.$]+)\s*[\(\{\[]/);
+        if (objMatch) {
+            let className = objMatch[1];
+            let openChar = content[i + className.length];
+            let closeChar = openChar === '(' ? ')' : (openChar === '{' ? '}' : ']');
+            let depth = 0;
+            let j = i + className.length;
+            for (; j < content.length; j++) {
+                if (content[j] === openChar) depth++;
+                else if (content[j] === closeChar) depth--;
+                if (depth === 0) break;
+            }
+            let inner = content.substring(i + className.length + 1, j);
+            return { value: parseObjectContent(inner), nextIndex: j + 1 };
+        }
+
+        // Map/Set {}
+        if (char === '{' || char === '[') {
+            let closeChar = char === '{' ? '}' : ']';
+            let depth = 0;
+            let j = i;
+            for (; j < content.length; j++) {
+                if (content[j] === char) depth++;
+                else if (content[j] === closeChar) depth--;
+                if (depth === 0) break;
+            }
+            let inner = content.substring(i + 1, j);
+            if (char === '{') {
+                return { value: parseObjectContent(inner), nextIndex: j + 1 };
+            } else {
+                // List
+                let items = splitTopLevel(inner, ',');
+                return { value: items.map(item => extractValue(item.trim(), 0).value), nextIndex: j + 1 };
+            }
+        }
+
+        // Quoted string
+        if (char === '"' || char === "'") {
+            let j = i + 1;
+            while (j < content.length && content[j] !== char) {
+                if (content[j] === '\\') j++;
+                j++;
+            }
+            return { value: content.substring(i + 1, j), nextIndex: j + 1 };
+        }
+
+        // Simple literal or unquoted string
+        let j = i;
+        while (j < content.length && !/[\s,;\]\)\}]/.test(content[j])) j++;
+        let rawVal = content.substring(i, j).trim();
+        return { value: parseLiteral(rawVal), nextIndex: j };
+    }
+
+    function splitTopLevel(str, separator) {
+        const parts = [];
+        let start = 0;
+        let depth = 0;
+        let inQuote = false;
+        let quoteChar = '';
+
+        for (let i = 0; i < str.length; i++) {
+            let c = str[i];
+            if (!inQuote) {
+                if (c === '"' || c === "'") { inQuote = true; quoteChar = c; }
+                else if (c === '(' || c === '[' || c === '{') depth++;
+                else if (c === ')' || c === ']' || c === '}') depth--;
+                else if (c === separator && depth === 0) {
+                    parts.push(str.substring(start, i));
+                    start = i + 1;
+                }
+            } else if (c === quoteChar && str[i-1] !== '\\') {
+                inQuote = false;
+            }
+        }
+        parts.push(str.substring(start));
+        return parts;
+    }
+
+    function parseLiteral(val) {
+        if (!val) return null;
+        if (val.toLowerCase() === 'true') return true;
+        if (val.toLowerCase() === 'false') return false;
+        if (val.toLowerCase() === 'null') return null;
+        if (!isNaN(val) && val.trim() !== '') return Number(val);
+        return val;
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('output-json').textContent;
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = originalText, 2000);
+    }
+</script>
+{% endblock %}

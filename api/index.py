@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import socket
+import requests
 from flask import Flask, request, jsonify, render_template
 
 # Local directory addition for module discovery
@@ -18,6 +19,7 @@ app = Flask(__name__)
 def index():
     return render_template('index.html', active_page='masker')
 
+# Commented out other tool routes as per user request to focus on Masker
 @app.route('/json-editor')
 def json_editor():
     return render_template('json_editor.html', active_page='json_editor')
@@ -118,17 +120,22 @@ def lorem_ipsum():
 def dummy_data():
     return render_template('dummy_data.html', active_page='dummy_data')
 
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html', active_page='privacy')
+
 @app.route('/api/mask', methods=['POST'])
 def api_mask():
     data = request.json
     code = data.get('code', '')
     lang = data.get('lang', 'python')
+    custom_rules = data.get('custom_rules', [])
 
     if not code:
         return jsonify({"error": "No code provided"}), 400
 
     try:
-        masked_code, mapping = masker_logic.mask_content(code, lang)
+        masked_code, mapping = masker_logic.mask_content(code, lang, custom_rules)
         return jsonify({
             "masked_code": masked_code,
             "mapping": mapping
@@ -168,6 +175,64 @@ def api_resolve_domain():
     except socket.gaierror:
         return jsonify({"error": f"Could not resolve domain: {domain}"}), 400
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/universal-converter')
+def universal_converter():
+    return render_template('universal_converter.html', active_page='universal_converter')
+
+@app.route('/java-to-json')
+def java_to_json():
+    return render_template('java_to_json.html', active_page='java_to_json')
+
+@app.route('/aws-cloudwatch')
+def aws_cloudwatch():
+    return render_template('aws_cloudwatch.html', active_page='aws_cloudwatch')
+
+@app.route('/api/proxy', methods=['POST'])
+def api_proxy():
+    try:
+        data = request.json
+        url = data.get('url')
+        method = data.get('method', 'GET')
+        headers = data.get('headers', {})
+        body = data.get('body')
+
+        if not url:
+            from flask import jsonify
+            return jsonify({"error": "No URL provided"}), 400
+        
+        headers.pop('Host', None)
+        headers.pop('host', None)
+        
+        if method.upper() == 'GET':
+            resp = requests.get(url, headers=headers)
+        elif method.upper() == 'POST':
+            resp = requests.post(url, headers=headers, data=body)
+        elif method.upper() == 'PUT':
+            resp = requests.put(url, headers=headers, data=body)
+        elif method.upper() == 'PATCH':
+            resp = requests.patch(url, headers=headers, data=body)
+        elif method.upper() == 'DELETE':
+            resp = requests.delete(url, headers=headers)
+        else:
+            from flask import jsonify
+            return jsonify({"error": f"Unsupported method {method}"}), 400
+
+        resp_headers = dict(resp.headers)
+        resp_headers.pop('Content-Encoding', None)
+        resp_headers.pop('Transfer-Encoding', None)
+        
+        from flask import jsonify
+        return jsonify({
+            "status": resp.status_code,
+            "statusText": resp.reason,
+            "headers": resp_headers,
+            "text": resp.text
+        })
+    except Exception as e:
+        from flask import jsonify
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

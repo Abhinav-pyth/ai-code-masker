@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="icon-box">M</div>
+        <h1>AI Code Masker</h1>
+      </div>
+      <span class="badge">Beta</span>
+    </header>
+
+    <div class="quick-mask">
+      <textarea id="snippet" placeholder="Paste code to mask..."></textarea>
+      <button id="mask-btn">Mask Snippet</button>
+    </div>
+
+    <div class="tools-grid">
+      <button class="tool-btn" data-url="http://localhost:3000/">
+        <span class="icon">✏️</span>
+        <span class="label">Editor</span>
+      </button>
+      <button class="tool-btn" data-url="http://localhost:3000/api-tester">
+        <span class="icon">🚀</span>
+        <span class="label">API Client</span>
+      </button>
+      <button class="tool-btn" data-url="http://localhost:3000/json-editor">
+        <span class="icon">📄</span>
+        <span class="label">JSON</span>
+      </button>
+      <button class="tool-btn" data-url="http://localhost:3000/universal-converter">
+        <span class="icon">🔄</span>
+        <span class="label">Converter</span>
+      </button>
+    </div>
+
+    <footer>
+      <p>Privacy-first developer utilities</p>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
