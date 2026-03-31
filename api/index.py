@@ -19,6 +19,16 @@ app = Flask(__name__)
 def index():
     return render_template('index.html', active_page='masker')
 
+@app.route('/robots.txt')
+def robots():
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.xml')
+
 # Commented out other tool routes as per user request to focus on Masker
 @app.route('/json-editor')
 def json_editor():
@@ -124,42 +134,8 @@ def dummy_data():
 def privacy():
     return render_template('privacy.html', active_page='privacy')
 
-@app.route('/api/mask', methods=['POST'])
-def api_mask():
-    data = request.json
-    code = data.get('code', '')
-    lang = data.get('lang', 'python')
-    custom_rules = data.get('custom_rules', [])
-
-    if not code:
-        return jsonify({"error": "No code provided"}), 400
-
-    try:
-        masked_code, mapping = masker_logic.mask_content(code, lang, custom_rules)
-        return jsonify({
-            "masked_code": masked_code,
-            "mapping": mapping
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/unmask', methods=['POST'])
-def api_unmask():
-    data = request.json
-    code = data.get('code', '')
-    mapping = data.get('mapping', {})
-    lang = data.get('lang', 'python')
-
-    if not code or not mapping:
-        return jsonify({"error": "Code and mapping are required"}), 400
-
-    try:
-        unmasked_code = masker_logic.unmask_content(code, mapping, lang)
-        return jsonify({
-            "unmasked_code": unmasked_code
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# API routes for masking are now moved to client-side JS for 100% privacy.
+# The server no longer processes or sees any code content.
 
 @app.route('/api/resolve-domain', methods=['POST'])
 def api_resolve_domain():

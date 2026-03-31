@@ -1,47 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
+    <meta charset="UTF-8">
+    <title>AI Code Masker</title>
+    <link rel="stylesheet" href="popup.css">
 </head>
-<body>
-  <div class="container">
-    <header>
-      <div class="logo">
-        <div class="icon-box">M</div>
-        <h1>AI Code Masker</h1>
-      </div>
-      <span class="badge">Beta</span>
-    </header>
+<body class="bg-dark">
+    <div class="container overflow-hidden">
+        <header class="header flex items-center justify-between p-4 mb-3">
+            <div class="logo flex items-center gap-2">
+                <div class="logo-box">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h1 class="text-xs font-black uppercase tracking-widest text-white">AI Code Masker</h1>
+            </div>
+            <div class="privacy-badge">
+                <span class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[8px] font-black uppercase text-emerald-400">Local Only</span>
+            </div>
+        </header>
 
-    <div class="quick-mask">
-      <textarea id="snippet" placeholder="Paste code to mask..."></textarea>
-      <button id="mask-btn">Mask Snippet</button>
+        <main class="main p-4 pt-1">
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Editor Snippet</p>
+            <textarea id="snippet" placeholder="Paste sensitive code here..." spellcheck="false" class="textarea mb-4 code-font"></textarea>
+            <button id="mask-btn" class="btn-primary w-full py-3 mb-6">Mask Snippet</button>
+
+            <div class="flex items-center justify-between mb-4 border-t border-white/5 pt-4">
+                <h2 class="text-[10px] font-black uppercase tracking-widest text-indigo-400">Quick Access Tools</h2>
+                <a href="http://localhost:3000" target="_blank" class="text-[9px] font-bold text-slate-500 hover:text-white transition-all uppercase underline">Visit Web App</a>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button class="tool-btn" data-url="http://localhost:3000/json-editor">JSON Editor</button>
+                <button class="tool-btn" data-url="http://localhost:3000/api-tester">API Tester</button>
+                <button class="tool-btn" data-url="http://localhost:3000/java-to-json">Java Fixer</button>
+                <button class="tool-btn" data-url="http://localhost:3000/universal-converter">Universal</button>
+            </div>
+        </main>
     </div>
 
-    <div class="tools-grid">
-      <button class="tool-btn" data-url="http://localhost:3000/">
-        <span class="icon">✏️</span>
-        <span class="label">Editor</span>
-      </button>
-      <button class="tool-btn" data-url="http://localhost:3000/api-tester">
-        <span class="icon">🚀</span>
-        <span class="label">API Client</span>
-      </button>
-      <button class="tool-btn" data-url="http://localhost:3000/json-editor">
-        <span class="icon">📄</span>
-        <span class="label">JSON</span>
-      </button>
-      <button class="tool-btn" data-url="http://localhost:3000/universal-converter">
-        <span class="icon">🔄</span>
-        <span class="label">Converter</span>
-      </button>
-    </div>
-
-    <footer>
-      <p>Privacy-first developer utilities</p>
-    </footer>
-  </div>
-  <script src="popup.js"></script>
+    <!-- Scripts -->
+    <script src="masker.js"></script>
+    <script src="popup.js"></script>
 </body>
 </html>

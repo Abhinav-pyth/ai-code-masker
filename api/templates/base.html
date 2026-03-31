@@ -5,14 +5,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Code Masker{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI Code Masker: The privacy-first layer for safe AI code sharing. Mask sensitive variables, API keys, and secrets in-memory before sharing with ChatGPT, Copilot, or Claude. 100% client-side.">
+    <meta name="keywords" content="code masking tool, remove secrets from code, safe code sharing, AI privacy tool, redact variables, prevent AI data leakage">
+    <link rel="canonical" href="https://aicomdemasker.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aicomdemasker.com/">
+    <meta property="og:title" content="AI Code Masker | Privacy-First Code Sharing for AI">
+    <meta property="og:description" content="Protect your proprietary code and secrets. 100% browser-based masking ensures your data never leaves your machine.">
+    <meta property="og:image" content="https://aicomdemasker.com/static/img/og-preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://aicomdemasker.com/">
+    <meta property="twitter:title" content="AI Code Masker | Privacy-First Code Sharing for AI">
+    <meta property="twitter:description" content="Stop leaking secrets to AI. Mask identifiers and tokens in-memory with our local-only substitution engine.">
+    <meta property="twitter:image" content="https://aicomdemasker.com/static/img/og-preview.png">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AI Code Masker",
+      "url": "https://aicomdemasker.com",
+      "description": "A privacy-focused tool to mask code identifiers, secrets, and sensitive strings locally in the browser before sharing with AI tools.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
-        rel="stylesheet">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-dark: #0c0c14;
+            --card-bg: rgba(255, 255, 255, 0.02);
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            overflow-x: hidden;
         }
 
         .code-font {
@@ -20,80 +76,62 @@
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            background: rgba(12, 12, 20, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px) saturate(160%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
         .gradient-bg {
-            background: radial-gradient(circle at 0% 0%, #1e1b4b 0%, #0c0c14 50%, #000000 100%);
+            background: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #0c0c14 60%, #000000 100%);
             background-attachment: fixed;
         }
 
         .btn-premium {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: 700;
+            letter-spacing: 0.05em;
         }
 
         .btn-premium:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.5);
-            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.6);
+            filter: brightness(1.1);
         }
 
-        .nav-active {
-            background: rgba(99, 102, 241, 0.1);
-            color: white;
-            border: 1px solid rgba(99, 102, 241, 0.3);
+        /* Prism Overrides */
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 1.5rem !important;
+            background: rgba(0,0,0,0.2) !important;
+            font-size: 0.875rem !important;
+            line-height: 1.7 !important;
+            border-radius: 12px;
+        }
+        
+        code[class*="language-"] {
+            text-shadow: none !important;
+            font-family: 'Fira Code', monospace !important;
         }
 
-        .nav-item {
-            color: rgb(148, 163, 184);
-            transition: all 0.3s ease;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .nav-group-label {
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: rgb(71, 85, 105);
-            padding: 0.5rem 1rem;
-            margin-top: 0.75rem;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.4); }
 
         {% block extra_styles %}{% endblock %}
 
@@ -105,14 +143,13 @@
             .desktop-nav { display: none !important; }
             .mobile-nav {
                 display: none;
-                position: absolute;
-                top: 80px;
-                left: 0; right: 0;
+                position: fixed;
+                top: 64px; left: 0; right: 0;
                 background: #0a0a12;
                 border-bottom: 1px solid rgba(255,255,255,0.08);
-                padding: 1rem 1.5rem;
+                padding: 1.5rem;
                 flex-direction: column;
-                gap: 1rem;
+                gap: 1.25rem;
                 z-index: 50;
             }
             .mobile-nav.open { display: flex; }
@@ -120,143 +157,124 @@
     </style>
 </head>
 
-<body class="gradient-bg text-slate-200 min-h-screen flex flex-col">
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 h-16 glass border-b border-white/10 flex items-center justify-between px-6 md:px-10 z-[60] shrink-0">
+<body class="gradient-bg min-h-screen flex flex-col">
+    <!-- Top Navigation -->
+    <header class="sticky top-0 h-16 glass flex items-center justify-between px-6 md:px-12 z-[100] shrink-0">
         <div class="flex items-center space-x-4 group cursor-pointer" onclick="window.location.href='/'">
-            <div class="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform shrink-0">
-                <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                    </path>
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
             </div>
             <div class="flex flex-col">
-                <div class="flex items-center space-x-2">
-                    <h1 class="text-base md:text-xl font-black text-white tracking-widest uppercase">AI Code Masker</h1>
-                    <span class="hidden sm:inline bg-indigo-500/20 text-indigo-400 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Beta</span>
+                <h1 class="text-sm md:text-lg font-black text-white tracking-widest uppercase">AI Code Masker</h1>
+                <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">100% Client-Side Privacy</p>
                 </div>
-                <p class="hidden sm:block text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Privacy-first code masking</p>
             </div>
         </div>
 
         <!-- Desktop Nav -->
-        <nav class="desktop-nav hidden md:flex items-center space-x-6">
-            <div class="flex items-center space-x-3 bg-emerald-500/5 px-3 py-1.5 rounded-xl border border-emerald-500/10">
-                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zero Data Retention</span>
-            </div>
-            <a href="/" class="text-[11px] font-black uppercase tracking-[3px] {% if active_page == 'masker' %}text-white{% else %}text-slate-500 hover:text-indigo-400{% endif %} transition-all">Editor</a>
+        <nav class="desktop-nav hidden md:flex items-center space-x-8">
+            <a href="/" class="text-[11px] font-bold uppercase tracking-[3px] {% if active_page == 'masker' %}text-white{% else %}text-slate-500 hover:text-indigo-400{% endif %} transition-all">Editor</a>
             
-            <!-- Tools Dropdown -->
             <div class="relative group">
-                <button class="text-[11px] font-black uppercase tracking-[3px] text-slate-500 hover:text-indigo-400 transition-all flex items-center gap-1 focus:outline-none">
+                <button class="text-[11px] font-bold uppercase tracking-[3px] text-slate-500 hover:text-indigo-400 transition-all flex items-center gap-1 focus:outline-none">
                     Tools
                     <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <div class="absolute right-0 mt-2 w-[600px] bg-[#0c0c14]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 grid grid-cols-3 gap-6 transform translate-y-2 group-hover:translate-y-0 before:absolute before:-top-4 before:left-0 before:w-full before:h-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] z-[100]">
-                    
-                    <!-- Code & Data -->
+                <div class="absolute right-0 mt-3 w-[560px] bg-[#0c0c14]/95 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 grid grid-cols-2 gap-8 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)] z-[200]">
                     <div>
-                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3 border-b border-white/10 pb-1">Code & Data</div>
-                        <ul class="space-y-2">
-                            <li><a href="/json-editor" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">JSON Editor</a></li>
-                            <li><a href="/java-to-json" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Java to JSON Converter</a></li>
-                            <li><a href="/sql-optimizer" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">SQL Optimizer</a></li>
-                            <li><a href="/dummy-data" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Dummy Data Generator</a></li>
-                            <li><a href="/lorem-ipsum" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Lorem Ipsum Generator</a></li>
-                            <li><a href="/js-executor" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">JS Executor</a></li>
-                            <li><a href="/html-preview" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">HTML Preview</a></li>
+                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 opacity-50">Utilities</div>
+                        <ul class="space-y-3">
+                            <li><a href="/json-editor" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">JSON Editor</a></li>
+                            <li><a href="/java-to-json" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">Java to JSON Converter</a></li>
+                            <li><a href="/aws-cloudwatch" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">AWS CloudWatch Formatter</a></li>
+                            <li><a href="/api-tester" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">API Tester Client</a></li>
                         </ul>
                     </div>
-
-                    <!-- Converters & Network -->
                     <div>
-                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3 border-b border-white/10 pb-1">Converters & Network</div>
-                        <ul class="space-y-2">
-                            <li><a href="/universal-converter" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Universal Converter</a></li>
-                            <li><a href="/base64" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Base64 Encode/Decode</a></li>
-                            <li><a href="/case-converter" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Case Converter</a></li>
-                            <li><a href="/url-encoder" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">URL Encoder/Decoder</a></li>
-                            <li><a href="/api-tester" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">API Tester Client</a></li>
-                            <li><a href="/aws-cloudwatch" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">AWS CloudWatch Logs</a></li>
-                            <li><a href="/jwt-tool" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">JWT Tool</a></li>
-                            <li><a href="/domain-to-ip" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Domain to IP</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Media & Text -->
-                    <div>
-                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3 border-b border-white/10 pb-1">Media & Text</div>
-                        <ul class="space-y-2">
-                            <li><a href="/image-converter" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Image Converter</a></li>
-                            <li><a href="/image-resize" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Image Resizer</a></li>
-                            <li><a href="/pixel-editor" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Pixel Editor</a></li>
-                            <li><a href="/qr-generator" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">QR Generator</a></li>
-                            <li><a href="/translator" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Translator</a></li>
-                            <li><a href="/spell-checker" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Spell Checker</a></li>
-                            <li><a href="/naming-suggestions" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Naming Suggestions</a></li>
-                            <li><a href="/email-formation" class="text-xs font-medium text-slate-400 hover:text-white transition-colors block">Email Formation</a></li>
+                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 opacity-50">Core Tools</div>
+                        <ul class="space-y-3">
+                            <li><a href="/universal-converter" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">Universal Converter</a></li>
+                            <li><a href="/base64" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">Base64 Tool</a></li>
+                            <li><a href="/jwt-tool" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">JWT Inspector</a></li>
+                            <li><a href="/pixel-editor" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">Image Pixel Editor</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
-
-            <a href="/privacy" class="text-[11px] font-black uppercase tracking-[3px] {% if active_page == 'privacy' %}text-white{% else %}text-slate-500 hover:text-indigo-400{% endif %} transition-all">Privacy</a>
+            <a href="/privacy" class="text-[11px] font-bold uppercase tracking-[3px] {% if active_page == 'privacy' %}text-white{% else %}text-slate-500 hover:text-indigo-400{% endif %} transition-all">Privacy</a>
         </nav>
 
-        <!-- Mobile Hamburger -->
-        <button class="hamburger-btn items-center justify-center w-10 h-10 rounded-xl border border-white/10 text-slate-400 hover:text-white transition-all" onclick="toggleMobileNav()" aria-label="Menu">
-            <svg id="ham-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
+        <button class="hamburger-btn" onclick="toggleMobileNav()">
+            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
 
-        <!-- Mobile Nav Dropdown -->
-        <div id="mobile-nav" class="mobile-nav overflow-y-auto max-h-[80vh]">
-            <a href="/" class="text-sm font-black uppercase tracking-widest {% if active_page == 'masker' %}text-white{% else %}text-slate-400{% endif %} block mt-2">Editor</a>
-            
-            <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-4 mb-2">Code & Data</div>
-            <a href="/json-editor" class="text-xs text-slate-400 pl-4 py-1.5 block">JSON Editor</a>
-            <a href="/java-to-json" class="text-xs text-slate-400 pl-4 py-1.5 block">Java to JSON Converter</a>
-            <a href="/sql-optimizer" class="text-xs text-slate-400 pl-4 py-1.5 block">SQL Optimizer</a>
-            <a href="/aws-cloudwatch" class="text-xs text-slate-400 pl-4 py-1.5 block">AWS CloudWatch Logs</a>
-            
-            <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-4 mb-2">Converters & Network</div>
-            <a href="/universal-converter" class="text-xs text-slate-400 pl-4 py-1.5 block">Universal Converter</a>
-            <a href="/api-tester" class="text-xs text-slate-400 pl-4 py-1.5 block">API Tester</a>
-            <a href="/base64" class="text-xs text-slate-400 pl-4 py-1.5 block">Base64 Enc/Dec</a>
-            <a href="/jwt-tool" class="text-xs text-slate-400 pl-4 py-1.5 block">JWT Tool</a>
-            
-            <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mt-4 mb-2">Media & Text</div>
-            <a href="/image-converter" class="text-xs text-slate-400 pl-4 py-1.5 block">Image Converter</a>
-            <a href="/image-resize" class="text-xs text-slate-400 pl-4 py-1.5 block">Image Resizer</a>
-            <a href="/translator" class="text-xs text-slate-400 pl-4 py-1.5 block">Translator</a>
-            
-            <div class="mt-4 pt-4 border-t border-white/10"></div>
-            <a href="/privacy" class="text-sm font-black uppercase tracking-widest {% if active_page == 'privacy' %}text-white{% else %}text-slate-400{% endif %} block mb-4 mt-2">Privacy</a>
+        <!-- Mobile Nav -->
+        <div id="mobile-nav" class="mobile-nav">
+            <a href="/" class="text-sm font-bold uppercase tracking-widest text-slate-400">Editor</a>
+            <a href="/json-editor" class="text-sm font-bold uppercase tracking-widest text-slate-400">JSON Editor</a>
+            <a href="/universal-converter" class="text-sm font-bold uppercase tracking-widest text-slate-400">Universal Converter</a>
+            <a href="/privacy" class="text-sm font-bold uppercase tracking-widest text-slate-400">Privacy</a>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col bg-black/20">
+    <main class="flex-grow flex flex-col">
         {% block content %}{% endblock %}
     </main>
 
-    <script>
-        window.addEventListener('load', () => {
-            gsap.from("header", { y: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
-            gsap.from("main .content-area", { y: 30, opacity: 0, duration: 0.8, ease: "power4.out", stagger: 0.1 });
-        });
+    <footer class="py-12 border-t border-white/5 bg-black/40 px-6 md:px-12">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="col-span-2">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <span class="text-white font-black uppercase tracking-widest">AI Code Masker</span>
+                </div>
+                <p class="text-slate-500 text-sm leading-relaxed max-w-sm">
+                    The privacy-first layer for modern AI development. Mask your code identifiers and secrets in-memory before sharing them with LLMs. 
+                    <span class="text-indigo-400 font-bold block mt-2">100% Client-Side. No Data Ever Leaves Your Browser.</span>
+                </p>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-6">Product</h4>
+                <ul class="space-y-3 text-sm font-medium text-slate-500">
+                    <li><a href="/" class="hover:text-white transition-colors">Editor</a></li>
+                    <li><a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Chrome Extension</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-6">Connect</h4>
+                <ul class="space-y-3 text-sm font-medium text-slate-500">
+                    <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">X / Twitter</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Discord</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">&copy; 2026 AI Code Masker. Built for Privacy.</p>
+            <div class="flex items-center space-x-4">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Systems Operational</span>
+            </div>
+        </div>
+    </footer>
 
+    <script>
         function toggleMobileNav() {
-            const nav = document.getElementById('mobile-nav');
-            nav.classList.toggle('open');
+            document.getElementById('mobile-nav').classList.toggle('open');
         }
+        
+        window.addEventListener('load', () => {
+            gsap.from("header", { y: -50, opacity: 0, duration: 0.6, ease: "power3.out" });
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>
-
 </html>
