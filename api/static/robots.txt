@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /static/
+Disallow: /api/proxy
+Disallow: /api/resolve-domain
+
+# Host
+Host: https://aicomdemasker.com
+
+# Sitemaps
+Sitemap: https://aicomdemasker.com/sitemap.xml
