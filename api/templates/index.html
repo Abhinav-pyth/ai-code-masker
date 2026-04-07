@@ -31,28 +31,45 @@
     tab-size: 4;
 }
 
-.prism-editor textarea {
+.prism-editor textarea,
+.prism-editor pre {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    padding: 1.5rem;
-    margin: 0;
+    padding: 1.5rem !important;
+    margin: 0 !important;
     border: 0;
+    box-sizing: border-box;
+    font-family: 'Fira Code', monospace !important;
+    white-space: pre !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    tab-size: 4 !important;
+    background: transparent !important;
+}
+
+.prism-editor textarea {
     outline: none;
     resize: none;
-    background: transparent !important;
     color: transparent !important;
     caret-color: white;
     z-index: 10;
-    white-space: pre;
     overflow: auto;
-    font-family: 'Fira Code', monospace !important;
 }
 
 .prism-editor pre {
-    position: relative;
     z-index: 5;
     pointer-events: none;
+    overflow: hidden !important;
+}
+
+.prism-editor pre code {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    font-family: inherit !important;
 }
 
 .diff-highlight-add { background: rgba(16, 185, 129, 0.15); border-left: 2px solid #10b981; }
@@ -137,6 +154,7 @@
                         </div>
                     </div>
                     <div class="flex-grow prism-editor">
+                        <textarea id="result-input" spellcheck="false" onscroll="syncScroll(this, 'result-pre')" readonly>Waiting for logic protection...</textarea>
                         <pre id="result-pre" class="language-python"><code>Waiting for logic protection...</code></pre>
                     </div>
                 </div>
@@ -225,9 +243,9 @@
         document.getElementById('mode-restore').classList.toggle('text-white', mode === 'restore');
         document.getElementById('mode-restore').classList.toggle('text-slate-500', mode !== 'restore');
 
-        document.getElementById('input-label').innerText = mode === 'mask' ? 'Source Input' : 'Masked Input (to restore)';
+        document.getElementById('input-label').textContent = mode === 'mask' ? 'Source Input' : 'Masked Input (to restore)';
         if (mode === 'restore') {
-            const currentResult = document.getElementById('result-pre').querySelector('code').innerText;
+            const currentResult = document.getElementById('result-pre').querySelector('code').textContent;
             if (currentResult && !currentResult.includes('Waiting')) {
                 document.getElementById('src-input').value = currentResult;
                 onInput(document.getElementById('src-input'));
@@ -248,7 +266,7 @@
         
         pre.className = `language-${lang}`;
         code.className = `language-${lang}`;
-        code.innerText = text;
+        code.textContent = text;
         Prism.highlightElement(code);
     }
 
@@ -269,16 +287,19 @@
         if (currentMode === 'mask') {
             const { maskedCode, mapping } = maskContent(text, lang === 'python' ? 'python' : (lang === 'javascript' ? 'js' : 'java'));
             currentMapping = mapping;
-            resultCode.innerText = maskedCode;
-            document.getElementById('map-output').innerText = JSON.stringify(mapping, null, 2);
+            resultCode.textContent = maskedCode;
+            document.getElementById('result-input').value = maskedCode;
+            document.getElementById('map-output').textContent = JSON.stringify(mapping, null, 2);
         } else {
             try {
-                const mapText = document.getElementById('map-output').innerText;
+                const mapText = document.getElementById('map-output').textContent;
                 const mapping = JSON.parse(mapText);
                 const unmasked = unmaskContent(text, mapping, lang === 'python' ? 'python' : (lang === 'javascript' ? 'js' : 'java'));
-                resultCode.innerText = unmasked;
+                resultCode.textContent = unmasked;
+                document.getElementById('result-input').value = unmasked;
             } catch (e) {
-                resultCode.innerText = "Error: Invalid map JSON for restoration.";
+                resultCode.textContent = "Error: Invalid map JSON for restoration.";
+                document.getElementById('result-input').value = "Error: Invalid map JSON for restoration.";
             }
         }
 
@@ -308,13 +329,13 @@
     }
 
     function copyOutput() {
-        const text = document.getElementById('result-pre').querySelector('code').innerText;
+        const text = document.getElementById('result-pre').querySelector('code').textContent;
         navigator.clipboard.writeText(text);
         showToast("Masked code copied!");
     }
 
     function copyMap() {
-        const text = document.getElementById('map-output').innerText;
+        const text = document.getElementById('map-output').textContent;
         navigator.clipboard.writeText(text);
         showToast("Map JSON copied!");
     }
@@ -322,7 +343,7 @@
     function showToast(msg) {
         const toast = document.createElement('div');
         toast.className = "fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-2xl z-[1000] border border-white/20";
-        toast.innerText = msg;
+        toast.textContent = msg;
         document.body.appendChild(toast);
         gsap.from(toast, { y: 100, opacity: 0, duration: 0.4, ease: "back.out" });
         setTimeout(() => {
@@ -332,13 +353,14 @@
 
     function clearAll() {
         document.getElementById('src-input').value = '';
-        document.getElementById('src-pre').querySelector('code').innerText = '';
-        document.getElementById('result-pre').querySelector('code').innerText = 'Waiting for logic protection...';
-        document.getElementById('map-output').innerText = 'Map values will populate here. Use these to restore your code later.';
+        document.getElementById('src-pre').querySelector('code').textContent = '';
+        document.getElementById('result-input').value = 'Waiting for logic protection...';
+        document.getElementById('result-pre').querySelector('code').textContent = 'Waiting for logic protection...';
+        document.getElementById('map-output').textContent = 'Map values will populate here. Use these to restore your code later.';
     }
 
     function downloadOutput() {
-        const text = document.getElementById('result-pre').querySelector('code').innerText;
+        const text = document.getElementById('result-pre').querySelector('code').textContent;
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
