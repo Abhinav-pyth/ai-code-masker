@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- ─── Commands ──────────────────────────────────────────── -->
+   <extension point="org.eclipse.ui.commands">
+      <category
+            id="com.aimasker.eclipse.commands.category"
+            name="AI Code Masker">
+      </category>
+      <command
+            id="com.aimasker.eclipse.commands.maskSelection"
+            name="Mask Selection"
+            description="Mask identifiers in the selected text"
+            categoryId="com.aimasker.eclipse.commands.category">
+      </command>
+      <command
+            id="com.aimasker.eclipse.commands.maskFile"
+            name="Mask Entire File"
+            description="Mask all identifiers in the current file"
+            categoryId="com.aimasker.eclipse.commands.category">
+      </command>
+      <command
+            id="com.aimasker.eclipse.commands.unmaskSelection"
+            name="Unmask Selection"
+            description="Restore identifiers in the selected text using stored mapping"
+            categoryId="com.aimasker.eclipse.commands.category">
+      </command>
+      <command
+            id="com.aimasker.eclipse.commands.unmaskFile"
+            name="Unmask Entire File"
+            description="Restore all identifiers in the current file"
+            categoryId="com.aimasker.eclipse.commands.category">
+      </command>
+      <command
+            id="com.aimasker.eclipse.commands.showMapping"
+            name="Show Mapping"
+            description="Open the AI Code Masker Mapping view"
+            categoryId="com.aimasker.eclipse.commands.category">
+      </command>
+   </extension>
+
+   <!-- ─── Handlers ──────────────────────────────────────────── -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            commandId="com.aimasker.eclipse.commands.maskSelection"
+            class="com.aimasker.eclipse.handlers.MaskSelectionHandler">
+      </handler>
+      <handler
+            commandId="com.aimasker.eclipse.commands.maskFile"
+            class="com.aimasker.eclipse.handlers.MaskFileHandler">
+      </handler>
+      <handler
+            commandId="com.aimasker.eclipse.commands.unmaskSelection"
+            class="com.aimasker.eclipse.handlers.UnmaskSelectionHandler">
+      </handler>
+      <handler
+            commandId="com.aimasker.eclipse.commands.unmaskFile"
+            class="com.aimasker.eclipse.handlers.UnmaskFileHandler">
+      </handler>
+      <handler
+            commandId="com.aimasker.eclipse.commands.showMapping"
+            class="com.aimasker.eclipse.handlers.ShowMappingHandler">
+      </handler>
+   </extension>
+
+   <!-- ─── Key Bindings ─────────────────────────────────────── -->
+   <extension point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.aimasker.eclipse.commands.maskSelection"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+SHIFT+M">
+      </key>
+      <key
+            commandId="com.aimasker.eclipse.commands.unmaskSelection"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+SHIFT+U">
+      </key>
+   </extension>
+
+   <!-- ─── Menu Contributions ────────────────────────────────── -->
+   <extension point="org.eclipse.ui.menus">
+      <!-- Editor context menu -->
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu
+               id="com.aimasker.eclipse.menu"
+               label="🔒 AI Code Masker"
+               mnemonic="A">
+            <command
+                  commandId="com.aimasker.eclipse.commands.maskSelection"
+                  label="Mask Selection"
+                  mnemonic="M"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.aimasker.eclipse.commands.maskFile"
+                  label="Mask Entire File"
+                  mnemonic="F"
+                  style="push">
+            </command>
+            <separator name="com.aimasker.eclipse.separator1" visible="true"/>
+            <command
+                  commandId="com.aimasker.eclipse.commands.unmaskSelection"
+                  label="Unmask Selection"
+                  mnemonic="U"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.aimasker.eclipse.commands.unmaskFile"
+                  label="Unmask Entire File"
+                  mnemonic="R"
+                  style="push">
+            </command>
+            <separator name="com.aimasker.eclipse.separator2" visible="true"/>
+            <command
+                  commandId="com.aimasker.eclipse.commands.showMapping"
+                  label="Show Mapping"
+                  mnemonic="S"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+
+      <!-- Toolbar contribution -->
+      <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar id="com.aimasker.eclipse.toolbar" label="AI Code Masker">
+            <command
+                  commandId="com.aimasker.eclipse.commands.maskSelection"
+                  label="Mask"
+                  tooltip="Mask selected code"
+                  style="push">
+            </command>
+            <command
+                  commandId="com.aimasker.eclipse.commands.unmaskSelection"
+                  label="Unmask"
+                  tooltip="Unmask selected code"
+                  style="push">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+
+   <!-- ─── Views ─────────────────────────────────────────────── -->
+   <extension point="org.eclipse.ui.views">
+      <category
+            id="com.aimasker.eclipse.views.category"
+            name="AI Code Masker">
+      </category>
+      <view
+            id="com.aimasker.eclipse.views.MappingView"
+            name="Masker Mapping"
+            class="com.aimasker.eclipse.views.MappingView"
+            category="com.aimasker.eclipse.views.category"
+            icon="icons/icon.png"
+            allowMultiple="false"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>
