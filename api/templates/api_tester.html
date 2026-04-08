@@ -51,13 +51,60 @@
                     class="flex-grow bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm code-font text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500/50">
                 <!-- Send Button -->
                 <div class="flex gap-2">
+                    <button onclick="openCollectionsModal()" title="View Saved Collections"
+                        class="h-10 w-10 flex items-center justify-center bg-slate-800/60 border border-slate-700/50 rounded-xl hover:text-indigo-400 hover:border-indigo-500/30 transition-colors shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </button>
+                    <button onclick="openCurlModal()" title="Import from cURL"
+                        class="h-10 w-10 flex items-center justify-center bg-slate-800/60 border border-slate-700/50 rounded-xl hover:text-indigo-400 hover:border-indigo-500/30 transition-colors shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </button>
                     <button onclick="loadDemo()" class="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all">
                         Demo
                     </button>
                     <button onclick="sendRequest()" id="send-btn"
-                        class="btn-premium px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[3px] shrink-0">
+                        class="btn-premium px-6 lg:px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[3px] shrink-0">
                         Send
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collections Modal -->
+        <div id="collections-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-card rounded-2xl w-full max-w-md h-3/4 flex flex-col overflow-hidden shadow-2xl border border-white/10 p-4">
+                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                    <span class="text-sm font-black text-white tracking-widest uppercase">Saved Requests</span>
+                    <button onclick="closeCollectionsModal()" class="text-slate-500 hover:text-white">&times;</button>
+                </div>
+                <div class="mb-3 space-y-2">
+                    <button onclick="saveCurrentRequest()" class="w-full text-xs text-indigo-400 hover:text-indigo-300 font-bold bg-indigo-500/10 px-4 py-2 rounded-xl text-center">+ Save Current</button>
+                    <input type="text" id="collection-search" placeholder="Filter requests..." class="w-full bg-slate-900/50 border border-slate-700/30 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50">
+                </div>
+                <div id="collections-list" class="flex-grow overflow-y-auto p-2 space-y-1">
+                    <!-- Collections populated via JS -->
+                </div>
+                <div class="pt-4 mt-2 border-t border-white/10 flex gap-2 shrink-0">
+                    <button onclick="exportCollections()" class="flex-1 text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/50 py-2 rounded-lg uppercase tracking-wider">Export JSON</button>
+                    <label class="flex-1 text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/50 py-2 rounded-lg uppercase tracking-wider text-center cursor-pointer">
+                        Import
+                        <input type="file" id="import-file" class="hidden" accept=".json" onchange="importCollectionsFile(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- cURL Modal -->
+        <div id="curl-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-white/10 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-black text-white tracking-widest uppercase">Import cURL</h3>
+                    <button onclick="closeCurlModal()" class="text-slate-500 hover:text-white">&times;</button>
+                </div>
+                <textarea id="curl-input" class="w-full bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 code-font text-xs text-slate-300 placeholder-slate-600 outline-none h-48 focus:border-indigo-500/50" placeholder="Paste your curl command here..."></textarea>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button onclick="closeCurlModal()" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">Cancel</button>
+                    <button onclick="importCurl()" class="btn-premium px-6 py-2 rounded-lg text-xs font-bold text-white shadow-lg shadow-indigo-500/20">Import</button>
                 </div>
             </div>
         </div>
@@ -110,15 +157,18 @@
 
                 <!-- Body Tab -->
                 <div id="section-body" class="tab-section flex-col flex-grow overflow-hidden glass-card rounded-2xl p-5">
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Request Body</span>
-                        <div class="flex gap-2">
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase shrink-0">Request Body</span>
+                        <div class="flex gap-2 flex-wrap items-center">
                             <select id="body-type" class="bg-slate-800/60 border border-slate-700/50 rounded-lg px-2 py-1 text-[10px] code-font text-slate-300 outline-none cursor-pointer">
                                 <option value="json">JSON</option>
                                 <option value="text">Text</option>
                                 <option value="form">Form Data</option>
                             </select>
-                            <button onclick="prettifyBody()" class="text-[10px] text-indigo-400 hover:text-indigo-300">Prettify</button>
+                            <span class="text-slate-600">|</span>
+                            <button onclick="prettifyBody()" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300">Prettify</button>
+                            <button onclick="convertBodyToJson()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300">CSV to JSON</button>
+                            <button onclick="convertBodyToCsv()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300">JSON to CSV</button>
                         </div>
                     </div>
                     <textarea id="body-input"
@@ -167,7 +217,8 @@
                         <span id="resp-status" class="code-font text-xs font-bold"></span>
                         <span id="resp-size" class="text-[10px] code-font text-slate-600"></span>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap items-center">
+                        <button onclick="exportRespCsv()" id="btn-export-csv" class="hidden px-3 py-1 rounded-lg text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 transition-colors">Export CSV</button>
                         <button onclick="switchRespTab('body')" id="resp-tab-body"
                             class="px-3 py-1 rounded-lg text-[10px] font-bold text-white bg-indigo-600/20 border border-indigo-500/30">Body</button>
                         <button onclick="switchRespTab('headers')" id="resp-tab-headers"
@@ -188,6 +239,10 @@
 {% endblock %}
 
 {% block scripts %}
+    <!-- PapaParse for robust CSV Conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+    </style>
     <script>
         let currentMethod = 'GET';
         let currentReqTab = 'params';
@@ -384,12 +439,19 @@
                 const text = data.text;
                 respSize.textContent = formatSize(new Blob([text]).size);
 
+                document.getElementById('btn-export-csv').classList.add('hidden');
                 try {
                     const json = JSON.parse(text);
                     responseBody.textContent = JSON.stringify(json, null, 2);
+                    // Show export CSV button for typical tabular data or FHIR Bundles
+                    if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
+                        document.getElementById('btn-export-csv').classList.remove('hidden');
+                    }
                 } catch(e) {
                     responseBody.textContent = text;
                 }
+                
+                switchRespTab('body');
             } catch(err) {
                 const elapsed = Math.round(performance.now() - startTime);
                 respTime.textContent = elapsed + 'ms';
@@ -445,6 +507,242 @@
             t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
             document.body.appendChild(t);
             setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+        // --- Collections / LocalStorage Logic ---
+        let collections = JSON.parse(localStorage.getItem('api_tester_collections') || '[]');
+
+        function saveCollections() {
+            localStorage.setItem('api_tester_collections', JSON.stringify(collections));
+            renderCollections();
+        }
+
+        function saveCurrentRequest() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) return alert('Please enter a URL to save.');
+
+            const name = prompt('Enter a name for this request:', currentMethod + ' ' + url.split('?')[0]);
+            if (!name) return;
+
+            collections.push({
+                id: Date.now().toString(),
+                name, method: currentMethod, url,
+                params: getParams(), headers: getHeaders(),
+                bodyType: document.getElementById('body-type').value,
+                body: document.getElementById('body-input').value,
+                authType: document.getElementById('auth-type').value,
+                authToken: document.getElementById('bearer-token').value,
+                authUser: document.getElementById('basic-user').value,
+                authPass: document.getElementById('basic-pass').value,
+                apiKeyName: document.getElementById('apikey-key').value,
+                apiKeyValue: document.getElementById('apikey-value').value
+            });
+            saveCollections();
+        }
+
+        function loadRequest(id) {
+            const req = collections.find(r => r.id === id);
+            if (!req) return;
+
+            setMethod(req.method || 'GET');
+            let rawUrl = req.url.split('?')[0];
+            document.getElementById('url-input').value = rawUrl;
+
+            // Load Params
+            document.getElementById('params-container').innerHTML = '';
+            let combinedParams = { ...(req.params || {}) };
+            try { new URL(req.url.startsWith('http') ? req.url : 'http://' + req.url).searchParams.forEach((v, k) => combinedParams[k] = v); } catch(e){}
+            let pAdded=false;
+            for (const [k, v] of Object.entries(combinedParams)) {
+                const row = document.createElement('div'); row.className = 'param-row';
+                row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-key">
+                                 <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-value">
+                                 <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                document.getElementById('params-container').appendChild(row); pAdded=true;
+            }
+            if(!pAdded) addParam();
+
+            // Load Headers
+            document.getElementById('headers-container').innerHTML = '';
+            let hAdded=false;
+            for (const [k, v] of Object.entries(req.headers || {})) {
+                const row = document.createElement('div'); row.className = 'param-row';
+                row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-key">
+                                 <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-value">
+                                 <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                document.getElementById('headers-container').appendChild(row); hAdded=true;
+            }
+            if(!hAdded) addHeader();
+
+            document.getElementById('body-type').value = req.bodyType || 'json';
+            document.getElementById('body-input').value = req.body || '';
+            document.getElementById('auth-type').value = req.authType || 'none';
+            document.getElementById('bearer-token').value = req.authToken || '';
+            document.getElementById('basic-user').value = req.authUser || '';
+            document.getElementById('basic-pass').value = req.authPass || '';
+            document.getElementById('apikey-key').value = req.apiKeyName || '';
+            document.getElementById('apikey-value').value = req.apiKeyValue || '';
+            
+            toggleAuthFields();
+            switchReqTab('params');
+            closeCollectionsModal();
+        }
+
+        function renderCollections(filter = '') {
+            const list = document.getElementById('collections-list');
+            list.innerHTML = '';
+            const f = filter.toLowerCase();
+            const clsColors = { GET: 'text-green-400', POST: 'text-amber-400', PUT: 'text-blue-400', PATCH: 'text-purple-400', DELETE: 'text-red-400' };
+
+            collections.forEach(r => {
+                if (f && !r.name.toLowerCase().includes(f) && !r.url.toLowerCase().includes(f)) return;
+                const col = document.createElement('div');
+                col.className = 'group flex items-center justify-between p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors';
+                col.onclick = () => loadRequest(r.id);
+                col.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-[9px] font-black ${clsColors[r.method||'GET']||'text-slate-400'} w-8 shrink-0">${r.method||'GET'}</span>
+                        <span class="text-[11px] text-slate-300 truncate">${escapeHtml(r.name)}</span>
+                    </div>
+                    <button onclick="deleteRequest('${r.id}', event)" class="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">×</button>`;
+                list.appendChild(col);
+            });
+            if (!collections.length) list.innerHTML = '<div class="text-[10px] text-slate-500 text-center italic mt-4">No saved requests</div>';
+        }
+
+        function deleteRequest(id, event) {
+            event.stopPropagation();
+            if(confirm('Delete this request?')) { collections = collections.filter(r => r.id !== id); saveCollections(); }
+        }
+
+        function openCollectionsModal() { document.getElementById('collections-modal').classList.replace('hidden', 'flex'); renderCollections(); }
+        function closeCollectionsModal() { document.getElementById('collections-modal').classList.replace('flex', 'hidden'); }
+        document.getElementById('collection-search').addEventListener('input', e => renderCollections(e.target.value));
+
+        function exportCollections() {
+            const blob = new Blob([JSON.stringify(collections, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'api_tester_collections.json'; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importCollectionsFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) { collections = collections.concat(imported); saveCollections(); } else alert('Invalid format');
+                } catch(err) { alert('Error: ' + err.message); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // --- cURL Import Logic ---
+        function openCurlModal() { document.getElementById('curl-modal').classList.replace('hidden', 'flex'); }
+        function closeCurlModal() { document.getElementById('curl-modal').classList.replace('flex', 'hidden'); document.getElementById('curl-input').value = ''; }
+
+        function importCurl() {
+            const cmd = document.getElementById('curl-input').value.trim().replace(/\\\n/g, ' ').replace(/\\\r\n/g, ' ');
+            if (!cmd) return;
+            
+            let method = cmd.includes('-d ') || cmd.match(/--data(-raw|-binary)?\b/) ? 'POST' : 'GET';
+            const mMatch = cmd.match(/(?:-X|--request)\s+['"]?([A-Z]+)['"]?/i);
+            if (mMatch) method = mMatch[1].toUpperCase();
+            setMethod(method);
+
+            document.getElementById('headers-container').innerHTML = '';
+            const hRegex = /(?:-H|--header)\s+(['"])(.+?)\1/g;
+            let hMatch, hAdded=false;
+            while ((hMatch = hRegex.exec(cmd))) {
+                const parts = hMatch[2].split(/:\s*/);
+                if (parts.length >= 2) {
+                    const row = document.createElement('div'); row.className = 'param-row';
+                    row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(parts[0])}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-key">
+                                     <input type="text" placeholder="Value" value="${escapeHtml(parts.slice(1).join(':'))}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-value">
+                                     <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                    document.getElementById('headers-container').appendChild(row); hAdded=true;
+                }
+            }
+            if(!hAdded) addHeader();
+
+            const dMatch = cmd.match(/(?:-d|--data(?:-raw|-binary)?)\s+(['"])([\s\S]*?)\1/);
+            if (dMatch) document.getElementById('body-input').value = dMatch[2];
+
+            const aMatch = cmd.match(/(?:-u|--user)\s+(['"]?)(.+?)\1(?=\s|$)/);
+            if (aMatch) {
+                document.getElementById('auth-type').value = 'basic'; toggleAuthFields();
+                const parts = aMatch[2].split(':');
+                document.getElementById('basic-user').value = parts[0] || '';
+                document.getElementById('basic-pass').value = parts[1] || '';
+            }
+
+            const uMatch = cmd.match(/['"]?(https?:\/\/[^\s'"]+)['"]?/);
+            if (uMatch) {
+                try {
+                    const obj = new URL(uMatch[1]);
+                    document.getElementById('url-input').value = obj.origin + obj.pathname;
+                    document.getElementById('params-container').innerHTML = '';
+                    let pAdded=false;
+                    obj.searchParams.forEach((v, k) => {
+                        const row = document.createElement('div'); row.className = 'param-row';
+                        row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-key">
+                                         <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-value">
+                                         <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                        document.getElementById('params-container').appendChild(row); pAdded=true;
+                    });
+                    if(!pAdded) addParam();
+                } catch(e){}
+            }
+            closeCurlModal();
+        }
+
+        // --- JSON ↔ CSV Converters (FHIR Data supported) ---
+        function convertBodyToJson() {
+            const csv = document.getElementById('body-input').value.trim();
+            if (!csv) return alert("Please parse CSV data first");
+            Papa.parse(csv, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.errors.length) return alert("CSV Parsing error: " + results.errors[0].message);
+                    document.getElementById('body-input').value = JSON.stringify(results.data, null, 2);
+                    document.getElementById('body-type').value = 'json';
+                }
+            });
+        }
+
+        function convertBodyToCsv() {
+            const jsonText = document.getElementById('body-input').value.trim();
+            if (!jsonText) return;
+            try {
+                let data = JSON.parse(jsonText);
+                if (data.resourceType === 'Bundle' && data.entry) {
+                    data = data.entry.map(e => e.resource);
+                }
+                if (!Array.isArray(data)) data = [data]; // PapaParse works best with arrays of objects
+                const csv = Papa.unparse(data);
+                document.getElementById('body-input').value = csv;
+                document.getElementById('body-type').value = 'text'; // Optional: visual change
+            } catch(e) { alert("Invalid JSON: " + e.message); }
+        }
+
+        function exportRespCsv() {
+            const jsonText = document.getElementById('response-body').textContent;
+            try {
+                let data = JSON.parse(jsonText);
+                if (data.resourceType === 'Bundle' && data.entry) {
+                    data = data.entry.map(e => e.resource);
+                }
+                if (!Array.isArray(data)) data = [data];
+                const csv = Papa.unparse(data);
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'api_export.csv'; a.click();
+                URL.revokeObjectURL(url);
+            } catch(e) { alert("Cannot export current response into CSV (Must be JSON array or FHIR Bundle)."); }
         }
     </script>
 {% endblock %}

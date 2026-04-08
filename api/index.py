@@ -98,6 +98,10 @@ def domain_to_ip():
 def api_tester():
     return render_template('api_tester.html', active_page='api_tester')
 
+@app.route('/clinical-parser')
+def clinical_parser():
+    return render_template('clinical_parser.html', active_page='clinical_parser')
+
 @app.route('/url-encoder')
 def url_encoder():
     return render_template('url_encoder.html', active_page='url_encoder')

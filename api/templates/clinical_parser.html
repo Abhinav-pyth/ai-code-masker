@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+{% block title %}Clinical Parser{% endblock %}
+
+{% block extra_styles %}
+        /* Split layout editor */
+        .editor-textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            color: #cbd5e1;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .editor-textarea::placeholder {
+            color: rgba(148, 163, 184, 0.4);
+        }
+
+        /* HL7 Table Rendering */
+        .hl7-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            font-family: 'Outfit', sans-serif;
+            color: #e2e8f0;
+        }
+        .hl7-table th, .hl7-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hl7-table th {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        .hl7-segment-header {
+            background-color: rgba(255, 255, 255, 0.05);
+            font-weight: 800;
+            color: #fff;
+        }
+
+        /* JSON Tree styling override */
+        pre.json-view {
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            color: #cbd5e1;
+        }
+{% endblock %}
+
+{% block content %}
+    <!-- Main Workspace -->
+    <div class="flex-grow flex flex-col h-full overflow-hidden p-6 gap-6 relative z-10">
+        
+        <!-- Header -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 border border-emerald-500/20">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-black text-white tracking-widest uppercase flex items-center gap-3">
+                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Clinical Parser
+                    </h2>
+                    <span class="px-2 py-1 bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 text-[10px] rounded uppercase font-bold tracking-widest">Client-Side Only</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-2 max-w-xl">Parse HL7 v2 messages, C-CDA XML documents, and FHIR payloads into human-readable tables, formatted narratives, and JSON structures securely in your browser.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="loadSample('hl7')" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest border border-white/10">Simulate HL7</button>
+                <button onclick="loadSample('ccda')" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest border border-white/10">Simulate C-CDA</button>
+                <button onclick="clearAll()" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-xs font-bold text-rose-400 transition-colors uppercase tracking-widest">Clear</button>
+            </div>
+        </div>
+
+        <!-- Split Workspace -->
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
+            
+            <!-- Input Area -->
+            <div class="glass-card rounded-2xl flex flex-col overflow-hidden relative group">
+                <div class="h-12 border-b border-white/10 bg-white/5 flex items-center justify-between px-4 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Input Document</span>
+                        <span id="format-badge" class="hidden px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/20">Auto-Detected</span>
+                    </div>
+                    <select id="manual-format" onchange="processInput()" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 outline-none cursor-pointer focus:border-indigo-500/50">
+                        <option value="auto">Auto Detect Format</option>
+                        <option value="hl7">HL7 v2 (Pipe Delimited)</option>
+                        <option value="ccda">C-CDA (XML)</option>
+                        <option value="fhir">FHIR (JSON)</option>
+                    </select>
+                </div>
+                <div class="flex-grow relative">
+                    <textarea id="clinical-input" class="editor-textarea" placeholder="Paste your HL7 v2, C-CDA, or FHIR document here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Output Area -->
+            <div class="glass-card rounded-2xl flex flex-col overflow-hidden">
+                <div class="h-12 border-b border-white/10 bg-white/5 flex items-center justify-between px-4 shrink-0">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Parsed Output</span>
+                    <div class="flex gap-2" id="output-tabs">
+                        <button onclick="switchTab('readable')" id="tab-readable" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Readable View</button>
+                        <button onclick="switchTab('json')" id="tab-json" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent hidden">Extract JSON</button>
+                    </div>
+                </div>
+                
+                <div class="flex-grow relative overflow-hidden bg-[#0a0a0f]">
+                    <!-- Readable Summary Pane -->
+                    <div id="pane-readable" class="absolute inset-0 overflow-y-auto p-6 block">
+                        <div id="output-readable" class="text-slate-400 text-sm italic">Status: Waiting for input...</div>
+                    </div>
+                    
+                    <!-- Extracted JSON Pane -->
+                    <div id="pane-json" class="absolute inset-0 overflow-y-auto p-6 hidden">
+                        <button onclick="copyExtractedJson()" class="absolute top-4 right-6 text-[10px] uppercase font-bold text-indigo-400 hover:text-white">Copy JSON</button>
+                        <pre id="output-json" class="json-view code-font text-xs"></pre>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentFormat = 'unknown';
+    let extractedData = null;
+
+    // Listeners
+    document.getElementById('clinical-input').addEventListener('input', debounce(processInput, 500));
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => { clearTimeout(timeout); func(...args); };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function switchTab(tab) {
+        document.getElementById('pane-readable').style.display = tab === 'readable' ? 'block' : 'none';
+        document.getElementById('pane-json').style.display = tab === 'json' ? 'block' : 'none';
+        
+        document.getElementById('tab-readable').className = tab === 'readable' 
+            ? 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            : 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent';
+            
+        document.getElementById('tab-json').className = tab === 'json' 
+            ? 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            : 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent';
+    }
+
+    function detectFormat(text) {
+        const manual = document.getElementById('manual-format').value;
+        if (manual !== 'auto') return manual;
+
+        const trimmed = text.trim();
+        if (trimmed.startsWith('MSH|')) return 'hl7';
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try { 
+                const j = JSON.parse(trimmed); 
+                if (j.resourceType) return 'fhir';
+                return 'json'; 
+            } catch(e) {}
+        }
+        if (trimmed.includes('<ClinicalDocument') || trimmed.includes('urn:hl7-org:v3')) return 'ccda';
+        if (trimmed.startsWith('<')) return 'xml';
+        
+        return 'unknown';
+    }
+
+    function processInput() {
+        const input = document.getElementById('clinical-input').value;
+        const outReadable = document.getElementById('output-readable');
+        const outJson = document.getElementById('output-json');
+        const badge = document.getElementById('format-badge');
+        const tabJson = document.getElementById('tab-json');
+        
+        extractedData = null;
+
+        if (!input.trim()) {
+            outReadable.innerHTML = '<span class="text-slate-400 italic">Waiting for input...</span>';
+            badge.classList.add('hidden');
+            tabJson.style.display = 'none';
+            switchTab('readable');
+            return;
+        }
+
+        currentFormat = detectFormat(input);
+        
+        badge.classList.remove('hidden');
+        badge.textContent = currentFormat.toUpperCase();
+        tabJson.style.display = 'inline-block'; // allow JSON extraction viewing
+
+        if (currentFormat === 'hl7') {
+            parseHL7(input);
+        } else if (currentFormat === 'ccda') {
+            parseCCDA(input);
+        } else if (currentFormat === 'fhir' || currentFormat === 'json') {
+            parseFHIR(input);
+        } else if (currentFormat === 'xml') {
+            outReadable.innerHTML = '<span class="text-amber-400 italic">Generic XML detected, but not recognized as C-CDA. Attempting generic rendering.</span>';
+            parseCCDA(input); // Fallback to generic XML sections
+        } else {
+            outReadable.innerHTML = '<span class="text-rose-400 italic">Format not recognized. Please select format manually or check your input.</span>';
+            badge.classList.add('hidden');
+        }
+    }
+
+    // --- HL7 v2 PARSER ---
+    function parseHL7(data) {
+        const lines = data.split(/[\r\n]+/).filter(l => l.trim() !== '');
+        let html = '<table class="hl7-table mb-6">';
+        html += '<thead><tr><th style="width:10%">SEG</th><th style="width:10%">SEQ</th><th>VALUE</th></tr></thead><tbody>';
+        
+        let jsonPayload = { messageType: '', segments: [] };
+
+        lines.forEach(line => {
+            const fields = line.split('|');
+            const segType = fields[0];
+            if (!segType) return;
+            
+            let segObj = { type: segType, fields: {} };
+
+            // Segment Header Row
+            html += `<tr class="hl7-segment-header"><td colspan="3">${segType} Segment</td></tr>`;
+
+            // Field iterations
+            // For MSH, field[1] is actually the encoding characters, so indexing is slightly shifted.
+            let offset = segType === 'MSH' ? 0 : -1; 
+            
+            for (let i = 1; i < fields.length; i++) {
+                if (!fields[i]) continue;
+                const seq = i + offset;
+                
+                // If it's MSH-1 or MSH-2, it's just raw delimiters
+                if (segType === 'MSH' && i === 1) {
+                    html += `<tr><td>${segType}</td><td>1</td><td><span class="text-emerald-400 font-bold">${escapeHtml(fields[i])}</span></td></tr>`;
+                    segObj.fields["1"] = fields[i];
+                    continue;
+                }
+
+                // Split components by ^
+                const components = fields[i].split('^');
+                if (components.length > 1) {
+                    let compHtml = `<div class="flex flex-col gap-1">`;
+                    let compObj = [];
+                    components.forEach((c, idx) => {
+                        if (c) {
+                            compHtml += `<div><span class="text-slate-500 text-[10px] mr-2">[${idx+1}]</span> <span class="text-emerald-300">${escapeHtml(c)}</span></div>`;
+                            compObj.push(c);
+                        }
+                    });
+                    compHtml += `</div>`;
+                    html += `<tr><td>${segType}</td><td>${seq}</td><td>${compHtml}</td></tr>`;
+                    segObj.fields[seq.toString()] = compObj;
+                } else {
+                    html += `<tr><td>${segType}</td><td>${seq}</td><td class="text-slate-300">${escapeHtml(fields[i])}</td></tr>`;
+                    segObj.fields[seq.toString()] = fields[i];
+                }
+            }
+            jsonPayload.segments.push(segObj);
+            
+            if (segType === 'MSH' && segObj.fields["9"]) {
+                jsonPayload.messageType = Array.isArray(segObj.fields["9"]) ? segObj.fields["9"].join('^') : segObj.fields["9"];
+            }
+        });
+        
+        html += '</tbody></table>';
+        document.getElementById('output-readable').innerHTML = html;
+        
+        extractedData = jsonPayload;
+        document.getElementById('output-json').textContent = JSON.stringify(extractedData, null, 2);
+    }
+
+    // --- C-CDA XML PARSER ---
+    function parseCCDA(xmlString) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        const outReadable = document.getElementById('output-readable');
+        
+        if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            outReadable.innerHTML = '<span class="text-rose-400 italic">Invalid XML Document format. Cannot parse.</span>';
+            return;
+        }
+
+        let html = '<div class="space-y-6">';
+        let jsonPayload = { title: "", patient: {}, sections: [] };
+
+        // Title
+        const titleNode = xmlDoc.getElementsByTagName("title")[0];
+        if (titleNode && titleNode.parentElement.nodeName === "ClinicalDocument") {
+            const t = titleNode.textContent;
+            jsonPayload.title = t;
+            html += `<div class="bg-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
+                        <h3 class="text-lg font-bold text-white mb-1">${escapeHtml(t)}</h3>
+                        <p class="text-[10px] text-emerald-400 uppercase tracking-widest">C-CDA Document Outline</p>
+                     </div>`;
+        }
+
+        // Basics: Try to extract Patient Info natively
+        const patientRole = xmlDoc.getElementsByTagName("patientRole")[0];
+        if (patientRole) {
+            const names = patientRole.getElementsByTagName("name")[0];
+            if (names) {
+                const given = names.getElementsByTagName("given")[0]?.textContent || '';
+                const family = names.getElementsByTagName("family")[0]?.textContent || '';
+                jsonPayload.patient.name = `${given} ${family}`.trim();
+            }
+            const gender = patientRole.getElementsByTagName("administrativeGenderCode")[0];
+            if (gender) jsonPayload.patient.gender = gender.getAttribute("displayName") || gender.getAttribute("code");
+            
+            const dob = patientRole.getElementsByTagName("birthTime")[0];
+            if (dob) jsonPayload.patient.birthTime = dob.getAttribute("value");
+
+            if (Object.keys(jsonPayload.patient).length > 0) {
+                html += `<div class="bg-indigo-600/10 border border-indigo-500/20 rounded-xl p-4 flex gap-6">
+                            <div><span class="text-[10px] text-indigo-400 uppercase block mb-1">Patient Name</span><span class="font-bold text-slate-200">${escapeHtml(jsonPayload.patient.name)}</span></div>
+                            ${jsonPayload.patient.gender ? `<div><span class="text-[10px] text-indigo-400 uppercase block mb-1">Gender</span><span class="font-bold text-slate-200">${escapeHtml(jsonPayload.patient.gender)}</span></div>` : ''}
+                            ${jsonPayload.patient.birthTime ? `<div><span class="text-[10px] text-indigo-400 uppercase block mb-1">BirthTime</span><span class="font-bold text-slate-200">${escapeHtml(jsonPayload.patient.birthTime)}</span></div>` : ''}
+                         </div>`;
+            }
+        }
+
+        // Parse Standard component sections
+        const components = Array.from(xmlDoc.getElementsByTagName("component"));
+        components.forEach(comp => {
+            const section = comp.getElementsByTagName("section")[0];
+            if (!section) return;
+
+            const secTitleNode = section.getElementsByTagName("title")[0];
+            const title = secTitleNode ? secTitleNode.textContent : 'Unnamed Section';
+            
+            const textNode = section.getElementsByTagName("text")[0];
+            let rawContent = textNode ? textNode.innerHTML : '';
+            
+            // Clean namespace tags for display
+            let cleanHtml = rawContent.replace(/<([a-z0-9]+):([a-z0-9]+)/gi, '<$2').replace(/<\/([a-z0-9]+):([a-z0-9]+)/gi, '</$2');
+            
+            jsonPayload.sections.push({ title: title, rawHTMLLength: cleanHtml.length });
+
+            html += `<div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                       <div class="px-4 py-3 bg-black/40 border-b border-white/10 flex justify-between items-center">
+                           <h4 class="text-sm font-bold text-emerald-400 tracking-wide">${escapeHtml(title)}</h4>
+                           <span class="text-[10px] text-slate-500">${cleanHtml.length} bytes narrative</span>
+                       </div>
+                       <div class="p-4 text-xs text-slate-300 prose prose-invert prose-td:border-white/10 prose-th:border-white/10 max-w-none hl7-table overflow-x-auto">
+                           ${textNode ? cleanHtml : '<i class="text-slate-500">No narrative text provided in document XML.</i>'}
+                       </div>
+                     </div>`;
+        });
+        
+        html += '</div>';
+
+        // Custom style fixes for embedded CDA HTML
+        html = html.replace(/<table/g, '<table class="hl7-table mb-2"');
+        html = html.replace(/<content/gi, '<span').replace(/<\/content>/gi, '</span>');
+        html = html.replace(/<list/gi, '<ul class="list-disc ml-4 my-2"').replace(/<\/list>/gi, '</ul>');
+        html = html.replace(/<item/gi, '<li').replace(/<\/item>/gi, '</li>');
+
+        outReadable.innerHTML = html;
+        extractedData = jsonPayload;
+        document.getElementById('output-json').textContent = JSON.stringify(extractedData, null, 2);
+    }
+
+    // --- FHIR PARSER ---
+    function parseFHIR(jsonString) {
+        try {
+            const data = JSON.parse(jsonString);
+            const outReadable = document.getElementById('output-readable');
+            
+            let html = '<div class="space-y-4">';
+            
+            if (data.resourceType === 'Bundle') {
+                const total = data.total || (data.entry ? data.entry.length : 0);
+                html += `<div class="bg-indigo-600/10 border border-indigo-500/20 rounded-xl p-4 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">FHIR Bundle</h3>
+                                <p class="text-[10px] text-indigo-400 uppercase tracking-widest">${escapeHtml(data.type || 'Collection')} - ${total} Resources</p>
+                            </div>
+                         </div>`;
+                
+                if (data.entry) {
+                    data.entry.forEach((entry, idx) => {
+                        const res = entry.resource || {};
+                        html += buildFhirCard(res, idx);
+                    });
+                } else {
+                    html += `<div class="text-slate-500 italic px-4">No entries found in bundle.</div>`;
+                }
+
+            } else if (data.resourceType) {
+                // Single Resource
+                html += buildFhirCard(data, 0);
+            } else {
+                // Fallback standard JSON generic display
+                html += `<div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+                            <h3 class="text-sm font-bold text-amber-400 mb-1">Standard JSON (Non-FHIR)</h3>
+                            <div class="text-xs text-slate-300 mt-2">${Object.keys(data).length} top-level keys detected. View extraction tab.</div>
+                         </div>`;
+            }
+            
+            html += '</div>';
+            outReadable.innerHTML = html;
+
+            // Output raw JSON formatting in the JSON tab
+            extractedData = data;
+            document.getElementById('output-json').textContent = JSON.stringify(data, null, 2);
+
+        } catch (e) {
+            document.getElementById('output-readable').innerHTML = '<span class="text-rose-400 italic">Invalid JSON Document.</span>';
+        }
+    }
+
+    function buildFhirCard(res, idx) {
+        const type = res.resourceType || 'Unknown';
+        const id = res.id || 'No-ID';
+        
+        let detailsHtml = '';
+        
+        if (type === 'Patient') {
+            const name = res.name?.[0] ? `${res.name[0].given?.join(' ')} ${res.name[0].family}` : 'Unknown';
+            detailsHtml = `<span class="text-slate-300 font-bold">${escapeHtml(name)}</span> | <span class="text-slate-400">${res.gender || 'U'}</span> | <span class="text-slate-400">${res.birthDate || 'No DOB'}</span>`;
+        } else if (type === 'Observation') {
+            const code = res.code?.coding?.[0]?.display || res.code?.text || 'Unknown Obs';
+            const val = res.valueQuantity ? `${res.valueQuantity.value} ${res.valueQuantity.unit}` : (res.valueString || '');
+            detailsHtml = `<span class="text-slate-300 font-bold">${escapeHtml(code)}</span> : <span class="text-emerald-400 font-mono">${escapeHtml(val)}</span>`;
+        } else if (type === 'Encounter') {
+            const status = res.status || 'unknown';
+            const klass = res.class?.display || res.class?.code || '';
+            detailsHtml = `<span class="text-slate-300">Status: <b class="uppercase">${escapeHtml(status)}</b></span> | <span class="text-slate-400">${escapeHtml(klass)}</span>`;
+        } else {
+            detailsHtml = `<span class="text-slate-500 italic">${Object.keys(res).length} properties attached.</span>`;
+        }
+
+        return `
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-indigo-500/30 transition-colors">
+                <div class="flex justify-between items-start mb-2 border-b border-white/5 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-slate-500 bg-black/40 px-1.5 py-0.5 rounded">#${idx+1}</span>
+                        <h4 class="text-sm font-black text-indigo-400 tracking-wide">${escapeHtml(type)}</h4>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(id)}</span>
+                </div>
+                <div class="text-xs mt-2">${detailsHtml}</div>
+            </div>`;
+    }
+
+    // --- Helpers ---
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div'); div.textContent = str; return div.innerHTML;
+    }
+
+    function clearAll() {
+        document.getElementById('clinical-input').value = '';
+        processInput();
+    }
+
+    function copyExtractedJson() {
+        if (!extractedData) return;
+        navigator.clipboard.writeText(JSON.stringify(extractedData, null, 2));
+        alert('JSON Copied to clipboard!');
+    }
+
+    function loadSample(type) {
+        const inp = document.getElementById('clinical-input');
+        if (type === 'hl7') {
+            inp.value = `MSH|^~\\&|SENDING_APP|SENDING_FAC|RECV_APP|RECV_FAC|202310101200||ADT^A01|MSG00001|P|2.4
+EVN|A01|202310101200
+PID|1||12345^^^MRN||DOE^JOHN^MIDDLE||19800101|M|||123 MAIN ST^^CITY^ST^12345
+PV1|1|I|WARD A^RM 100^BED 1|||||||||||||||`;
+        } else if (type === 'ccda') {
+            inp.value = `<?xml version="1.0" encoding="UTF-8"?>
+<ClinicalDocument xmlns="urn:hl7-org:v3">
+  <title>Continuity of Care Document</title>
+  <patientRole>
+    <patient>
+      <name><given>Jane</given><family>Doe</family></name>
+      <administrativeGenderCode code="F" displayName="Female"/>
+      <birthTime value="19750501"/>
+    </patient>
+  </patientRole>
+  <component>
+    <structuredBody>
+      <component>
+        <section>
+          <title>Allergies</title>
+          <text>
+            <table border="1" width="100%">
+              <thead><tr><th>Substance</th><th>Reaction</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Penicillin</td><td>Hives</td><td>Active</td></tr>
+              </tbody>
+            </table>
+          </text>
+        </section>
+      </component>
+      <component>
+        <section>
+          <title>Medications</title>
+          <text>
+            <list>
+              <item>Aspirin 81mg po daily</item>
+              <item>Lisinopril 10mg po daily</item>
+            </list>
+          </text>
+        </section>
+      </component>
+    </structuredBody>
+  </component>
+</ClinicalDocument>`;
+        }
+        processInput();
+    }
+
+    // Load example on startup for demo purposes
+    window.addEventListener('load', () => {
+        loadSample('hl7');
+    });
+</script>
+{% endblock %}
