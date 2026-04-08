@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}HL7 Converter Tool - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12 flex-grow flex flex-col">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">HL7 Message Converter</h1>
+        <p class="text-slate-400 max-w-3xl text-sm">Convert raw Pipe-Delimited HL7 v2 messages (e.g., ADT, ORU) into JSON, XML, basic FHIR, or CSV structures.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
+        <div class="flex flex-col bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
+            <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest p-4 border-b border-white/5">Input: Raw HL7 (v2.x)</h3>
+            <textarea id="hl7-input" class="flex-grow w-full bg-transparent p-4 text-xs code-font text-slate-300 outline-none resize-none" placeholder="MSH|^~\&|..."></textarea>
+            <div class="border-t border-white/5 p-4 flex gap-4">
+                <button onclick="convertHL7('json')" class="btn-premium px-6 py-2 rounded-xl text-xs font-black tracking-widest">To JSON</button>
+                <button onclick="convertHL7('xml')" class="px-6 py-2 bg-white/5 rounded-xl text-xs font-black tracking-widest text-slate-300">To XML</button>
+                <button onclick="convertHL7('fhir')" class="px-6 py-2 bg-white/5 rounded-xl text-xs font-black tracking-widest text-slate-300">To FHIR (Basic)</button>
+                <button onclick="convertHL7('csv')" class="px-6 py-2 bg-white/5 rounded-xl text-xs font-black tracking-widest text-slate-300">To CSV</button>
+            </div>
+        </div>
+        
+        <div class="flex flex-col bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
+            <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest p-4 border-b border-white/5" id="output-title">Output</h3>
+            <pre class="w-full flex-grow p-4 text-xs code-font text-indigo-300 m-0 overflow-auto"><code id="hl7-output">Output will appear here.</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function parseHL7(rawMsg) {
+        let lines = rawMsg.trim().split('\n').map(l => l.trim()).filter(l => l !== '');
+        if(lines.length === 0) return null;
+        let delim = lines[0].substring(3, 4); // Usually |
+        let subDelim = lines[0].substring(4, 5); // Usually ^
+
+        let segments = [];
+        for(let i = 0; i < lines.length; i++) {
+            let partArr = lines[i].split(delim);
+            let name = partArr[0];
+            let fields = [];
+            for (let j = 1; j < partArr.length; j++) {
+                let comp = partArr[j].split(subDelim);
+                fields.push(comp.length === 1 ? comp[0] : comp);
+            }
+            segments.push({ name, fields });
+        }
+        return segments;
+    }
+
+    function convertHL7(format) {
+        const raw = document.getElementById('hl7-input').value;
+        const parsed = parseHL7(raw);
+        if(!parsed) { alert("Please provide valid HL7."); return; }
+
+        let out = "";
+        let title = "Output";
+
+        if(format === 'json') {
+            title = "JSON Structure";
+            out = JSON.stringify(parsed, null, 2);
+        } else if (format === 'xml') {
+            title = "XML Formatting";
+            out = `<HL7Message>\n`;
+            parsed.forEach(seg => {
+                out += `  <${seg.name}>\n`;
+                seg.fields.forEach((f, idx) => {
+                    let fName = `${seg.name}.${idx+1}`;
+                    if(Array.isArray(f)) {
+                        f.forEach((c, cIdx) => {
+                           out += `    <${fName}.${cIdx+1}>${c}</${fName}.${cIdx+1}>\n`; 
+                        });
+                    } else {
+                        out += `    <${fName}>${f}</${fName}>\n`;
+                    }
+                });
+                out += `  </${seg.name}>\n`;
+            });
+            out += `</HL7Message>`;
+        } else if (format === 'csv') {
+            title = "CSV Extract";
+            out = "Segment,Field,Component,Value\n";
+            parsed.forEach(seg => {
+                seg.fields.forEach((f, idx) => {
+                    if(Array.isArray(f)) {
+                        f.forEach((c, cIdx) => {
+                            if(c.trim()!==""){
+                                out += `${seg.name},${idx+1},${cIdx+1},"${c.replace(/"/g,'""')}"\n`;
+                            }
+                        });
+                    } else {
+                        if(f.trim()!=="") out += `${seg.name},${idx+1},0,"${f.replace(/"/g,'""')}"\n`;
+                    }
+                });
+            });
+        } else if (format === 'fhir') {
+            title = "FHIR Patient / Obvs Bundle (Basic)";
+            let bundle = { resourceType: "Bundle", type: "collection", entry: [] };
+            
+            parsed.forEach(seg => {
+                if(seg.name === 'PID') {
+                    let patient = { resourceType: "Patient", name: [], gender: "unknown" };
+                    if(seg.fields[4]) {
+                        let names = Array.isArray(seg.fields[4]) ? seg.fields[4] : [seg.fields[4]];
+                        patient.name.push({ family: names[0], given: [names[1] || ""] });
+                    }
+                    if(seg.fields[7]) { patient.gender = seg.fields[7] === 'M' ? 'male' : (seg.fields[7] === 'F' ? 'female' : 'other'); }
+                    bundle.entry.push({ resource: patient });
+                } else if (seg.name === 'OBX') {
+                    let obv = { resourceType: "Observation", status: "final", code: { text: Array.isArray(seg.fields[2]) ? seg.fields[2][1] : seg.fields[2] }, valueString: seg.fields[4] };
+                    bundle.entry.push({ resource: obv });
+                }
+            });
+            out = JSON.stringify(bundle, null, 2);
+        }
+
+        document.getElementById('output-title').textContent = "Output: " + title;
+        document.getElementById('hl7-output').textContent = out;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}cURL Compare - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <h1 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">cURL Command Comparator</h1>
+    <p class="text-slate-400 mb-8 max-w-3xl">Analyze and directly compare the URL, HTTP Methods, Headers, and Data Payload sizes of two distinct cURL requests. Fully client-side processing.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-2xl flex flex-col h-[300px]">
+            <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest mb-4">Request A</h3>
+            <textarea id="curl-a" class="flex-grow bg-black/40 border border-white/10 rounded-xl p-4 text-sm code-font text-slate-300 outline-none focus:border-indigo-500" placeholder="Paste first cURL command here..."></textarea>
+        </div>
+        <div class="glass-card p-6 rounded-2xl flex flex-col h-[300px]">
+            <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest mb-4">Request B</h3>
+            <textarea id="curl-b" class="flex-grow bg-black/40 border border-white/10 rounded-xl p-4 text-sm code-font text-slate-300 outline-none focus:border-emerald-500" placeholder="Paste second cURL command here..."></textarea>
+        </div>
+    </div>
+    
+    <div class="flex justify-center mb-8">
+        <button onclick="compareRequests()" class="btn-premium px-10 py-4 rounded-2xl font-black tracking-widest">COMPARE COMMANDS</button>
+    </div>
+
+    <!-- Output Section -->
+    <div id="output-pane" class="hidden">
+        <div class="glass-card rounded-[32px] overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white/5 border-b border-white/10 text-xs font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-6 w-1/4">Property</th>
+                        <th class="p-6 w-[37.5%] border-l border-white/10 text-indigo-300">Request A</th>
+                        <th class="p-6 w-[37.5%] border-l border-white/10 text-emerald-300">Request B</th>
+                    </tr>
+                </thead>
+                <tbody id="diff-tbody" class="text-sm">
+                    <!-- Rows injected via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function parseCurl(cmd) {
+        if(!cmd || !cmd.trim()) return null;
+        let c = cmd.trim();
+        // Light parse logic
+        let method = "GET";
+        let matchX = c.match(/-X\s+(['"]?)([A-Z]+)\1/);
+        if (matchX) method = matchX[2];
+        
+        let url = "";
+        let urlMatch = c.match(/(?:curl|'|")\s+(https?:\/\/[^\s'"]+)/);
+        if (urlMatch) url = urlMatch[1];
+        
+        let headers = [];
+        const headerRegex = /-H\s+(['"])(.*?)\1/g;
+        let hMatch;
+        while((hMatch = headerRegex.exec(c)) !== null) {
+            headers.push(hMatch[2]);
+        }
+        
+        // Data extraction
+        let data = "";
+        let dataMatch = c.match(/--data(?:-raw|-binary)?\s+(['"]?)([\s\S]*?)\1(?:\s+-[A-Z]|$)/);
+        if(!dataMatch) dataMatch = c.match(/-d\s+(['"])([\s\S]*?)\1/);
+        
+        if (dataMatch) {
+            data = dataMatch[2];
+            if (method === "GET") method = "POST";
+        }
+        
+        return { method, url, headers, data };
+    }
+
+    function compareRequests() {
+        const valA = document.getElementById("curl-a").value;
+        const valB = document.getElementById("curl-b").value;
+        const a = parseCurl(valA);
+        const b = parseCurl(valB);
+        
+        if(!a || !b) {
+            alert("Please provide valid cURL commands in both boxes.");
+            return;
+        }
+
+        const tbody = document.getElementById("diff-tbody");
+        tbody.innerHTML = "";
+        
+        function makeRow(prop, val1, val2) {
+            const tr = document.createElement("tr");
+            tr.className = "border-b border-white/5 hover:bg-white/5";
+            let mismatch = val1 !== val2;
+            let formatVal = v => {
+                if (v === "" || v === undefined) return `<span class="italic text-slate-600">None</span>`;
+                return `<code class="bg-black/40 px-2 py-1 rounded code-font text-slate-300 break-all">${v}</code>`;
+            };
+            
+            tr.innerHTML = `
+                <td class="p-6 font-bold text-slate-400 capitalize">${prop}</td>
+                <td class="p-6 border-l border-white/10 ${mismatch ? 'bg-rose-500/10' : 'bg-emerald-500/10'}">${formatVal(val1)}</td>
+                <td class="p-6 border-l border-white/10 ${mismatch ? 'bg-rose-500/10' : 'bg-emerald-500/10'}">${formatVal(val2)}</td>
+            `;
+            return tr;
+        }
+
+        tbody.appendChild(makeRow("Method", a.method, b.method));
+        tbody.appendChild(makeRow("Target URL", a.url, b.url));
+        
+        // Merge headers for comparison
+        let allHeaders = new Set();
+        let headAMap = {}, headBMap = {};
+        a.headers.forEach(h => { let [k,v] = h.split(/:\s*(.*)/); if(k) { headAMap[k.toLowerCase()] = v||""; allHeaders.add(k.toLowerCase()); } });
+        b.headers.forEach(h => { let [k,v] = h.split(/:\s*(.*)/); if(k) { headBMap[k.toLowerCase()] = v||""; allHeaders.add(k.toLowerCase()); } });
+        
+        allHeaders.forEach(k => {
+            tbody.appendChild(makeRow(`Header: ${k}`, headAMap[k], headBMap[k]));
+        });
+
+        tbody.appendChild(makeRow("Body / Data", a.data, b.data));
+
+        document.getElementById("output-pane").classList.remove("hidden");
+    }
+</script>
+{% endblock %}

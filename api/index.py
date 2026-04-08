@@ -136,6 +136,24 @@ def api_mask():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/curl-compare')
+def curl_compare():
+    return render_template('curl_compare.html', active_page='curl_compare')
+
+@app.route('/ccda-parser')
+def ccda_parser():
+    return render_template('ccda_parser.html', active_page='ccda_parser')
+
+@app.route('/hl7-converter')
+def hl7_converter():
+    return render_template('hl7_converter.html', active_page='hl7_converter')
+
+@app.route('/ccda-to-fhir')
+def ccda_to_fhir():
+    return render_template('ccda_to_fhir.html', active_page='ccda_to_fhir')
+
+
+
 @app.route('/api/unmask', methods=['POST'])
 def api_unmask():
     data = request.json

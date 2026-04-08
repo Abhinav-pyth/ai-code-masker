@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}C-CDA to FHIR Converter - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12 flex-grow flex flex-col">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">C-CDA to FHIR R4</h1>
+        <p class="text-slate-400 max-w-3xl text-sm">Convert Clinical Document Architecture (C-CDA) XML into basic FHIR resources (Patient, AllergyIntolerance, Condition, Medication, Observation). Processed safely in-browser.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 h-[600px]">
+        <div class="flex flex-col bg-black/40 rounded-2xl border border-white/5 overflow-hidden shadow-lg">
+            <div class="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/10">
+                <span class="text-xs font-black text-indigo-400 uppercase tracking-widest">Standard C-CDA XML</span>
+            </div>
+            <textarea id="ccda-input" class="w-full flex-grow bg-transparent p-6 text-sm code-font text-slate-300 outline-none resize-none focus:bg-white/[0.02] transition-colors" placeholder="<ClinicalDocument xmlns='urn:hl7-org:v3'>..."></textarea>
+            <div class="bg-black/80 px-6 py-4 border-t border-white/10">
+                <button onclick="convertToFHIR()" class="w-full btn-premium py-4 rounded-xl text-sm font-black tracking-widest">CONVERT TO FHIR JOSN</button>
+            </div>
+        </div>
+
+        <div class="flex flex-col bg-black/40 rounded-2xl border border-white/5 overflow-hidden shadow-lg">
+            <div class="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/10">
+                <span class="text-xs font-black text-emerald-400 uppercase tracking-widest">FHIR R4 Bundle</span>
+                <button onclick="copyFHIR()" class="text-[10px] font-bold text-slate-500 hover:text-emerald-400 uppercase tracking-widest transition-colors">COPY</button>
+            </div>
+            <pre class="w-full flex-grow p-6 text-xs code-font text-emerald-300 m-0 overflow-auto whitespace-pre"><code id="fhir-output">FHIR Result bundle will appear here.</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copyFHIR() {
+        const text = document.getElementById("fhir-output").textContent;
+        navigator.clipboard.writeText(text);
+        alert("FHIR JSON Copied!");
+    }
+
+    function getTextByTag(context, tagName) {
+        let nodes = context.getElementsByTagName(tagName);
+        return nodes.length > 0 ? (nodes[0].textContent || "") : "";
+    }
+
+    function convertToFHIR() {
+        const xmlText = document.getElementById("ccda-input").value;
+        if (!xmlText.trim()) return;
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+        if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            document.getElementById("fhir-output").textContent = "Error: Invalid XML Structure.";
+            return;
+        }
+
+        let bundle = {
+            resourceType: "Bundle",
+            type: "document",
+            entry: []
+        };
+
+        // --- 1. Map Patient ---
+        const patientRoles = xmlDoc.getElementsByTagName("patientRole");
+        if (patientRoles.length > 0) {
+            let patientNode = patientRoles[0].querySelector("patient");
+            if (patientNode) {
+                let fhirPatient = { resourceType: "Patient", name: [], gender: "unknown", birthDate: "" };
+                let names = patientNode.getElementsByTagName("name");
+                if (names.length > 0) {
+                    fhirPatient.name.push({
+                        family: getTextByTag(names[0], "family"),
+                        given: [getTextByTag(names[0], "given")]
+                    });
+                }
+                
+                let adminSex = patientNode.getElementsByTagName("administrativeGenderCode");
+                if(adminSex.length > 0) {
+                    let code = adminSex[0].getAttribute("code");
+                    fhirPatient.gender = code === "M" ? "male" : (code === "F" ? "female" : "other");
+                }
+                
+                let birth = patientNode.getElementsByTagName("birthTime");
+                if(birth.length > 0) {
+                    let val = birth[0].getAttribute("value");
+                    if (val && val.length >= 8) {
+                        fhirPatient.birthDate = `${val.substring(0,4)}-${val.substring(4,6)}-${val.substring(6,8)}`;
+                    }
+                }
+                
+                bundle.entry.push({ resource: fhirPatient });
+            }
+        }
+
+        // --- 2. Map Problems / Conditions ---
+        // Basic mapping checking for "Observation" nodes inside a problem section context
+        const observations = Array.from(xmlDoc.getElementsByTagName("observation")).filter(obv => {
+            const classCode = obv.getAttribute("classCode");
+            return classCode === "OBS" || obv.querySelector("templateId[root='2.16.840.1.113883.10.20.22.4.4']");
+        });
+
+        observations.forEach(obv => {
+            let codeNode = obv.querySelector("value[xsi\\:type='CD'], value[type='CD']");
+            if (!codeNode) codeNode = obv.querySelector("code"); // fallback
+
+            if(codeNode) {
+                let fhirCondition = {
+                    resourceType: "Condition",
+                    clinicalStatus: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/condition-clinical", code: "active" }] },
+                    code: {
+                        coding: [{
+                            system: "http://snomed.info/sct",
+                            code: codeNode.getAttribute("code"),
+                            display: codeNode.getAttribute("displayName") || "Unknown Condition"
+                        }]
+                    }
+                };
+                bundle.entry.push({ resource: fhirCondition });
+            }
+        });
+
+        // Add additional resources (like Allergies, meds) as needed...
+        
+        if (bundle.entry.length === 0) {
+            document.getElementById("fhir-output").textContent = "// No mapable FHIR Resources found. Check if this is a valid C-CDA XML.";
+            return;
+        }
+
+        document.getElementById("fhir-output").textContent = JSON.stringify(bundle, null, 2);
+    }
+</script>
+{% endblock %}

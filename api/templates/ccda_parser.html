@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}C-CDA Parser Tool - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12 flex-grow flex flex-col">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-white mb-2 uppercase tracking-widest">C-CDA XML Parser</h1>
+        <p class="text-slate-400 max-w-3xl text-sm">Upload or paste an HL7 Consolidate-Clinical Document Architecture (C-CDA) XML file. The parser runs 100% locally in your browser to transform the XML into structured views (Table, JSON, HTML) without hitting any server.</p>
+    </div>
+
+    <div class="glass-card rounded-[32px] p-6 mb-8 flex flex-col items-center">
+        <textarea id="ccda-input" class="w-full h-40 bg-black/40 border border-white/10 rounded-xl p-4 text-xs code-font text-slate-300 outline-none focus:border-indigo-500 mb-4" placeholder="Paste raw C-CDA XML here..."></textarea>
+        <button onclick="parseCCDA()" class="btn-premium px-10 py-3 rounded-2xl font-black tracking-widest text-xs">PARSE C-CDA LOCally</button>
+    </div>
+
+    <div id="results" class="hidden flex-grow flex flex-col bg-black/20 rounded-[32px] border border-white/5 overflow-hidden">
+        <div class="flex border-b border-white/5 bg-black/40">
+            <button onclick="switchTab('table')" id="tab-table" class="px-8 py-4 text-xs font-black uppercase tracking-widest text-indigo-400 border-b-2 border-indigo-500">Summary Table</button>
+            <button onclick="switchTab('json')" id="tab-json" class="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white">JSON Tree</button>
+            <button onclick="switchTab('html')" id="tab-html" class="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white">Raw HTML View</button>
+        </div>
+        
+        <div id="view-table" class="p-8 hidden">
+            <h3 class="text-lg font-bold text-white mb-4">Patient Information</h3>
+            <div id="table-patient" class="bg-white/5 p-4 rounded-xl text-sm text-slate-300 mb-6"></div>
+        </div>
+        <div id="view-json" class="p-0 hidden h-96 overflow-auto">
+            <pre class="w-full h-full p-6 text-xs code-font text-emerald-400 m-0"><code id="json-output"></code></pre>
+        </div>
+        <div id="view-html" class="p-8 hidden h-96 overflow-auto bg-white/90 text-black text-sm">
+            <div id="html-output" class="prose max-w-none"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function parseCCDA() {
+        const xmlString = document.getElementById("ccda-input").value;
+        if (!xmlString.trim()) { alert("Paste XML first."); return; }
+        
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        
+        if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            alert("Invalid XML format.");
+            return;
+        }
+
+        // 1. JSON View (Simplistic mapping)
+        function xml2json(node) {
+            let obj = {};
+            if (node.nodeType == 1) { // element
+                if (node.attributes.length > 0) {
+                    obj["@attributes"] = {};
+                    for (let j = 0; j < node.attributes.length; j++) {
+                        let attribute = node.attributes.item(j);
+                        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+                    }
+                }
+            } else if (node.nodeType == 3) { // text
+                obj = node.nodeValue.trim();
+            }
+            if (node.hasChildNodes()) {
+                for(let i = 0; i < node.childNodes.length; i++) {
+                    let item = node.childNodes.item(i);
+                    let nodeName = item.nodeName;
+                    if (nodeName === "#text" && item.nodeValue.trim() === "") continue;
+                    
+                    if (typeof(obj[nodeName]) == "undefined") {
+                        obj[nodeName] = xml2json(item);
+                    } else {
+                        if (typeof(obj[nodeName].push) == "undefined") {
+                            let old = obj[nodeName];
+                            obj[nodeName] = [];
+                            obj[nodeName].push(old);
+                        }
+                        obj[nodeName].push(xml2json(item));
+                    }
+                }
+            }
+            return obj;
+        }
+        
+        const jsonObj = xml2json(xmlDoc);
+        document.getElementById("json-output").textContent = JSON.stringify(jsonObj, null, 2);
+
+        // 2. Table / Summary View (Targeting HL7 namespaces loosely)
+        let givenName = "Unknown", familyName = "Unknown", gender = "Unknown";
+        
+        const patients = xmlDoc.getElementsByTagName("patient");
+        if(patients.length > 0) {
+            const names = patients[0].getElementsByTagName("name");
+            if(names.length > 0) {
+                const givens = names[0].getElementsByTagName("given");
+                const families = names[0].getElementsByTagName("family");
+                if (givens.length > 0) givenName = givens[0].textContent;
+                if (families.length > 0) familyName = families[0].textContent;
+            }
+            const genderNodes = patients[0].getElementsByTagName("administrativeGenderCode");
+            if(genderNodes.length > 0) {
+                gender = genderNodes[0].getAttribute("displayName") || genderNodes[0].getAttribute("code");
+            }
+        }
+        document.getElementById("table-patient").innerHTML = `
+            <strong>Name:</strong> ${givenName} ${familyName} <br>
+            <strong>Gender:</strong> ${gender}
+        `;
+
+        // 3. HTML View (rendering CDA textual blocks from <text>)
+        let htmlStr = `<h1>Clinical Document</h1><hr>`;
+        const sections = xmlDoc.getElementsByTagName("section");
+        for(let i=0; i<sections.length; i++) {
+            const titleNodes = sections[i].getElementsByTagName("title");
+            const textNodes = sections[i].getElementsByTagName("text");
+            if(titleNodes.length > 0 && textNodes.length > 0) {
+                htmlStr += `<h2>${titleNodes[0].textContent}</h2>`;
+                htmlStr += `<div>${xmlToHtmlNodes(textNodes[0])}</div>`;
+            }
+        }
+        document.getElementById("html-output").innerHTML = htmlStr;
+
+        document.getElementById("results").classList.remove("hidden");
+        switchTab('table');
+    }
+
+    // Rough parser to convert standard CDA tables to HTML table
+    function xmlToHtmlNodes(xmlNode) {
+        let text = xmlNode.innerHTML || xmlNode.textContent;
+        text = text.replace(/<([^>:]+:)?table/g, '<table class="table-auto w-full border-collapse" ')
+                   .replace(/<([^>:]+:)?tr/g, '<tr class="border-b border-gray-300" ')
+                   .replace(/<([^>:]+:)?th/g, '<th class="p-2 text-left bg-gray-200" ')
+                   .replace(/<([^>:]+:)?td/g, '<td class="p-2" ')
+                   .replace(/<\/([a-zA-Z0-9]+:)/g, '</'); // strip namespaces from closing tags
+        return text;
+    }
+
+    function switchTab(tab) {
+        document.getElementById('view-table').classList.add('hidden');
+        document.getElementById('view-json').classList.add('hidden');
+        document.getElementById('view-html').classList.add('hidden');
+        
+        document.getElementById('tab-table').className = "px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white";
+        document.getElementById('tab-json').className = "px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white";
+        document.getElementById('tab-html').className = "px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white";
+
+        document.getElementById('view-'+tab).classList.remove('hidden');
+        document.getElementById('tab-'+tab).className = "px-8 py-4 text-xs font-black uppercase tracking-widest text-indigo-400 border-b-2 border-indigo-500 bg-white/5";
+    }
+</script>
+{% endblock %}
