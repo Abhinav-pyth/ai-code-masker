@@ -7,7 +7,7 @@ Disallow: /api/resolve-domain
 Crawl-delay: 2
 
 # Host
-Host: https://aicomdemasker.com
+Host: https://ai-code-masker.vercel.app
 
 # Sitemaps
-Sitemap: https://aicomdemasker.com/sitemap.xml
+Sitemap: https://ai-code-masker.vercel.app/sitemap.xml

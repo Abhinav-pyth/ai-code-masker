@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <!-- ===== PRIMARY PAGES ===== -->
     <url>
-        <loc>https://aicomdemasker.com/</loc>
+        <loc>https://ai-code-masker.vercel.app/</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/privacy</loc>
+        <loc>https://ai-code-masker.vercel.app/privacy</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -18,7 +17,7 @@
 
     <!-- ===== HEALTHCARE / CLINICAL TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/clinical-parser</loc>
+        <loc>https://ai-code-masker.vercel.app/clinical-parser</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.95</priority>
@@ -26,55 +25,55 @@
 
     <!-- ===== DEVELOPER TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/api-tester</loc>
+        <loc>https://ai-code-masker.vercel.app/api-tester</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.85</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/json-editor</loc>
+        <loc>https://ai-code-masker.vercel.app/json-editor</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/jwt-tool</loc>
+        <loc>https://ai-code-masker.vercel.app/jwt-tool</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.75</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/java-to-json</loc>
+        <loc>https://ai-code-masker.vercel.app/java-to-json</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/universal-converter</loc>
+        <loc>https://ai-code-masker.vercel.app/universal-converter</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/html-preview</loc>
+        <loc>https://ai-code-masker.vercel.app/html-preview</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/js-executor</loc>
+        <loc>https://ai-code-masker.vercel.app/js-executor</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/sql-optimizer</loc>
+        <loc>https://ai-code-masker.vercel.app/sql-optimizer</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/aws-cloudwatch</loc>
+        <loc>https://ai-code-masker.vercel.app/aws-cloudwatch</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
@@ -82,37 +81,37 @@
 
     <!-- ===== ENCODING / CONVERSION TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/base64</loc>
+        <loc>https://ai-code-masker.vercel.app/base64</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/base64-to-pdf</loc>
+        <loc>https://ai-code-masker.vercel.app/base64-to-pdf</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/base64-to-image</loc>
+        <loc>https://ai-code-masker.vercel.app/base64-to-image</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/url-encoder</loc>
+        <loc>https://ai-code-masker.vercel.app/url-encoder</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.65</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/case-converter</loc>
+        <loc>https://ai-code-masker.vercel.app/case-converter</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/hex-rgb</loc>
+        <loc>https://ai-code-masker.vercel.app/hex-rgb</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
@@ -120,19 +119,19 @@
 
     <!-- ===== IMAGE TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/image-resize</loc>
+        <loc>https://ai-code-masker.vercel.app/image-resize</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/image-converter</loc>
+        <loc>https://ai-code-masker.vercel.app/image-converter</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/pixel-editor</loc>
+        <loc>https://ai-code-masker.vercel.app/pixel-editor</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.55</priority>
@@ -140,43 +139,43 @@
 
     <!-- ===== TEXT / WRITING TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/spell-checker</loc>
+        <loc>https://ai-code-masker.vercel.app/spell-checker</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/translator</loc>
+        <loc>https://ai-code-masker.vercel.app/translator</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/lorem-ipsum</loc>
+        <loc>https://ai-code-masker.vercel.app/lorem-ipsum</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.55</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/dummy-data</loc>
+        <loc>https://ai-code-masker.vercel.app/dummy-data</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.55</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/email-formation</loc>
+        <loc>https://ai-code-masker.vercel.app/email-formation</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.55</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/sentence-formation</loc>
+        <loc>https://ai-code-masker.vercel.app/sentence-formation</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/naming-suggestions</loc>
+        <loc>https://ai-code-masker.vercel.app/naming-suggestions</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
@@ -184,13 +183,13 @@
 
     <!-- ===== NETWORK TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/my-ip</loc>
+        <loc>https://ai-code-masker.vercel.app/my-ip</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>
     <url>
-        <loc>https://aicomdemasker.com/domain-to-ip</loc>
+        <loc>https://ai-code-masker.vercel.app/domain-to-ip</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
@@ -198,7 +197,7 @@
 
     <!-- ===== MISC TOOLS ===== -->
     <url>
-        <loc>https://aicomdemasker.com/qr-generator</loc>
+        <loc>https://ai-code-masker.vercel.app/qr-generator</loc>
         <lastmod>2026-04-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>

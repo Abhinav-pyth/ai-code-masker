@@ -29,6 +29,11 @@ def sitemap():
     from flask import send_from_directory
     return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.xml')
 
+@app.route('/google0118da07594017cd.html')
+def google_verification():
+    from flask import send_from_directory
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'google0118da07594017cd.html')
+
 # Commented out other tool routes as per user request to focus on Masker
 @app.route('/json-editor')
 def json_editor():
