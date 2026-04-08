@@ -84,38 +84,64 @@
         <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[500px]">
             
             <!-- Input Area -->
-            <div class="glass-card rounded-2xl flex flex-col overflow-hidden relative group">
+            <div id="drop-zone" class="glass-card rounded-2xl flex flex-col overflow-hidden relative group border-2 border-transparent transition-all">
+                <input type="file" id="file-upload" multiple class="hidden" accept=".hl7,.json,.xml,.txt,.csv" onchange="handleFiles(this.files)" />
+                
                 <div class="h-12 border-b border-white/10 bg-white/5 flex items-center justify-between px-4 shrink-0">
                     <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Input Document</span>
-                        <span id="format-badge" class="hidden px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/20">Auto-Detected</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Input</span>
+                        <span id="format-badge" class="hidden px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/20">Auto</span>
                     </div>
-                    <select id="manual-format" onchange="processInput()" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 outline-none cursor-pointer focus:border-indigo-500/50">
-                        <option value="auto">Auto Detect Format</option>
-                        <option value="hl7">HL7 v2 (Pipe Delimited)</option>
-                        <option value="ccda">C-CDA (XML)</option>
-                        <option value="fhir">FHIR (JSON)</option>
-                    </select>
+                    <div class="flex items-center gap-2">
+                        <button onclick="document.getElementById('file-upload').click()" class="px-2 py-1 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 rounded text-[10px] uppercase tracking-wider font-bold transition-colors">↑ Upload Files</button>
+                        <select id="manual-format" onchange="processInput()" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-slate-300 outline-none cursor-pointer focus:border-indigo-500/50">
+                            <option value="auto">Auto Detect Format</option>
+                            <option value="hl7">HL7 v2 (Pipe Delimited)</option>
+                            <option value="ccda">C-CDA (XML)</option>
+                            <option value="fhir">FHIR (JSON)</option>
+                        </select>
+                    </div>
                 </div>
+
+                <!-- File Tabs Bar -->
+                <div id="file-tabs-container" class="bg-black/30 border-b border-white/5 flex overflow-x-auto custom-scrollbar px-2 pt-2 gap-1 min-h-[36px]">
+                    <button class="file-tab active-tab px-3 py-1.5 rounded-t-lg bg-white/10 text-emerald-400 text-[10px] font-bold tracking-widest border border-white/10 border-b-0 uppercase">Workspace</button>
+                </div>
+                
                 <div class="flex-grow relative">
-                    <textarea id="clinical-input" class="editor-textarea" placeholder="Paste your HL7 v2, C-CDA, or FHIR document here..."></textarea>
+                    <textarea id="clinical-input" class="editor-textarea" placeholder="Paste HL7 v2, C-CDA, or FHIR... Or drag and drop files here."></textarea>
+                    
+                    <!-- Drag overlay -->
+                    <div id="drag-overlay" class="absolute inset-0 bg-indigo-500/20 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity border-2 border-indigo-400 border-dashed rounded-b-xl z-20">
+                        <span class="text-indigo-300 font-bold text-lg pointer-events-none">Drop files to load...</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Output Area -->
             <div class="glass-card rounded-2xl flex flex-col overflow-hidden">
                 <div class="h-12 border-b border-white/10 bg-white/5 flex items-center justify-between px-4 shrink-0">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px]">Parsed Output</span>
-                    <div class="flex gap-2" id="output-tabs">
-                        <button onclick="switchTab('readable')" id="tab-readable" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Readable View</button>
-                        <button onclick="switchTab('json')" id="tab-json" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent hidden">Extract JSON</button>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[3px] hidden sm:block">Parsed Output</span>
+                    <input type="text" id="filter-input" onkeyup="filterOutput()" placeholder="Search tables..." class="w-1/3 bg-black/40 border border-white/10 rounded px-2 py-1 text-xs text-slate-300 outline-none focus:border-indigo-500/50 placeholder-slate-600 transition-all">
+                    <div class="flex gap-2 items-center" id="output-tabs">
+                        <button onclick="downloadOutput('csv')" id="btn-dl-csv" class="hidden text-[10px] uppercase font-bold text-slate-400 hover:text-emerald-400" title="Download HTML Tables as CSV">↓ CSV</button>
+                        <button onclick="downloadOutput('json')" id="btn-dl-json" class="hidden text-[10px] uppercase font-bold text-slate-400 hover:text-indigo-400" title="Download Extracted JSON">↓ JSON</button>
+                        <div class="w-px h-4 bg-white/10 mx-1"></div>
+                        <button onclick="switchTab('readable')" id="tab-readable" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Readable</button>
+                        <button onclick="switchTab('json')" id="tab-json" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent hidden">JSON</button>
                     </div>
                 </div>
                 
                 <div class="flex-grow relative overflow-hidden bg-[#0a0a0f]">
+                    <!-- Loader Overlay -->
+                    <div id="parse-loader" class="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity z-50">
+                        <svg class="animate-spin h-8 w-8 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Processing Document...</div>
+                    </div>
+
                     <!-- Readable Summary Pane -->
                     <div id="pane-readable" class="absolute inset-0 overflow-y-auto p-6 block">
-                        <div id="output-readable" class="text-slate-400 text-sm italic">Status: Waiting for input...</div>
+                        <div id="output-readable" class="text-slate-400 text-sm italic parser-container">Status: Waiting for input...</div>
                     </div>
                     
                     <!-- Extracted JSON Pane -->
@@ -131,12 +157,104 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Include PapaParse for CSV exports -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
 <script>
     let currentFormat = 'unknown';
     let extractedData = null;
+    let fileContents = [{name: 'Workspace', content: ''}];
+    let currentFileIndex = 0;
 
-    // Listeners
-    document.getElementById('clinical-input').addEventListener('input', debounce(processInput, 500));
+    // Listeners & Drop Zone
+    const dropZone = document.getElementById('drop-zone');
+    const dragOverlay = document.getElementById('drag-overlay');
+    const inputEl = document.getElementById('clinical-input');
+
+    inputEl.addEventListener('input', debounce((e) => {
+        fileContents[currentFileIndex].content = e.target.value;
+        triggerProcessing();
+    }, 500));
+
+    // Drag and drop setup
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragOverlay.classList.remove('opacity-0');
+        dragOverlay.classList.remove('pointer-events-none');
+    });
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        if (e.relatedTarget !== dragOverlay) {
+            dragOverlay.classList.add('opacity-0');
+            dragOverlay.classList.add('pointer-events-none');
+        }
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragOverlay.classList.add('opacity-0');
+        dragOverlay.classList.add('pointer-events-none');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+        if (!files || files.length === 0) return;
+        
+        let pending = files.length;
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                fileContents.push({ name: file.name, content: e.target.result });
+                pending--;
+                if (pending === 0) {
+                    renderFileTabs();
+                    switchFile(fileContents.length - 1);
+                }
+            };
+            reader.readAsText(file);
+        });
+        
+        // reset input so same file can be selected again
+        document.getElementById('file-upload').value = '';
+    }
+
+    function renderFileTabs() {
+        const container = document.getElementById('file-tabs-container');
+        container.innerHTML = '';
+        fileContents.forEach((f, idx) => {
+            const active = idx === currentFileIndex ? 'active-tab bg-white/10 text-emerald-400 border border-white/10 border-b-0' : 'text-slate-500 hover:text-slate-300 border border-transparent';
+            
+            const btn = document.createElement('div');
+            btn.className = `file-tab flex items-center gap-2 px-3 py-1.5 rounded-t-lg text-[10px] font-bold tracking-widest uppercase cursor-pointer ${active}`;
+            btn.innerHTML = `<span onclick="switchFile(${idx})">${escapeHtml(f.name)}</span>`;
+            
+            // Allow closing files (except Workspace)
+            if (idx !== 0) {
+                btn.innerHTML += `<span class="text-rose-400 hover:text-rose-300 text-sm leading-none px-1" onclick="closeFile(event, ${idx})">&times;</span>`;
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    function switchFile(idx) {
+        currentFileIndex = idx;
+        const input = document.getElementById('clinical-input');
+        input.value = fileContents[idx].content || '';
+        renderFileTabs();
+        triggerProcessing();
+    }
+
+    function closeFile(e, idx) {
+        e.stopPropagation();
+        fileContents.splice(idx, 1);
+        if (currentFileIndex >= fileContents.length) {
+            currentFileIndex = fileContents.length - 1;
+        } else if (currentFileIndex === idx) {
+            currentFileIndex = Math.max(0, idx - 1);
+        } else if (currentFileIndex > idx) {
+            currentFileIndex--;
+        }
+        switchFile(currentFileIndex);
+    }
 
     function debounce(func, wait) {
         let timeout;
@@ -179,49 +297,87 @@
         return 'unknown';
     }
 
+    // Process output queue orchestrator
+    function triggerProcessing() {
+        processInput(); // To be updated
+    }
+
     function processInput() {
         const input = document.getElementById('clinical-input').value;
         const outReadable = document.getElementById('output-readable');
-        const outJson = document.getElementById('output-json');
         const badge = document.getElementById('format-badge');
         const tabJson = document.getElementById('tab-json');
         
         extractedData = null;
+        document.getElementById('btn-dl-csv').classList.add('hidden');
+        document.getElementById('btn-dl-json').classList.add('hidden');
 
         if (!input.trim()) {
             outReadable.innerHTML = '<span class="text-slate-400 italic">Waiting for input...</span>';
             badge.classList.add('hidden');
             tabJson.style.display = 'none';
+            document.getElementById('parse-loader').classList.add('opacity-0');
+            document.getElementById('parse-loader').classList.add('pointer-events-none');
             switchTab('readable');
             return;
         }
 
         currentFormat = detectFormat(input);
-        
         badge.classList.remove('hidden');
         badge.textContent = currentFormat.toUpperCase();
-        tabJson.style.display = 'inline-block'; // allow JSON extraction viewing
+        tabJson.style.display = 'inline-block';
 
-        if (currentFormat === 'hl7') {
-            parseHL7(input);
-        } else if (currentFormat === 'ccda') {
-            parseCCDA(input);
-        } else if (currentFormat === 'fhir' || currentFormat === 'json') {
-            parseFHIR(input);
-        } else if (currentFormat === 'xml') {
-            outReadable.innerHTML = '<span class="text-amber-400 italic">Generic XML detected, but not recognized as C-CDA. Attempting generic rendering.</span>';
-            parseCCDA(input); // Fallback to generic XML sections
-        } else {
-            outReadable.innerHTML = '<span class="text-rose-400 italic">Format not recognized. Please select format manually or check your input.</span>';
-            badge.classList.add('hidden');
-        }
+        // Show Loader
+        document.getElementById('parse-loader').classList.remove('opacity-0');
+        document.getElementById('parse-loader').classList.remove('pointer-events-none');
+
+        // Async execution to allow UI paint of the loader
+        setTimeout(() => {
+            try {
+                if (currentFormat === 'hl7') {
+                    parseHL7(input);
+                } else if (currentFormat === 'ccda') {
+                    parseCCDA(input);
+                } else if (currentFormat === 'fhir' || currentFormat === 'json') {
+                    parseFHIR(input);
+                } else if (currentFormat === 'xml') {
+                    outReadable.innerHTML = '<span class="text-amber-400 italic mb-4 block">Generic XML detected. Attempting generic rendering via C-CDA engine.</span>';
+                    parseCCDA(input);
+                } else {
+                    outReadable.innerHTML = '<span class="text-rose-400 italic">Format not recognized. Please select format manually or check your input.</span>';
+                    badge.classList.add('hidden');
+                }
+            } catch (e) {
+                outReadable.innerHTML = `<span class="text-rose-400">Error processing document: ${e.message}</span>`;
+            }
+            
+            // Hide Loader
+            document.getElementById('parse-loader').classList.add('opacity-0');
+            document.getElementById('parse-loader').classList.add('pointer-events-none');
+        }, 50); // slight delay to allow repaint
     }
 
     // --- HL7 v2 PARSER ---
     function parseHL7(data) {
+        document.getElementById('btn-dl-csv').classList.remove('hidden');
+        document.getElementById('btn-dl-json').classList.remove('hidden');
+
         const lines = data.split(/[\r\n]+/).filter(l => l.trim() !== '');
-        let html = '<table class="hl7-table mb-6">';
-        html += '<thead><tr><th style="width:10%">SEG</th><th style="width:10%">SEQ</th><th>VALUE</th></tr></thead><tbody>';
+        
+        let html = `<details open class="mb-6 group filterable-card">
+            <summary class="cursor-pointer font-bold text-emerald-400 bg-white/5 py-2 px-4 rounded-xl flex justify-between items-center outline-none list-none group-open:rounded-b-none border border-white/10" style="display:flex;">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    HL7 v2 Message Array
+                </span>
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest pt-0.5">${lines.length} Segments</span>
+                    <button class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/40 text-[10px] uppercase font-bold tracking-wider" onclick="copyData('hl7-table-content', event)">Copy Table</button>
+                </div>
+            </summary>
+            <div id="hl7-table-content" class="border border-white/10 border-t-0 p-0 rounded-b-xl bg-black/20 overflow-x-auto">
+                <table class="hl7-table filterable-table">
+                <thead><tr><th style="width:10%">SEG</th><th style="width:10%">SEQ</th><th>VALUE</th></tr></thead><tbody>`;
         
         let jsonPayload = { messageType: '', segments: [] };
 
@@ -276,7 +432,7 @@
             }
         });
         
-        html += '</tbody></table>';
+        html += '</tbody></table></div></details>';
         document.getElementById('output-readable').innerHTML = html;
         
         extractedData = jsonPayload;
@@ -285,6 +441,8 @@
 
     // --- C-CDA XML PARSER ---
     function parseCCDA(xmlString) {
+        document.getElementById('btn-dl-json').classList.remove('hidden');
+
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlString, "text/xml");
         const outReadable = document.getElementById('output-readable');
@@ -334,9 +492,11 @@
 
         // Parse Standard component sections
         const components = Array.from(xmlDoc.getElementsByTagName("component"));
+        let secIdx = 0;
         components.forEach(comp => {
             const section = comp.getElementsByTagName("section")[0];
             if (!section) return;
+            secIdx++;
 
             const secTitleNode = section.getElementsByTagName("title")[0];
             const title = secTitleNode ? secTitleNode.textContent : 'Unnamed Section';
@@ -349,15 +509,21 @@
             
             jsonPayload.sections.push({ title: title, rawHTMLLength: cleanHtml.length });
 
-            html += `<div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                       <div class="px-4 py-3 bg-black/40 border-b border-white/10 flex justify-between items-center">
-                           <h4 class="text-sm font-bold text-emerald-400 tracking-wide">${escapeHtml(title)}</h4>
-                           <span class="text-[10px] text-slate-500">${cleanHtml.length} bytes narrative</span>
-                       </div>
-                       <div class="p-4 text-xs text-slate-300 prose prose-invert prose-td:border-white/10 prose-th:border-white/10 max-w-none hl7-table overflow-x-auto">
+            html += `<details open class="bg-white/5 border border-white/10 rounded-xl overflow-hidden filterable-card mb-4 group">
+                       <summary class="cursor-pointer px-4 py-3 bg-black/40 border-b border-white/10 flex justify-between items-center outline-none list-none" style="display:flex;">
+                           <span class="flex items-center gap-2">
+                               <svg class="w-4 h-4 transition-transform group-open:rotate-90 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                               <h4 class="text-sm font-bold text-emerald-400 tracking-wide">${escapeHtml(title)}</h4>
+                           </span>
+                           <div class="flex items-center gap-3">
+                               <span class="text-[10px] text-slate-500">${cleanHtml.length} bytes</span>
+                               <button class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/40 text-[10px] uppercase font-bold tracking-wider" onclick="copyData('ccda-sec-${secIdx}', event)">Copy</button>
+                           </div>
+                       </summary>
+                       <div id="ccda-sec-${secIdx}" class="p-4 text-xs text-slate-300 prose prose-invert prose-td:border-white/10 prose-th:border-white/10 max-w-none hl7-table overflow-x-auto filterable-table">
                            ${textNode ? cleanHtml : '<i class="text-slate-500">No narrative text provided in document XML.</i>'}
                        </div>
-                     </div>`;
+                     </details>`;
         });
         
         html += '</div>';
@@ -375,6 +541,8 @@
 
     // --- FHIR PARSER ---
     function parseFHIR(jsonString) {
+        document.getElementById('btn-dl-json').classList.remove('hidden');
+        
         try {
             const data = JSON.parse(jsonString);
             const outReadable = document.getElementById('output-readable');
@@ -444,33 +612,122 @@
         }
 
         return `
-            <div class="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-indigo-500/30 transition-colors">
-                <div class="flex justify-between items-start mb-2 border-b border-white/5 pb-2">
+            <details open class="bg-white/5 border border-white/10 rounded-xl p-0 hover:border-indigo-500/30 transition-colors filterable-card group mb-4 outline-none list-none">
+                <summary class="cursor-pointer px-4 py-3 bg-black/40 border-b border-white/5 flex justify-between items-center outline-none list-none" style="display:flex;">
                     <div class="flex items-center gap-2">
+                        <svg class="w-3 h-3 transition-transform group-open:rotate-90 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span class="text-[10px] text-slate-500 bg-black/40 px-1.5 py-0.5 rounded">#${idx+1}</span>
                         <h4 class="text-sm font-black text-indigo-400 tracking-wide">${escapeHtml(type)}</h4>
                     </div>
-                    <span class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(id)}</span>
-                </div>
-                <div class="text-xs mt-2">${detailsHtml}</div>
-            </div>`;
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-mono text-slate-500 truncate max-w-[120px]">ID: ${escapeHtml(id)}</span>
+                        <button class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/40 text-[10px] uppercase font-bold tracking-wider" onclick="copyData('fhir-res-${idx}', event)">Copy</button>
+                    </div>
+                </summary>
+                <div id="fhir-res-${idx}" class="text-xs p-4">${detailsHtml}</div>
+            </details>`;
     }
 
-    // --- Helpers ---
+    // --- Helper Functions & Export Logic ---
     function escapeHtml(str) {
         if (!str) return '';
         const div = document.createElement('div'); div.textContent = str; return div.innerHTML;
     }
 
     function clearAll() {
-        document.getElementById('clinical-input').value = '';
-        processInput();
+        if (fileContents.length > 1) {
+            fileContents = [{name: 'Workspace', content: ''}];
+            currentFileIndex = 0;
+            switchFile(0);
+        } else {
+            document.getElementById('clinical-input').value = '';
+            processInput();
+        }
     }
 
     function copyExtractedJson() {
         if (!extractedData) return;
         navigator.clipboard.writeText(JSON.stringify(extractedData, null, 2));
         alert('JSON Copied to clipboard!');
+    }
+
+    function copyData(id, event) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        const el = document.getElementById(id);
+        if (!el) return;
+        const text = el.innerText || el.textContent;
+        navigator.clipboard.writeText(text);
+        
+        const btn = event ? event.target : null;
+        if (btn) {
+            const og = btn.innerHTML;
+            btn.innerHTML = 'Copied!';
+            setTimeout(() => btn.innerHTML = og, 1500);
+        } else {
+            alert('Copied to clipboard');
+        }
+    }
+
+    function filterOutput() {
+        const query = document.getElementById('filter-input').value.toLowerCase();
+        
+        // Filter table rows
+        const tables = document.querySelectorAll('.parser-container .filterable-table');
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                // Keep segment headers visible iff children are visible, but simplest logic is just simple textmatch
+                if (row.classList.contains('hl7-segment-header')) return; 
+                const text = row.textContent || row.innerText;
+                row.style.display = text.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
+            });
+        });
+
+        // Filter cards (FHIR / CCDA sections)
+        const cards = document.querySelectorAll('.parser-container .filterable-card');
+        cards.forEach(card => {
+            const text = card.textContent || card.innerText;
+            card.style.display = text.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
+        });
+    }
+
+    function downloadOutput(type) {
+        if (!extractedData) return;
+        
+        if (type === 'json') {
+            const blob = new Blob([JSON.stringify(extractedData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clinical_export_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } 
+        else if (type === 'csv') {
+            if (currentFormat === 'hl7' && extractedData.segments) {
+                // Flatten HL7 for CSV
+                const flatData = [];
+                extractedData.segments.forEach(seg => {
+                    for (const [seq, val] of Object.entries(seg.fields)) {
+                        flatData.push({
+                            Segment: seg.type,
+                            Sequence: seq,
+                            Value: Array.isArray(val) ? val.join(' | ') : val
+                        });
+                    }
+                });
+                const csv = Papa.unparse(flatData);
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hl7_export_${Date.now()}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                alert('CSV export is currently only supported for parsed HL7 tabular data.');
+            }
+        }
     }
 
     function loadSample(type) {
