@@ -1,8 +1,10 @@
 User-agent: *
 Allow: /
-Allow: /static/
 Disallow: /api/proxy
 Disallow: /api/resolve-domain
+
+# Crawl-delay for polite bots
+Crawl-delay: 2
 
 # Host
 Host: https://aicomdemasker.com

@@ -4,44 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Code Masker{% endblock %}</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="AI Code Masker: The privacy-first layer for safe AI code sharing. Mask sensitive variables, API keys, and secrets in-memory before sharing with ChatGPT, Copilot, or Claude. 100% client-side.">
-    <meta name="keywords" content="code masking tool, remove secrets from code, safe code sharing, AI privacy tool, redact variables, prevent AI data leakage">
-    <link rel="canonical" href="https://aicomdemasker.com/" />
+    <title>{% block title %}AI Code Masker — Privacy-First Developer Tools{% endblock %} | aicomdemasker.com</title>
+
+    <!-- SEO: Per-page meta description override -->
+    <meta name="description" content="{% block meta_description %}AI Code Masker is a free, privacy-first developer toolkit. Mask sensitive API keys, parse HL7/FHIR/C-CDA clinical documents, test REST APIs, and convert data — all 100% in-browser with zero data sent to any server.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}code masking tool, AI privacy tool, HL7 parser, FHIR parser, C-CDA parser, clinical document parser, API tester, developer tools, free online tools{% endblock %}">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="aicomdemasker.com">
+    <meta name="theme-color" content="#0f0f1a">
+    <link rel="canonical" href="{% block canonical %}https://aicomdemasker.com/{% endblock %}" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aicomdemasker.com/">
-    <meta property="og:title" content="AI Code Masker | Privacy-First Code Sharing for AI">
-    <meta property="og:description" content="Protect your proprietary code and secrets. 100% browser-based masking ensures your data never leaves your machine.">
+    <meta property="og:site_name" content="AI Code Masker">
+    <meta property="og:url" content="{% block og_url %}https://aicomdemasker.com/{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}AI Code Masker | Privacy-First Developer Tools{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Free developer tools that run 100% in your browser. Mask code secrets, parse HL7/FHIR/C-CDA, test REST APIs and more — your data never leaves your machine.{% endblock %}">
     <meta property="og:image" content="https://aicomdemasker.com/static/img/og-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://aicomdemasker.com/">
-    <meta property="twitter:title" content="AI Code Masker | Privacy-First Code Sharing for AI">
-    <meta property="twitter:description" content="Stop leaking secrets to AI. Mask identifiers and tokens in-memory with our local-only substitution engine.">
-    <meta property="twitter:image" content="https://aicomdemasker.com/static/img/og-preview.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@aicomdemasker">
+    <meta name="twitter:url" content="{% block tw_url %}https://aicomdemasker.com/{% endblock %}">
+    <meta name="twitter:title" content="{% block tw_title %}AI Code Masker | Privacy-First Developer Tools{% endblock %}">
+    <meta name="twitter:description" content="{% block tw_description %}Mask code, parse clinical documents, test APIs — all free and 100% in-browser. No data ever sent to the cloud.{% endblock %}">
+    <meta name="twitter:image" content="https://aicomdemasker.com/static/img/og-preview.png">
 
-    <!-- Structured Data (JSON-LD) -->
+    <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "AI Code Masker",
       "url": "https://aicomdemasker.com",
-      "description": "A privacy-focused tool to mask code identifiers, secrets, and sensitive strings locally in the browser before sharing with AI tools.",
+      "description": "A free, privacy-first toolkit for developers and clinical engineers. Features include code masking, HL7 v2 / C-CDA / FHIR parsing, REST API testing, JSON editing, Base64 conversion and more. All processing is 100% client-side.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript",
       "offers": {
         "@type": "Offer",
         "price": "0.00",
         "priceCurrency": "USD"
+      },
+      "featureList": [
+        "AI Code Masking",
+        "HL7 v2 Clinical Document Parser",
+        "C-CDA XML Parser",
+        "FHIR JSON/XML Parser",
+        "REST API Tester",
+        "JSON Editor",
+        "Base64 Encoder/Decoder",
+        "Patient Summary Extraction"
+      ],
+      "creator": {
+        "@type": "Organization",
+        "name": "aicomdemasker.com",
+        "url": "https://aicomdemasker.com"
       }
     }
     </script>
+    <!-- Per-page structured data override -->
+    {% block extra_ld_json %}{% endblock %}
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
