@@ -73,9 +73,10 @@
                 </div>
                 <p class="text-xs text-slate-400 mt-2 max-w-xl">Parse HL7 v2 messages, C-CDA XML documents, and FHIR payloads into human-readable tables, formatted narratives, and JSON structures securely in your browser.</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 flex-wrap">
                 <button onclick="loadSample('hl7')" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest border border-white/10">Simulate HL7</button>
                 <button onclick="loadSample('ccda')" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest border border-white/10">Simulate C-CDA</button>
+                <button onclick="loadSample('fhir')" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest border border-white/10">Simulate FHIR</button>
                 <button onclick="clearAll()" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-xs font-bold text-rose-400 transition-colors uppercase tracking-widest">Clear</button>
             </div>
         </div>
@@ -165,6 +166,18 @@
     let extractedData = null;
     let fileContents = [{name: 'Workspace', content: ''}];
     let currentFileIndex = 0;
+    
+    let patientSummary = {
+        name: "Unknown", gender: "U", dob: "Unknown", mrn: "N/A",
+        allergies: [], medications: [], conditions: []
+    };
+
+    function resetSummary() {
+        patientSummary = {
+            name: "Unknown", gender: "U", dob: "Unknown", mrn: "N/A",
+            allergies: [], medications: [], conditions: []
+        };
+    }
 
     // Listeners & Drop Zone
     const dropZone = document.getElementById('drop-zone');
@@ -333,6 +346,7 @@
 
         // Async execution to allow UI paint of the loader
         setTimeout(() => {
+            resetSummary();
             try {
                 if (currentFormat === 'hl7') {
                     parseHL7(input);
@@ -432,6 +446,9 @@
             }
         });
         
+        extractSummaryHL7(jsonPayload.segments);
+        
+        html = renderPatientSummary() + html;
         html += '</tbody></table></div></details>';
         document.getElementById('output-readable').innerHTML = html;
         
@@ -534,6 +551,9 @@
         html = html.replace(/<list/gi, '<ul class="list-disc ml-4 my-2"').replace(/<\/list>/gi, '</ul>');
         html = html.replace(/<item/gi, '<li').replace(/<\/item>/gi, '</li>');
 
+        extractSummaryCCDA(xmlDoc, jsonPayload.patient);
+        html = renderPatientSummary() + html;
+
         outReadable.innerHTML = html;
         extractedData = jsonPayload;
         document.getElementById('output-json').textContent = JSON.stringify(extractedData, null, 2);
@@ -579,6 +599,10 @@
             }
             
             html += '</div>';
+            
+            extractSummaryFHIR(data);
+            html = renderPatientSummary() + html;
+            
             outReadable.innerHTML = html;
 
             // Output raw JSON formatting in the JSON tab
@@ -626,6 +650,140 @@
                 </summary>
                 <div id="fhir-res-${idx}" class="text-xs p-4">${detailsHtml}</div>
             </details>`;
+    }
+
+    // --- Unified Patient Extraction Helpers ---
+    function extractSummaryHL7(segments) {
+        segments.forEach(seg => {
+            if (seg.type === 'PID') {
+                if (seg.fields["3"]) patientSummary.mrn = getFirstComponent(seg.fields["3"]);
+                if (seg.fields["5"]) patientSummary.name = getFirstComponent(seg.fields["5"], ' ').replace(/\^/g, ' ');
+                if (seg.fields["7"]) patientSummary.dob = getFirstComponent(seg.fields["7"]);
+                if (seg.fields["8"]) patientSummary.gender = getFirstComponent(seg.fields["8"]);
+            } else if (seg.type === 'AL1') {
+                if (seg.fields["3"]) patientSummary.allergies.push(getFirstComponent(seg.fields["3"]).replace(/\^/g, ' '));
+            } else if (seg.type === 'DG1') {
+                if (seg.fields["3"]) patientSummary.conditions.push(getFirstComponent(seg.fields["3"]).replace(/\^/g, ' '));
+            } else if (seg.type === 'RXE' || seg.type === 'RXO') {
+                if (seg.fields["2"] || seg.fields["1"]) {
+                    const med = getFirstComponent(seg.fields["2"] || seg.fields["1"]).replace(/\^/g, ' ');
+                    if (med) patientSummary.medications.push(med);
+                }
+            }
+        });
+    }
+
+    function getFirstComponent(field, joiner = '') {
+        if (!field) return '';
+        if (Array.isArray(field)) return field.join(joiner);
+        return field;
+    }
+
+    function extractSummaryCCDA(xmlDoc, demoObj) {
+        if (demoObj) {
+            if (demoObj.name) patientSummary.name = demoObj.name;
+            if (demoObj.gender) patientSummary.gender = demoObj.gender;
+            if (demoObj.birthTime) patientSummary.dob = demoObj.birthTime;
+        }
+        const patientRole = xmlDoc.getElementsByTagName("patientRole")[0];
+        if (patientRole) {
+            const ids = patientRole.getElementsByTagName("id");
+            if (ids.length > 0) patientSummary.mrn = ids[0].getAttribute("extension") || "Unknown MRN";
+        }
+
+        const sections = Array.from(xmlDoc.getElementsByTagName("section"));
+        sections.forEach(sec => {
+            const titleNode = sec.getElementsByTagName("title")[0];
+            const title = titleNode ? titleNode.textContent.toLowerCase() : '';
+            if (title.includes('allerg')) {
+                patientSummary.allergies.push(...extractItemsFromSection(sec));
+            } else if (title.includes('medication')) {
+                patientSummary.medications.push(...extractItemsFromSection(sec));
+            } else if (title.includes('problem') || title.includes('diagnos')) {
+                patientSummary.conditions.push(...extractItemsFromSection(sec));
+            }
+        });
+    }
+
+    function extractItemsFromSection(sec) {
+        let items = [];
+        const rows = Array.from(sec.getElementsByTagName('tr'));
+        if (rows.length > 1) { // Skip header
+            for (let i = 1; i < rows.length; i++) {
+                const td = rows[i].getElementsByTagName('td')[0];
+                if (td && td.textContent.trim()) items.push(td.textContent.trim());
+            }
+        } else {
+            const listItems = Array.from(sec.getElementsByTagName('item'));
+            listItems.forEach(li => { if (li.textContent.trim()) items.push(li.textContent.trim()); });
+        }
+        return items;
+    }
+
+    function extractSummaryFHIR(data) {
+        let entries = [];
+        if (data.resourceType === 'Bundle' && data.entry) {
+            entries = data.entry.map(e => e.resource);
+        } else if (data.resourceType) {
+            entries = [data];
+        }
+
+        entries.forEach(res => {
+            if (!res) return;
+            if (res.resourceType === 'Patient') {
+                if (res.name?.[0]) patientSummary.name = `${res.name[0].given?.join(' ') || ''} ${res.name[0].family || ''}`.trim();
+                if (res.gender) patientSummary.gender = res.gender;
+                if (res.birthDate) patientSummary.dob = res.birthDate;
+                if (res.identifier?.[0]) patientSummary.mrn = res.identifier[0].value;
+            } else if (res.resourceType === 'AllergyIntolerance') {
+                const code = res.code?.coding?.[0]?.display || res.code?.text;
+                if (code) patientSummary.allergies.push(code);
+            } else if (res.resourceType === 'Condition') {
+                const code = res.code?.coding?.[0]?.display || res.code?.text;
+                if (code) patientSummary.conditions.push(code);
+            } else if (res.resourceType === 'MedicationRequest' || res.resourceType === 'MedicationStatement') {
+                let code = res.medicationCodeableConcept?.coding?.[0]?.display || res.medicationCodeableConcept?.text || res.medicationReference?.display;
+                if (code) patientSummary.medications.push(code);
+            }
+        });
+    }
+
+    function renderPatientSummary() {
+        if (!patientSummary.name || patientSummary.name === 'Unknown') return '';
+
+        return `
+            <div class="glass-card mb-6 rounded-2xl overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
+                <div class="px-5 py-3 border-b border-emerald-500/10 flex justify-between items-center bg-black/20">
+                    <h3 class="text-xs font-black text-emerald-400 tracking-widest uppercase flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        Patient Summary
+                    </h3>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/10 border border-amber-500/20" title="${escapeHtml(patientSummary.allergies.join(', '))}">${patientSummary.allergies.length} Allergies</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/10 border border-indigo-500/20" title="${escapeHtml(patientSummary.medications.join(', '))}">${patientSummary.medications.length} Medications</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-rose-300 bg-rose-500/10 border border-rose-500/20" title="${escapeHtml(patientSummary.conditions.join(', '))}">${patientSummary.conditions.length} Conditions</span>
+                    </div>
+                </div>
+                <div class="p-5 flex flex-wrap gap-8 items-center bg-black/10">
+                    <div>
+                        <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Name</span>
+                        <span class="text-base font-bold text-white">${escapeHtml(patientSummary.name)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">DOB</span>
+                        <span class="text-sm font-mono text-slate-300">${escapeHtml(patientSummary.dob)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Gender</span>
+                        <span class="text-sm font-mono text-slate-300">${escapeHtml(patientSummary.gender)}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">MRN</span>
+                        <span class="text-sm font-mono text-slate-300">${escapeHtml(patientSummary.mrn)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     // --- Helper Functions & Export Logic ---
@@ -735,13 +893,19 @@
         if (type === 'hl7') {
             inp.value = `MSH|^~\\&|SENDING_APP|SENDING_FAC|RECV_APP|RECV_FAC|202310101200||ADT^A01|MSG00001|P|2.4
 EVN|A01|202310101200
-PID|1||12345^^^MRN||DOE^JOHN^MIDDLE||19800101|M|||123 MAIN ST^^CITY^ST^12345
-PV1|1|I|WARD A^RM 100^BED 1|||||||||||||||`;
+PID|1||MRN98765^^^Hospital||DOE^JOHN^MICHAEL||19800115|M|||123 MAIN ST^^CITYVILLE^CA^90210
+NK1|1|DOE^JANE|SPO|555-992-1234
+PV1|1|I|WARD A^RM 100^BED 1|||DR. SMITH^ROBERT|||||CARDIOLOGY
+AL1|1||PENICILLIN^Penicillin|MODERATE|HIVES~RASH
+AL1|2||ASPIRIN^Aspirin|SEVERE|GI BLEEDING
+DG1|1||I25.10^Coronary artery disease^ICD10|Coronary artery disease|20231010
+DG1|2||E11.9^Type 2 diabetes^ICD10|Type 2 Diabetes - uncontrolled|20231010`;
         } else if (type === 'ccda') {
             inp.value = `<?xml version="1.0" encoding="UTF-8"?>
 <ClinicalDocument xmlns="urn:hl7-org:v3">
   <title>Continuity of Care Document</title>
   <patientRole>
+    <id extension="MRN-12345" root="2.16.840.1.113883.4.1"/>
     <patient>
       <name><given>Jane</given><family>Doe</family></name>
       <administrativeGenderCode code="F" displayName="Female"/>
@@ -758,6 +922,7 @@ PV1|1|I|WARD A^RM 100^BED 1|||||||||||||||`;
               <thead><tr><th>Substance</th><th>Reaction</th><th>Status</th></tr></thead>
               <tbody>
                 <tr><td>Penicillin</td><td>Hives</td><td>Active</td></tr>
+                <tr><td>Sulfa Drugs</td><td>Rash</td><td>Active</td></tr>
               </tbody>
             </table>
           </text>
@@ -770,6 +935,18 @@ PV1|1|I|WARD A^RM 100^BED 1|||||||||||||||`;
             <list>
               <item>Aspirin 81mg po daily</item>
               <item>Lisinopril 10mg po daily</item>
+              <item>Metformin 500mg po twice daily</item>
+            </list>
+          </text>
+        </section>
+      </component>
+      <component>
+        <section>
+          <title>Problems</title>
+          <text>
+            <list>
+              <item>Type 2 Diabetes - uncontrolled</item>
+              <item>Hypertension</item>
             </list>
           </text>
         </section>
@@ -777,6 +954,36 @@ PV1|1|I|WARD A^RM 100^BED 1|||||||||||||||`;
     </structuredBody>
   </component>
 </ClinicalDocument>`;
+        } else if (type === 'fhir') {
+            inp.value = JSON.stringify({
+                resourceType: "Bundle",
+                type: "collection",
+                entry: [
+                    { resource: {
+                        resourceType: "Patient", id: "pt-001",
+                        identifier: [{ value: "MRN-77201" }],
+                        name: [{ given: ["Alice"], family: "Williams" }],
+                        gender: "female", birthDate: "1990-07-14"
+                    }},
+                    { resource: {
+                        resourceType: "AllergyIntolerance", id: "ai-001",
+                        code: { coding: [{ display: "Latex" }] }
+                    }},
+                    { resource: {
+                        resourceType: "Condition", id: "cond-001",
+                        code: { coding: [{ display: "Asthma" }] }
+                    }},
+                    { resource: {
+                        resourceType: "MedicationRequest", id: "mr-001",
+                        medicationCodeableConcept: { coding: [{ display: "Salbutamol 100mcg Inhaler" }] }
+                    }},
+                    { resource: {
+                        resourceType: "Observation", id: "obs-001",
+                        code: { coding: [{ display: "Blood Pressure" }] },
+                        valueQuantity: { value: 120, unit: "mmHg" }
+                    }}
+                ]
+            }, null, 2);
         }
         processInput();
     }
