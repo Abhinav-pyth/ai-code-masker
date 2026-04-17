@@ -68,6 +68,15 @@
             </div>
         </div>
 
+        <!-- Localhost Warning Banner -->
+        <div id="local-banner" class="hidden mx-8 mt-4 rounded-xl border border-amber-500/30 bg-amber-500/8 px-5 py-3 flex items-start gap-3 shrink-0">
+            <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            <div>
+                <p class="text-amber-400 text-[11px] font-black uppercase tracking-widest mb-0.5">Localhost / Private Network Detected</p>
+                <p class="text-amber-300/70 text-xs leading-relaxed">The server proxy cannot reach <code class="font-mono">localhost</code> or private IPs. This request will be sent <strong>directly from your browser</strong> instead. Make sure your local server has CORS enabled (<code class="font-mono">Access-Control-Allow-Origin: *</code>), otherwise the request will be blocked by the browser.</p>
+            </div>
+        </div>
+
         <!-- Request Bar -->
         <div class="px-8 pt-6 pb-4 shrink-0">
             <div class="glass-card rounded-2xl p-4 flex items-center gap-3">
@@ -391,6 +400,28 @@
             return headers;
         }
 
+        // Detect if URL targets localhost / private networks
+        function isLocalURL(url) {
+            try {
+                const u = new URL(url.startsWith('http') ? url : 'http://' + url);
+                const h = u.hostname.toLowerCase();
+                return h === 'localhost' || h === '127.0.0.1' || h === '::1' ||
+                       h.startsWith('192.168.') || h.startsWith('10.') ||
+                       h.startsWith('172.16.') || h.endsWith('.local');
+            } catch(e) { return false; }
+        }
+
+        // Show / hide localhost warning banner
+        function setLocalBanner(show) {
+            const banner = document.getElementById('local-banner');
+            if (show) banner.classList.remove('hidden');
+            else banner.classList.add('hidden');
+        }
+
+        document.getElementById('url-input').addEventListener('input', function() {
+            setLocalBanner(isLocalURL(this.value.trim()));
+        });
+
         // Send request
         async function sendRequest() {
             let url = document.getElementById('url-input').value.trim();
@@ -434,68 +465,109 @@
             }
 
             const startTime = performance.now();
+            const isLocal = isLocalURL(url);
 
-            // Backend Proxy fetch
-            try {
-                const proxyBody = {
-                    url: url,
-                    method: currentMethod,
-                    headers: headers,
-                    body: ['POST','PUT','PATCH'].includes(currentMethod) ? document.getElementById('body-input').value : null
-                };
-
-                const resp = await fetch('/api/proxy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(proxyBody)
-                });
-                
-                const data = await resp.json();
-                const elapsed = Math.round(performance.now() - startTime);
-                respTime.textContent = elapsed + 'ms';
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Status
-                const statusClass = data.status < 300 ? 'status-2xx' : data.status < 400 ? 'status-3xx' : data.status < 500 ? 'status-4xx' : 'status-5xx';
-                respStatus.className = 'code-font text-xs font-bold ' + statusClass;
-                respStatus.textContent = data.status + ' ' + (data.statusText || '');
-
-                // Response headers
-                const hdrs = [];
-                Object.entries(data.headers).forEach(([k, v]) => hdrs.push(k + ': ' + v));
-                responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
-
-                // Response body
-                const text = data.text;
-                respSize.textContent = formatSize(new Blob([text]).size);
-
-                document.getElementById('btn-export-csv').classList.add('hidden');
+            if (isLocal) {
+                // ── Local / private network: direct browser fetch (no server proxy) ──
                 try {
-                    const json = JSON.parse(text);
-                    responseBody.textContent = JSON.stringify(json, null, 2);
-                    // Show export CSV button for typical tabular data or FHIR Bundles
-                    if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
-                        document.getElementById('btn-export-csv').classList.remove('hidden');
+                    const resp = await fetch(url, fetchOpts);
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+
+                    const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-3xx' : resp.status < 500 ? 'status-4xx' : 'status-5xx';
+                    respStatus.className = 'code-font text-xs font-bold ' + statusClass;
+                    respStatus.textContent = resp.status + ' ' + (resp.statusText || '');
+
+                    const hdrs = [];
+                    resp.headers.forEach((v, k) => hdrs.push(k + ': ' + v));
+                    responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
+
+                    const text = await resp.text();
+                    respSize.textContent = formatSize(new Blob([text]).size);
+
+                    document.getElementById('btn-export-csv').classList.add('hidden');
+                    try {
+                        const json = JSON.parse(text);
+                        responseBody.textContent = JSON.stringify(json, null, 2);
+                        if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
+                            document.getElementById('btn-export-csv').classList.remove('hidden');
+                        }
+                    } catch(e) {
+                        responseBody.textContent = text;
                     }
-                } catch(e) {
-                    responseBody.textContent = text;
+                    switchRespTab('body');
+                } catch(err) {
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+                    respStatus.className = 'code-font text-xs font-bold status-5xx';
+                    respStatus.textContent = 'Error';
+                    respSize.textContent = '';
+                    // Helpful CORS hint for local failures
+                    const corsHint = err.message.includes('fetch') || err.message.includes('Failed')
+                        ? '\n\n💡 If your local server refuses: ensure CORS is enabled (Access-Control-Allow-Origin: *) or use a CORS-allowing proxy like cors-anywhere locally.'
+                        : '';
+                    responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message + corsHint) + '</span>';
+                    responseHeaders.textContent = 'Request failed';
+                } finally {
+                    sendBtn.textContent = 'Send';
+                    sendBtn.disabled = false;
                 }
-                
-                switchRespTab('body');
-            } catch(err) {
-                const elapsed = Math.round(performance.now() - startTime);
-                respTime.textContent = elapsed + 'ms';
-                respStatus.className = 'code-font text-xs font-bold status-5xx';
-                respStatus.textContent = 'Error';
-                respSize.textContent = '';
-                responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message) + '</span>';
-                responseHeaders.textContent = 'Request failed';
-            } finally {
-                sendBtn.textContent = 'Send';
-                sendBtn.disabled = false;
+            } else {
+                // ── Remote URL: route through backend proxy ──
+                try {
+                    const proxyBody = {
+                        url: url,
+                        method: currentMethod,
+                        headers: headers,
+                        body: ['POST','PUT','PATCH'].includes(currentMethod) ? document.getElementById('body-input').value : null
+                    };
+
+                    const resp = await fetch('/api/proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(proxyBody)
+                    });
+
+                    const data = await resp.json();
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+
+                    if (data.error) throw new Error(data.error);
+
+                    const statusClass = data.status < 300 ? 'status-2xx' : data.status < 400 ? 'status-3xx' : data.status < 500 ? 'status-4xx' : 'status-5xx';
+                    respStatus.className = 'code-font text-xs font-bold ' + statusClass;
+                    respStatus.textContent = data.status + ' ' + (data.statusText || '');
+
+                    const hdrs = [];
+                    Object.entries(data.headers).forEach(([k, v]) => hdrs.push(k + ': ' + v));
+                    responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
+
+                    const text = data.text;
+                    respSize.textContent = formatSize(new Blob([text]).size);
+
+                    document.getElementById('btn-export-csv').classList.add('hidden');
+                    try {
+                        const json = JSON.parse(text);
+                        responseBody.textContent = JSON.stringify(json, null, 2);
+                        if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
+                            document.getElementById('btn-export-csv').classList.remove('hidden');
+                        }
+                    } catch(e) {
+                        responseBody.textContent = text;
+                    }
+                    switchRespTab('body');
+                } catch(err) {
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+                    respStatus.className = 'code-font text-xs font-bold status-5xx';
+                    respStatus.textContent = 'Error';
+                    respSize.textContent = '';
+                    responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message) + '</span>';
+                    responseHeaders.textContent = 'Request failed';
+                } finally {
+                    sendBtn.textContent = 'Send';
+                    sendBtn.disabled = false;
+                }
             }
         }
 

@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% block title %}Data Flow Diagram Creator — Free Online DFD Tool{% endblock %}
+
+{% block meta_description %}Create professional Data Flow Diagrams (DFDs) online for free. Draw processes, data stores, external entities, and flows with our intuitive drag-and-drop canvas. Export as PNG or SVG — 100% browser-based.{% endblock %}
+{% block meta_keywords %}data flow diagram creator, DFD tool online, free DFD maker, process flow diagram, system design tool, data flow chart, DFD online{% endblock %}
+
+{% block canonical %}https://ai-code-masker.vercel.app/dfd-creator{% endblock %}
+{% block og_url %}https://ai-code-masker.vercel.app/dfd-creator{% endblock %}
+{% block og_title %}Data Flow Diagram Creator | Free Online DFD Tool{% endblock %}
+{% block og_description %}Design DFDs visually in your browser. Add processes, data stores, entities, and flow arrows. Export as PNG or SVG. No install, no account.{% endblock %}
+{% block tw_url %}https://ai-code-masker.vercel.app/dfd-creator{% endblock %}
+{% block tw_title %}Free Online Data Flow Diagram Creator{% endblock %}
+{% block tw_description %}Create DFDs visually in your browser. 100% free, no install needed.{% endblock %}
+
+{% block extra_styles %}
+    #dfd-canvas {
+        cursor: default;
+        display: block;
+        background: transparent;
+    }
+    .tool-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 8px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: all 0.2s;
+        width: 68px;
+    }
+    .tool-btn:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
+    .tool-btn.active { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #818cf8; }
+    .tool-btn svg { width: 22px; height: 22px; }
+    .canvas-wrap {
+        position: relative;
+        flex-grow: 1;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.05);
+        background: radial-gradient(circle at 50% 50%, rgba(30,27,75,0.5) 0%, rgba(12,12,20,0.9) 100%);
+    }
+    .canvas-dot-grid {
+        position: absolute; inset: 0;
+        background-image: radial-gradient(rgba(99,102,241,0.15) 1px, transparent 1px);
+        background-size: 24px 24px;
+        pointer-events: none;
+    }
+    #prop-panel {
+        display: none;
+    }
+    #prop-panel.visible {
+        display: flex;
+    }
+{% endblock %}
+
+{% block content %}
+<div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+    <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Data Flow Diagram Creator</h2>
+    <div class="flex items-center gap-3">
+        <button onclick="dfd.undo()" title="Undo" class="h-8 w-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6M3 10l6-6"/></svg>
+        </button>
+        <button onclick="dfd.clearAll()" class="h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all">Clear</button>
+        <button onclick="dfd.exportPNG()" class="h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all">Export PNG</button>
+        <button onclick="dfd.exportSVG()" class="h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all">Export SVG</button>
+    </div>
+</div>
+
+<div class="flex flex-grow overflow-hidden gap-0">
+    <!-- Left Toolbar -->
+    <div class="w-24 border-r border-white/5 flex flex-col items-center py-5 gap-2 bg-black/20 shrink-0 overflow-y-auto">
+        <div class="text-[8px] font-black text-slate-600 tracking-widest uppercase mb-2">Elements</div>
+        <button class="tool-btn active" id="tool-select" onclick="dfd.setTool('select')" title="Select & Move">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+            Select
+        </button>
+        <button class="tool-btn" id="tool-process" onclick="dfd.setTool('process')" title="Process (circle)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">P</text></svg>
+            Process
+        </button>
+        <button class="tool-btn" id="tool-entity" onclick="dfd.setTool('entity')" title="External Entity (rectangle)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" stroke-width="2"/></svg>
+            Entity
+        </button>
+        <button class="tool-btn" id="tool-store" onclick="dfd.setTool('store')" title="Data Store (open rect)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M3 7h18M3 7v10M21 7v10M3 17h18"/></svg>
+            Store
+        </button>
+        <button class="tool-btn" id="tool-flow" onclick="dfd.setTool('flow')" title="Data Flow (arrow)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Flow
+        </button>
+        <div class="w-12 border-t border-white/10 my-2"></div>
+        <div class="text-[8px] font-black text-slate-600 tracking-widest uppercase mb-2">Delete</div>
+        <button class="tool-btn" onclick="dfd.deleteSelected()" title="Delete selected element">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete
+        </button>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="flex flex-col flex-grow overflow-hidden p-4 gap-4">
+        <!-- Legend -->
+        <div class="flex items-center gap-6 px-2 shrink-0">
+            <div class="flex items-center gap-2"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="#818cf8" stroke-width="1.5"/></svg><span class="text-[10px] text-slate-500">Process</span></div>
+            <div class="flex items-center gap-2"><svg width="20" height="16"><rect x="1" y="1" width="18" height="14" rx="2" fill="none" stroke="#34d399" stroke-width="1.5"/></svg><span class="text-[10px] text-slate-500">External Entity</span></div>
+            <div class="flex items-center gap-2"><svg width="24" height="16"><path d="M1 1 H23 M1 1 V15 M1 15 H23" fill="none" stroke="#f59e0b" stroke-width="1.5"/></svg><span class="text-[10px] text-slate-500">Data Store</span></div>
+            <div class="flex items-center gap-2"><svg width="28" height="12"><line x1="2" y1="6" x2="24" y2="6" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><defs><marker id="ah" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#94a3b8"/></marker></defs></svg><span class="text-[10px] text-slate-500">Data Flow</span></div>
+            <span class="text-[10px] text-slate-600 ml-auto italic">Click canvas to place • Drag to move • Click flow tool then click two elements to connect</span>
+        </div>
+        <div class="canvas-wrap flex-grow">
+            <div class="canvas-dot-grid"></div>
+            <svg id="dfd-canvas" width="100%" height="100%">
+                <defs>
+                    <marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"/>
+                    </marker>
+                    <marker id="arrow-selected" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L8,4 L0,8 Z" fill="#818cf8"/>
+                    </marker>
+                </defs>
+                <g id="dfd-layer-flows"></g>
+                <g id="dfd-layer-nodes"></g>
+            </svg>
+        </div>
+
+        <!-- Properties Panel -->
+        <div id="prop-panel" class="flex-col gap-3 glass-card rounded-xl p-4 shrink-0">
+            <div class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Properties</div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] text-slate-400 font-bold">Label</label>
+                    <input id="prop-label" type="text" class="bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-1.5 text-xs code-font text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500/50 w-48" placeholder="Element label...">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] text-slate-400 font-bold">Color</label>
+                    <input id="prop-color" type="color" value="#818cf8" class="w-8 h-7 rounded cursor-pointer bg-transparent border border-slate-700/50">
+                </div>
+                <button onclick="dfd.applyProps()" class="btn-premium px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">Apply</button>
+                <button onclick="dfd.deleteSelected()" class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dfd = (() => {
+    const svg = document.getElementById('dfd-canvas');
+    const layerFlows = document.getElementById('dfd-layer-flows');
+    const layerNodes = document.getElementById('dfd-layer-nodes');
+
+    let tool = 'select';
+    let nodes = [];
+    let flows = [];
+    let selected = null;
+    let history = [];
+    let dragging = null, dragOffset = {x:0,y:0};
+    let flowStart = null;
+    let idCtr = 1;
+
+    // Colors per type
+    const TYPE_COLOR = { process: '#818cf8', entity: '#34d399', store: '#f59e0b' };
+    const TYPE_STROKE = { process: '#6366f1', entity: '#10b981', store: '#d97706' };
+
+    function snapshot() { history.push(JSON.stringify({nodes, flows})); if(history.length>50) history.shift(); }
+
+    function setTool(t) {
+        tool = t;
+        flowStart = null;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('tool-' + t);
+        if(btn) btn.classList.add('active');
+        svg.style.cursor = t === 'select' ? 'default' : 'crosshair';
+    }
+
+    function getSVGPt(e) {
+        const rect = svg.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function renderAll() {
+        layerNodes.innerHTML = '';
+        layerFlows.innerHTML = '';
+        flows.forEach(renderFlow);
+        nodes.forEach(renderNode);
+    }
+
+    function renderNode(n) {
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('id', 'node-' + n.id);
+        g.style.cursor = 'grab';
+
+        const isSelected = selected && selected.type === 'node' && selected.id === n.id;
+        const color = n.color || TYPE_COLOR[n.kind];
+        const stroke = isSelected ? '#fff' : (n.strokeColor || TYPE_STROKE[n.kind]);
+        const sw = isSelected ? 2.5 : 1.5;
+        const fillOp = isSelected ? '0.2' : '0.08';
+
+        if (n.kind === 'process') {
+            const rx = 50, ry = 30;
+            const el = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+            el.setAttribute('cx', n.x); el.setAttribute('cy', n.y);
+            el.setAttribute('rx', rx); el.setAttribute('ry', ry);
+            el.setAttribute('fill', color); el.setAttribute('fill-opacity', fillOp);
+            el.setAttribute('stroke', stroke); el.setAttribute('stroke-width', sw);
+            g.appendChild(el);
+        } else if (n.kind === 'entity') {
+            const w=100, h=50;
+            const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+            rect.setAttribute('x', n.x - w/2); rect.setAttribute('y', n.y - h/2);
+            rect.setAttribute('width', w); rect.setAttribute('height', h);
+            rect.setAttribute('rx', '6');
+            rect.setAttribute('fill', color); rect.setAttribute('fill-opacity', fillOp);
+            rect.setAttribute('stroke', stroke); rect.setAttribute('stroke-width', sw);
+            g.appendChild(rect);
+        } else if (n.kind === 'store') {
+            const w=110, h=44;
+            const rx = n.x - w/2, ry = n.y - h/2;
+            // Open rect (data store: two horizontal lines, no top)
+            const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+            path.setAttribute('d', `M${rx},${ry} H${rx+w} M${rx},${ry+h} H${rx+w} M${rx},${ry} V${ry+h} M${rx+w},${ry} V${ry+h}`);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', stroke); path.setAttribute('stroke-width', sw);
+            const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+            bg.setAttribute('x', rx+1.5); bg.setAttribute('y', ry+1.5);
+            bg.setAttribute('width', w-3); bg.setAttribute('height', h-3);
+            bg.setAttribute('fill', color); bg.setAttribute('fill-opacity', fillOp);
+            bg.setAttribute('stroke', 'none');
+            g.appendChild(bg); g.appendChild(path);
+        }
+
+        // Label
+        const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+        txt.setAttribute('x', n.x); txt.setAttribute('y', n.y + 4);
+        txt.setAttribute('text-anchor','middle');
+        txt.setAttribute('fill', '#e2e8f0'); txt.setAttribute('font-size','11');
+        txt.setAttribute('font-family','Outfit,sans-serif'); txt.setAttribute('font-weight','600');
+        txt.textContent = n.label;
+        g.appendChild(txt);
+
+        g.addEventListener('mousedown', e => onNodeMousedown(e, n));
+        layerNodes.appendChild(g);
+    }
+
+    function renderFlow(f) {
+        const fromN = nodes.find(n => n.id === f.from);
+        const toN = nodes.find(n => n.id === f.to);
+        if (!fromN || !toN) return;
+
+        const isSelected = selected && selected.type === 'flow' && selected.id === f.id;
+        const mx = (fromN.x + toN.x) / 2, my = (fromN.y + toN.y) / 2;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', fromN.x); line.setAttribute('y1', fromN.y);
+        line.setAttribute('x2', toN.x);   line.setAttribute('y2', toN.y);
+        line.setAttribute('stroke', isSelected ? '#818cf8' : '#94a3b8');
+        line.setAttribute('stroke-width', isSelected ? 2 : 1.5);
+        line.setAttribute('marker-end', isSelected ? 'url(#arrow-selected)' : 'url(#arrow)');
+        line.style.cursor = 'pointer';
+        line.addEventListener('click', () => { selected = {type:'flow', id: f.id}; showProps(f); renderAll(); });
+        layerFlows.appendChild(line);
+
+        // Label
+        if (f.label) {
+            const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+            const txtW = f.label.length * 6.5 + 8;
+            bg.setAttribute('x', mx - txtW/2); bg.setAttribute('y', my - 10);
+            bg.setAttribute('width', txtW); bg.setAttribute('height', 16);
+            bg.setAttribute('rx', 4); bg.setAttribute('fill', '#0c0c14');
+            layerFlows.appendChild(bg);
+            const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+            txt.setAttribute('x', mx); txt.setAttribute('y', my + 1);
+            txt.setAttribute('text-anchor','middle'); txt.setAttribute('fill','#94a3b8');
+            txt.setAttribute('font-size','10'); txt.setAttribute('font-family','Outfit,sans-serif');
+            txt.textContent = f.label;
+            layerFlows.appendChild(txt);
+        }
+    }
+
+    function onNodeMousedown(e, n) {
+        e.stopPropagation();
+        if (tool === 'flow') {
+            if (!flowStart) {
+                flowStart = n.id;
+                // Highlight
+                const g = document.getElementById('node-' + n.id);
+                if(g) g.style.opacity = '0.6';
+            } else if (flowStart !== n.id) {
+                snapshot();
+                flows.push({ id: 'f' + idCtr++, from: flowStart, to: n.id, label: 'data' });
+                flowStart = null;
+                renderAll();
+            }
+        } else if (tool === 'select') {
+            selected = {type: 'node', id: n.id};
+            showProps(n);
+            dragging = n;
+            const pt = getSVGPt(e);
+            dragOffset = { x: pt.x - n.x, y: pt.y - n.y };
+        }
+    }
+
+    svg.addEventListener('click', e => {
+        if (e.target === svg || e.target.closest('.canvas-dot-grid') || e.target.tagName === 'svg') {
+            if (tool !== 'select' && tool !== 'flow') {
+                const pt = getSVGPt(e);
+                snapshot();
+                const labels = { process: 'Process', entity: 'Entity', store: 'Store' };
+                nodes.push({ id: 'n' + idCtr++, kind: tool, x: pt.x, y: pt.y, label: labels[tool] || tool });
+                renderAll();
+            } else if (tool === 'select') {
+                selected = null;
+                flowStart = null;
+                hidePropPanel();
+                renderAll();
+            }
+        }
+    });
+
+    svg.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const pt = getSVGPt(e);
+        dragging.x = pt.x - dragOffset.x;
+        dragging.y = pt.y - dragOffset.y;
+        renderAll();
+    });
+
+    svg.addEventListener('mouseup', () => { if(dragging){ snapshot(); dragging = null; } });
+
+    function showProps(item) {
+        document.getElementById('prop-panel').classList.add('visible');
+        document.getElementById('prop-label').value = item.label || '';
+        document.getElementById('prop-color').value = item.color || (item.kind ? TYPE_COLOR[item.kind] : '#94a3b8');
+    }
+
+    function hidePropPanel() {
+        document.getElementById('prop-panel').classList.remove('visible');
+    }
+
+    function applyProps() {
+        if (!selected) return;
+        const label = document.getElementById('prop-label').value;
+        const color = document.getElementById('prop-color').value;
+        snapshot();
+        if (selected.type === 'node') {
+            const n = nodes.find(n => n.id === selected.id);
+            if (n) { n.label = label; n.color = color; }
+        } else if (selected.type === 'flow') {
+            const f = flows.find(f => f.id === selected.id);
+            if (f) { f.label = label; f.color = color; }
+        }
+        renderAll();
+    }
+
+    function deleteSelected() {
+        if (!selected) return;
+        snapshot();
+        if (selected.type === 'node') {
+            nodes = nodes.filter(n => n.id !== selected.id);
+            flows = flows.filter(f => f.from !== selected.id && f.to !== selected.id);
+        } else if (selected.type === 'flow') {
+            flows = flows.filter(f => f.id !== selected.id);
+        }
+        selected = null;
+        hidePropPanel();
+        renderAll();
+    }
+
+    function undo() {
+        if (!history.length) return;
+        const state = JSON.parse(history.pop());
+        nodes = state.nodes; flows = state.flows;
+        selected = null; hidePropPanel(); renderAll();
+    }
+
+    function clearAll() {
+        if (!confirm('Clear the entire diagram?')) return;
+        snapshot(); nodes = []; flows = []; selected = null; hidePropPanel(); renderAll();
+    }
+
+    function exportPNG() {
+        const rect = svg.getBoundingClientRect();
+        const serializer = new XMLSerializer();
+        const svgStr = serializer.serializeToString(svg);
+        const canvas = document.createElement('canvas');
+        canvas.width = rect.width * 2; canvas.height = rect.height * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0c0c14'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        const img = new Image();
+        const blob = new Blob([svgStr], {type:'image/svg+xml'});
+        const url = URL.createObjectURL(blob);
+        img.onload = () => { ctx.drawImage(img,0,0,canvas.width,canvas.height); canvas.toBlob(b=>{ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='dfd.png';a.click();}, 'image/png'); URL.revokeObjectURL(url); };
+        img.src = url;
+    }
+
+    function exportSVG() {
+        const serializer = new XMLSerializer();
+        const svgStr = serializer.serializeToString(svg);
+        const blob = new Blob([svgStr], {type:'image/svg+xml'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dfd.svg'; a.click();
+    }
+
+    // Load a starter demo
+    setTimeout(() => {
+        nodes = [
+            { id: 'n1', kind: 'entity', x: 120, y: 200, label: 'User' },
+            { id: 'n2', kind: 'process', x: 340, y: 200, label: 'Login' },
+            { id: 'n3', kind: 'store', x: 560, y: 200, label: 'User DB' },
+            { id: 'n4', kind: 'process', x: 340, y: 340, label: 'Dashboard' },
+        ];
+        flows = [
+            { id: 'f1', from: 'n1', to: 'n2', label: 'credentials' },
+            { id: 'f2', from: 'n2', to: 'n3', label: 'query' },
+            { id: 'f3', from: 'n3', to: 'n2', label: 'user record' },
+            { id: 'f4', from: 'n2', to: 'n4', label: 'auth token' },
+        ];
+        idCtr = 10;
+        renderAll();
+    }, 100);
+
+    return { setTool, undo, clearAll, exportPNG, exportSVG, applyProps, deleteSelected };
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+{% block title %}HQL to SQL Converter — Free Hibernate HQL Translator{% endblock %}
+
+{% block meta_description %}Convert Hibernate HQL (JPQL) queries to standard SQL online for free. Converts entity names, camelCase column names to snake_case, JOIN paths, named parameters and more. 100% browser-based.{% endblock %}
+{% block meta_keywords %}HQL to SQL converter, Hibernate query language converter, JPQL to SQL, HQL translator online, hibernate sql converter, JPA query converter, camelCase to snake_case SQL{% endblock %}
+
+{% block canonical %}https://ai-code-masker.vercel.app/hql-to-sql{% endblock %}
+{% block og_url %}https://ai-code-masker.vercel.app/hql-to-sql{% endblock %}
+{% block og_title %}HQL to SQL Converter | Free Hibernate Query Translator{% endblock %}
+{% block og_description %}Convert Hibernate HQL / JPQL to standard SQL instantly — entity names, column names, joins, named params. No install, no account, 100% free.{% endblock %}
+{% block tw_url %}https://ai-code-masker.vercel.app/hql-to-sql{% endblock %}
+{% block tw_title %}Free HQL to SQL Converter{% endblock %}
+{% block tw_description %}Convert Hibernate HQL/JPQL queries to SQL instantly — camelCase columns, entity names, JOIN paths. 100% browser-based, free.{% endblock %}
+
+{% block extra_styles %}
+    .editor-area {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(99,102,241,0.2);
+        border-radius: 12px;
+        min-height: 300px;
+        color: #e2e8f0;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.85rem;
+        padding: 18px;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s;
+        width: 100%;
+        line-height: 1.7;
+        box-sizing: border-box;
+    }
+    .editor-area:focus { border-color: rgba(99,102,241,0.5); }
+    .editor-area::placeholder { color: #475569; }
+    .convert-btn {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: #fff; border: none; padding: 11px 32px;
+        border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+        cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em;
+    }
+    .convert-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 25px -8px rgba(99,102,241,0.5); }
+    .action-btn {
+        background: rgba(99,102,241,0.1); color: #a5b4fc;
+        border: 1px solid rgba(99,102,241,0.25); padding: 8px 16px;
+        border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+        cursor: pointer; transition: background 0.2s;
+    }
+    .action-btn:hover { background: rgba(99,102,241,0.2); }
+    .badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 9px; font-weight: 800; letter-spacing: 1px;
+        text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    }
+    .badge-info { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+    .note-box {
+        background: rgba(99,102,241,0.06);
+        border: 1px solid rgba(99,102,241,0.15);
+        border-radius: 10px; padding: 14px 18px;
+        font-size: 0.8rem; color: #94a3b8; line-height: 1.6;
+    }
+    .conv-log-item {
+        display: flex; align-items: flex-start; gap: 8px;
+        font-size: 0.75rem; color: #94a3b8; padding: 3px 0;
+    }
+    .conv-log-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        margin-top: 5px; flex-shrink: 0;
+    }
+    .example-btn {
+        font-size: 10px; font-weight: 700; color: #818cf8;
+        cursor: pointer; background: none; border: none; padding: 0;
+        transition: color 0.2s;
+    }
+    .example-btn:hover { color: #a5b4fc; }
+{% endblock %}
+
+{% block content %}
+<div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+    <h2 class="text-xs font-black text-white tracking-[4px] uppercase">HQL &rarr; SQL Converter</h2>
+    <div class="flex items-center gap-2">
+        <span class="badge badge-info">Hibernate / JPQL</span>
+        <span class="badge badge-info">Client-Side</span>
+    </div>
+</div>
+
+<div class="flex-grow px-6 md:px-8 py-6 overflow-y-auto">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Main Editor Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Left: HQL Input -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">HQL / JPQL Input</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[9px] text-slate-600 uppercase tracking-wider">Examples:</span>
+                        <button class="example-btn" onclick="loadExample('select')">SELECT</button>
+                        <span class="text-slate-700">|</span>
+                        <button class="example-btn" onclick="loadExample('join')">JOIN</button>
+                        <span class="text-slate-700">|</span>
+                        <button class="example-btn" onclick="loadExample('aggregate')">Aggregate</button>
+                        <span class="text-slate-700">|</span>
+                        <button class="example-btn" onclick="loadExample('update')">UPDATE</button>
+                    </div>
+                </div>
+                <textarea id="hql-input" class="editor-area"
+                    placeholder="SELECT e.firstName, e.lastName FROM Employee e WHERE e.salary > :minSalary ORDER BY e.lastName ASC"></textarea>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="convertHQL()" class="convert-btn">Convert to SQL &rarr;</button>
+                    <button onclick="clearAll()" class="action-btn">Clear</button>
+                    <button onclick="swapEditors()" class="action-btn" title="Swap HQL/SQL editors">&#8644; Swap</button>
+                </div>
+            </div>
+
+            <!-- Right: SQL Output -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">SQL Output</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copySQL()" class="action-btn">Copy SQL</button>
+                        <button onclick="formatSQL()" class="action-btn">Format</button>
+                    </div>
+                </div>
+                <textarea id="sql-output" class="editor-area"
+                    placeholder="Converted SQL will appear here..." readonly></textarea>
+                <div id="conv-log" class="space-y-0.5 hidden p-3 bg-slate-900/40 rounded-xl border border-white/5"></div>
+            </div>
+        </div>
+
+        <!-- Conversion Notes -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="note-box">
+                <div class="text-[9px] font-black text-indigo-400 tracking-widest uppercase mb-2">Entity &amp; Column Names</div>
+                Java entity names (e.g. <code class="text-indigo-300">Employee</code>) map to snake_case tables (<code class="text-indigo-300">employee</code>). Java camelCase properties (e.g. <code class="text-indigo-300">e.firstName</code>) map to snake_case columns (<code class="text-indigo-300">e.first_name</code>).
+            </div>
+            <div class="note-box">
+                <div class="text-[9px] font-black text-indigo-400 tracking-widest uppercase mb-2">Parameters &amp; Joins</div>
+                Named params like <code class="text-indigo-300">:minSalary</code> become positional <code class="text-indigo-300">?</code> (JDBC-style). Association paths like <code class="text-indigo-300">JOIN e.department d</code> expand to <code class="text-indigo-300">JOIN department d ON d.id = e.department_id</code>.
+            </div>
+            <div class="note-box">
+                <div class="text-[9px] font-black text-indigo-400 tracking-widest uppercase mb-2">Implicit Paths</div>
+                Three-level paths like <code class="text-indigo-300">e.department.name</code> are expanded to the related table reference (<code class="text-indigo-300">department.name</code>) with a logged warning to add the JOIN manually.
+            </div>
+        </div>
+
+        <!-- Supported Conversions Reference -->
+        <div class="glass-card rounded-2xl p-5">
+            <div class="text-[9px] font-black text-slate-500 tracking-widest uppercase mb-4">Supported Conversions</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-wider mb-2">Clauses</div>
+                    <ul class="space-y-1 text-[11px] text-slate-400">
+                        <li>SELECT ... FROM</li>
+                        <li>WHERE conditions</li>
+                        <li>GROUP BY / HAVING</li>
+                        <li>ORDER BY ASC/DESC</li>
+                        <li>DISTINCT</li>
+                        <li>UPDATE / DELETE</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-wider mb-2">Mappings</div>
+                    <ul class="space-y-1 text-[11px] text-slate-400">
+                        <li>Entity &rarr; table name</li>
+                        <li>camelCase &rarr; snake_case</li>
+                        <li>JOIN FETCH &rarr; JOIN</li>
+                        <li>:param &rarr; ?</li>
+                        <li>Implicit path joins</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-wider mb-2">Functions</div>
+                    <ul class="space-y-1 text-[11px] text-slate-400">
+                        <li>COUNT, SUM, AVG</li>
+                        <li>MIN, MAX</li>
+                        <li>UPPER, LOWER</li>
+                        <li>CONCAT, LENGTH</li>
+                        <li>SIZE() &rarr; comment</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-wider mb-2">Operators</div>
+                    <ul class="space-y-1 text-[11px] text-slate-400">
+                        <li>IN, NOT IN</li>
+                        <li>IS NULL / IS NOT NULL</li>
+                        <li>LIKE / NOT LIKE</li>
+                        <li>BETWEEN</li>
+                        <li>EXISTS</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ──────────────────────────────────────────────────────────────────────────────
+// HQL → SQL Converter Engine
+// ──────────────────────────────────────────────────────────────────────────────
+
+const EXAMPLES = {
+    select: [
+        "SELECT e.firstName, e.lastName, e.emailAddress",
+        "FROM Employee e",
+        "WHERE e.department.name = 'Engineering'",
+        "  AND e.salary > :minSalary",
+        "  AND e.isActive = true",
+        "ORDER BY e.lastName ASC"
+    ].join("\n"),
+
+    join: [
+        "SELECT e.firstName, e.lastName, d.departmentName, p.projectCode",
+        "FROM Employee e",
+        "INNER JOIN e.department d",
+        "LEFT JOIN FETCH e.projects p",
+        "WHERE e.isActive = true",
+        "  AND d.locationCity = :city",
+        "ORDER BY d.departmentName, e.lastName"
+    ].join("\n"),
+
+    aggregate: [
+        "SELECT d.departmentName, COUNT(e), AVG(e.annualSalary), MAX(e.hireDate)",
+        "FROM Employee e",
+        "INNER JOIN e.department d",
+        "WHERE e.isActive = true",
+        "GROUP BY d.departmentName",
+        "HAVING COUNT(e) > :minCount",
+        "ORDER BY AVG(e.annualSalary) DESC"
+    ].join("\n"),
+
+    update: [
+        "UPDATE Employee e",
+        "SET e.salaryAmount = e.salaryAmount * 1.1, e.lastModifiedDate = :today",
+        "WHERE e.department.name = 'Engineering'",
+        "  AND e.isActive = true"
+    ].join("\n")
+};
+
+function loadExample(type) {
+    document.getElementById('hql-input').value = EXAMPLES[type] || '';
+    convertHQL();
+}
+
+function clearAll() {
+    document.getElementById('hql-input').value = '';
+    document.getElementById('sql-output').value = '';
+    hideLog();
+}
+
+function swapEditors() {
+    const hql = document.getElementById('hql-input');
+    const sql = document.getElementById('sql-output');
+    const tmp = hql.value;
+    hql.value = sql.value;
+    sql.removeAttribute('readonly');
+    sql.value = tmp;
+    sql.setAttribute('readonly', '');
+}
+
+function copySQL() {
+    const txt = document.getElementById('sql-output').value;
+    if (!txt) return;
+    navigator.clipboard.writeText(txt).catch(() => {});
+    showToast('SQL copied!', '#10b981');
+}
+
+function showToast(msg, bg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+        position: 'fixed', bottom: '24px', right: '24px',
+        background: bg || 'rgba(79,70,229,0.9)',
+        color: '#fff', padding: '10px 20px', borderRadius: '12px',
+        fontSize: '13px', zIndex: '9999',
+        fontFamily: "'Outfit', sans-serif", fontWeight: '700',
+        backdropFilter: 'blur(10px)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => {
+        t.style.transition = 'opacity 0.4s';
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 400);
+    }, 1800);
+}
+
+// ── Utilities ────────────────────────────────────────────────────────────────
+
+/** camelCase / PascalCase → snake_case */
+function toSnake(str) {
+    return str
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+        .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+        .toLowerCase();
+}
+
+const SQL_KEYWORDS = new Set([
+    'SELECT','FROM','WHERE','JOIN','ON','AND','OR','NOT','IN','IS','NULL','LIKE',
+    'BETWEEN','GROUP','ORDER','HAVING','DISTINCT','INNER','LEFT','RIGHT','OUTER',
+    'FETCH','AS','BY','ASC','DESC','UPDATE','DELETE','SET','INSERT','INTO','VALUES',
+    'EXISTS','CASE','WHEN','THEN','ELSE','END','COUNT','SUM','AVG','MIN','MAX',
+    'UPPER','LOWER','CONCAT','LENGTH','TRUE','FALSE','LIMIT','OFFSET'
+]);
+
+/**
+ * Convert all alias.property references in a fragment to alias.snake_property.
+ * Skips pairs where either side is a plain SQL keyword.
+ */
+function convertProps(fragment, log) {
+    return fragment.replace(
+        /\b([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)\b/g,
+        (m, alias, prop) => {
+            if (SQL_KEYWORDS.has(alias.toUpperCase()) || SQL_KEYWORDS.has(prop.toUpperCase())) return m;
+            const snakeProp = toSnake(prop);
+            if (snakeProp !== prop) {
+                log.push({ color: '#34d399', text: `Column: ${alias}.${prop} → ${alias}.${snakeProp}` });
+            }
+            return `${alias}.${snakeProp}`;
+        }
+    );
+}
+
+// ── Main Converter ────────────────────────────────────────────────────────────
+
+function convertHQL() {
+    const raw = document.getElementById('hql-input').value.trim();
+    if (!raw) { showToast('Please enter HQL first', '#ef4444'); return; }
+
+    const log = [];
+    // Normalise: collapse runs of whitespace/newlines to single space
+    let sql = raw.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // ── 1. Named params :name → ? ─────────────────────────────────────────
+    sql = sql.replace(/:([a-zA-Z][a-zA-Z0-9_]*)/g, (_, p) => {
+        log.push({ color: '#818cf8', text: `Param :${p} → ?` });
+        return '?';
+    });
+
+    // ── 2. FETCH JOINs → plain JOINs ─────────────────────────────────────
+    [
+        [/\bLEFT\s+(?:OUTER\s+)?JOIN\s+FETCH\b/gi, 'LEFT JOIN FETCH → LEFT JOIN', 'LEFT JOIN'],
+        [/\bINNER\s+JOIN\s+FETCH\b/gi,              'INNER JOIN FETCH → INNER JOIN', 'INNER JOIN'],
+        [/\bJOIN\s+FETCH\b/gi,                      'JOIN FETCH → JOIN', 'JOIN'],
+    ].forEach(([re, note, rep]) => {
+        if (re.test(sql)) {
+            log.push({ color: '#f59e0b', text: note });
+            sql = sql.replace(re, rep);
+        }
+    });
+
+    // ── 3. JOIN alias.Relation alias → JOIN table alias ON alias.id = parent.fk ──
+    sql = sql.replace(
+        /((?:LEFT\s+(?:OUTER\s+)?|INNER\s+|RIGHT\s+)?JOIN)\s+([a-z][a-zA-Z0-9_]*)\.([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)/gi,
+        (_, jtype, parentAlias, rel, alias) => {
+            const tbl = toSnake(rel);
+            const fk  = toSnake(rel) + '_id';
+            log.push({ color: '#818cf8', text: `JOIN path: ${parentAlias}.${rel} → ${tbl} ${alias} (FK: ${parentAlias}.${fk})` });
+            return `${jtype.trim()} ${tbl} ${alias} ON ${alias}.id = ${parentAlias}.${fk}`;
+        }
+    );
+
+    // ── 4. FROM EntityName alias → FROM entity_table alias ───────────────
+    sql = sql.replace(
+        /\bFROM\s+([A-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)/g,
+        (_, entity, alias) => {
+            const tbl = toSnake(entity);
+            log.push({ color: '#34d399', text: `Entity: ${entity} → table ${tbl} (alias: ${alias})` });
+            return `FROM ${tbl} ${alias}`;
+        }
+    );
+
+    // ── 5. UPDATE EntityName alias → UPDATE entity_table alias ───────────
+    sql = sql.replace(
+        /\bUPDATE\s+([A-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)/g,
+        (_, entity, alias) => {
+            const tbl = toSnake(entity);
+            log.push({ color: '#34d399', text: `UPDATE entity: ${entity} → ${tbl}` });
+            return `UPDATE ${tbl} ${alias}`;
+        }
+    );
+
+    // ── 6. DELETE FROM EntityName alias ──────────────────────────────────
+    sql = sql.replace(
+        /\bDELETE\s+FROM\s+([A-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)/gi,
+        (_, entity, alias) => {
+            const tbl = toSnake(entity);
+            log.push({ color: '#34d399', text: `DELETE entity: ${entity} → ${tbl}` });
+            return `DELETE FROM ${tbl} ${alias}`;
+        }
+    );
+
+    // ── 7. Three-level path alias.Entity.prop → entity_table.snake_prop ──
+    sql = sql.replace(
+        /\b([a-z][a-zA-Z0-9_]*)\.([A-Z][a-zA-Z0-9_]*)\.([a-zA-Z][a-zA-Z0-9_]*)\b/g,
+        (_, alias, rel, prop) => {
+            const tbl       = toSnake(rel);
+            const snakeProp = toSnake(prop);
+            log.push({ color: '#f59e0b', text: `Implicit path: ${alias}.${rel}.${prop} → ${tbl}.${snakeProp} (add JOIN manually)` });
+            return `${tbl}.${snakeProp}`;
+        }
+    );
+
+    // ── 8. Two-level alias.camelCaseProp → alias.snake_case_prop ─────────
+    sql = convertProps(sql, log);
+
+    // ── 9. HQL-only functions ─────────────────────────────────────────────
+    sql = sql.replace(/\bSIZE\s*\(\s*([^)]+?)\s*\)/gi, (_, arg) => {
+        log.push({ color: '#f97316', text: `SIZE(${arg}) → replace with COUNT subquery` });
+        return `/* SIZE(${arg.trim()}) — replace with COUNT subquery */ 0`;
+    });
+    sql = sql.replace(/\b(ELEMENTS|INDICES)\s*\(\s*([^)]+?)\s*\)/gi, (_, fn, arg) => {
+        log.push({ color: '#f97316', text: `${fn}(${arg}) is HQL-only — use a subquery` });
+        return `/* ${fn}(${arg.trim()}) — use subquery */ NULL`;
+    });
+
+    // ── 10. Constructor expression NEW pkg.Dto(...) ───────────────────────
+    sql = sql.replace(/\bNEW\s+[a-zA-Z0-9_.]+\s*\(/gi, () => {
+        log.push({ color: '#f97316', text: 'Constructor NEW Dto(...) stripped — map columns manually' });
+        return '(';
+    });
+
+    // ── 11. TYPE() → DTYPE (single-table inheritance discriminator) ───────
+    sql = sql.replace(/\bTYPE\s*\(\s*([^)]+?)\s*\)/gi, (_, arg) => {
+        log.push({ color: '#f97316', text: `TYPE(${arg.trim()}) → ${arg.trim()}.DTYPE` });
+        return `${arg.trim()}.DTYPE`;
+    });
+
+    // ── 12. Add SELECT * if HQL starts with FROM (no SELECT) ─────────────
+    if (/^\s*FROM\b/i.test(sql)) {
+        sql = 'SELECT * ' + sql;
+        log.push({ color: '#94a3b8', text: 'No SELECT clause detected — added SELECT *' });
+    }
+
+    // ── 13. Final cosmetic cleanup ────────────────────────────────────────
+    sql = sql.replace(/\s{2,}/g, ' ').trim();
+
+    document.getElementById('sql-output').value = sql;
+    renderLog(log);
+}
+
+// ── Format SQL ────────────────────────────────────────────────────────────────
+
+function formatSQL() {
+    let sql = document.getElementById('sql-output').value.trim();
+    if (!sql) return;
+
+    // Uppercase all SQL keywords
+    const KW = ['SELECT','DISTINCT','FROM','WHERE','AND','OR','NOT','IN','IS','NULL',
+                 'LIKE','BETWEEN','EXISTS','INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL OUTER JOIN',
+                 'JOIN','GROUP BY','HAVING','ORDER BY','LIMIT','OFFSET','ON','SET',
+                 'UPDATE','DELETE','INSERT INTO','VALUES','CASE','WHEN','THEN','ELSE','END','AS',
+                 'COUNT','SUM','AVG','MIN','MAX','UPPER','LOWER','ASC','DESC','TRUE','FALSE'];
+    KW.forEach(k => {
+        sql = sql.replace(new RegExp('\\b' + k.replace(/\s/g,'\\s+') + '\\b', 'gi'), k);
+    });
+
+    // Break onto new lines before major clauses
+    const BREAKS = ['FROM','WHERE','INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL OUTER JOIN',
+                    'JOIN','GROUP BY','HAVING','ORDER BY','LIMIT','OFFSET'];
+    BREAKS.forEach(k => {
+        sql = sql.replace(new RegExp('\\b(' + k.replace(/\s/g,'\\s+') + ')\\b', 'g'), '\n$1');
+    });
+
+    // Indent AND / OR
+    sql = sql.replace(/\b(AND|OR)\b/g, '\n  $1');
+
+    // Pretty-print SELECT column list (one per line, indented)
+    sql = sql.replace(/^(SELECT(?:\s+DISTINCT)?)\s+(.+?)(?=\nFROM)/m, (_, sel, cols) => {
+        const parts = cols.split(',').map(c => '  ' + c.trim()).join(',\n');
+        return `${sel}\n${parts}`;
+    });
+
+    // Collapse multiple blank lines
+    sql = sql.replace(/\n{2,}/g, '\n').trim();
+    document.getElementById('sql-output').value = sql;
+}
+
+// ── Log helpers ───────────────────────────────────────────────────────────────
+
+function renderLog(log) {
+    const el = document.getElementById('conv-log');
+    if (!log.length) { hideLog(); return; }
+    el.classList.remove('hidden');
+    el.innerHTML =
+        `<div style="font-size:9px;font-weight:900;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Conversion Notes (${log.length})</div>` +
+        log.map(l =>
+            `<div class="conv-log-item">` +
+            `<div class="conv-log-dot" style="background:${l.color}"></div>` +
+            `<span>${escHtml(l.text)}</span></div>`
+        ).join('');
+}
+
+function hideLog() {
+    const el = document.getElementById('conv-log');
+    el.classList.add('hidden');
+    el.innerHTML = '';
+}
+
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Auto-load default example
+window.addEventListener('DOMContentLoaded', () => loadExample('select'));
+</script>
+{% endblock %}

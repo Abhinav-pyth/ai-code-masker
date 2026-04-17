@@ -74,9 +74,21 @@
     </url>
     <url>
         <loc>https://ai-code-masker.vercel.app/aws-cloudwatch</loc>
-        <lastmod>2026-04-08</lastmod>
+        <lastmod>2026-04-17</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://ai-code-masker.vercel.app/dfd-creator</loc>
+        <lastmod>2026-04-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.75</priority>
+    </url>
+    <url>
+        <loc>https://ai-code-masker.vercel.app/hql-to-sql</loc>
+        <lastmod>2026-04-17</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
     </url>
 
     <!-- ===== ENCODING / CONVERSION TOOLS ===== -->

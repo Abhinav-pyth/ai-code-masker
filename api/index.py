@@ -175,6 +175,14 @@ def java_to_json():
 def aws_cloudwatch():
     return render_template('aws_cloudwatch.html', active_page='aws_cloudwatch')
 
+@app.route('/dfd-creator')
+def dfd_creator():
+    return render_template('dfd_creator.html', active_page='dfd_creator')
+
+@app.route('/hql-to-sql')
+def hql_to_sql():
+    return render_template('hql_to_sql.html', active_page='hql_to_sql')
+
 @app.route('/api/proxy', methods=['POST'])
 def api_proxy():
     try:
