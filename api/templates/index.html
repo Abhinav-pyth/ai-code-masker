@@ -77,7 +77,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="relative overflow-hidden">
+<div class="page-scroll">
+<div class="relative">
     <div class="hero-gradient"></div>
 
     <!-- Hero Section -->
@@ -221,110 +222,20 @@
         </div>
     </section>
 
-    <!-- Developer Tools Showcase -->
-    <section class="max-w-7xl mx-auto px-6 md:px-12 pb-32">
-        <div class="text-center mb-12">
-            <h2 class="text-2xl font-black text-white uppercase tracking-widest mb-3">More Developer Tools</h2>
-            <p class="text-slate-500 text-sm">All tools run 100% in your browser — no data leaves your machine.</p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-
-            <!-- DFD Creator -->
-            <a href="/dfd-creator" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-500/15 text-indigo-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2m0 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <h3 class="text-xs font-black text-white uppercase tracking-widest">DFD Creator</h3>
-                        <span class="text-[8px] font-black bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded uppercase tracking-wider">New</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Draw Data Flow Diagrams with drag-and-drop canvas. Export as PNG or SVG.</p>
-                </div>
+    <!-- Developer Tools CTA -->
+    <section class="max-w-4xl mx-auto px-6 pb-32 text-center">
+        <div class="glass-card rounded-3xl p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="text-left">
+                <h2 class="text-xl font-black text-white uppercase tracking-widest mb-2">30+ Developer Tools</h2>
+                <p class="text-slate-400 text-sm">API Tester, SQL Optimizer, HQL→SQL, DFD Creator, JSON Editor, Base64, Image tools, QR Generator and more — all free and client-side.</p>
+            </div>
+            <a href="/tools" class="btn-premium px-8 py-4 rounded-2xl text-sm shrink-0 inline-flex items-center gap-2">
+                Browse All Tools
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </a>
-
-            <!-- HQL to SQL -->
-            <a href="/hql-to-sql" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-500/15 text-purple-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <h3 class="text-xs font-black text-white uppercase tracking-widest">HQL → SQL</h3>
-                        <span class="text-[8px] font-black bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded uppercase tracking-wider">New</span>
-                    </div>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Convert Hibernate HQL / JPQL queries to standard SQL — camelCase columns included.</p>
-                </div>
-            </a>
-
-            <!-- API Tester -->
-            <a href="/api-tester" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500/15 text-amber-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest mb-1">API Tester</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Test REST APIs with GET/POST/PUT/DELETE. Supports localhost URLs directly from browser.</p>
-                </div>
-            </a>
-
-            <!-- SQL Optimizer -->
-            <a href="/sql-optimizer" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-sky-500/15 text-sky-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest mb-1">SQL Optimizer</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Detect anti-patterns in SQL queries and get optimization suggestions instantly.</p>
-                </div>
-            </a>
-
-            <!-- JSON Editor -->
-            <a href="/json-editor" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500/15 text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest mb-1">JSON Editor</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Format, validate and edit JSON with visual tree view and diff highlighting.</p>
-                </div>
-            </a>
-
-            <!-- JWT Tool -->
-            <a href="/jwt-tool" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-rose-500/15 text-rose-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest mb-1">JWT Inspector</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Decode and inspect JWT tokens. View header, payload and verify signature.</p>
-                </div>
-            </a>
-
-            <!-- Base64 Tool -->
-            <a href="/base64" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-indigo-500/30 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-teal-500/15 text-teal-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-white uppercase tracking-widest mb-1">Base64 Tool</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Encode and decode Base64 strings. Also convert Base64 to PDF or images.</p>
-                </div>
-            </a>
-
-            <!-- Clinical Parser -->
-            <a href="/clinical-parser" class="glass-card rounded-2xl p-5 flex flex-col gap-3 group hover:border-emerald-500/20 transition-all">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500/15 text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest mb-1">Clinical Parser</h3>
-                    <p class="text-[11px] text-slate-500 leading-relaxed">Parse HL7 v2, C-CDA and FHIR clinical documents with patient summary extraction.</p>
-                </div>
-            </a>
-
         </div>
     </section>
+</div>
 </div>
 {% endblock %}
 

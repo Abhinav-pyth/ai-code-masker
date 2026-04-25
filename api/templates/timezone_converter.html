@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Timezone Converter — EST, UTC, IST & More{% endblock %}
+{% block meta_description %}Convert datetime between EST, UTC, IST and 30+ timezones instantly. Free, browser-based timezone converter for developers.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/timezone-converter{% endblock %}
+
+{% block extra_styles %}
+.tz-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: #94a3b8; cursor: pointer; transition: all 0.2s; user-select: none;
+    letter-spacing: 0.5px; text-transform: uppercase;
+}
+.tz-chip:hover { border-color: rgba(99,102,241,0.3); color: #c7d2fe; }
+.tz-chip.active {
+    background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4);
+    color: #a5b4fc; box-shadow: 0 0 12px rgba(99,102,241,0.15);
+}
+.tz-chip.active .chip-dot { background: #818cf8; box-shadow: 0 0 6px #818cf8; }
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #475569; transition: all 0.2s; }
+
+.result-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-radius: 14px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.25s; cursor: pointer;
+}
+.result-row:hover {
+    border-color: rgba(99,102,241,0.25); background: rgba(255,255,255,0.04);
+    transform: translateX(4px);
+}
+.result-row .tz-name { font-size: 10px; font-weight: 900; color: #6366f1; letter-spacing: 2px; text-transform: uppercase; }
+.result-row .tz-time { font-size: 18px; font-weight: 800; color: #fff; font-family: 'Fira Code', monospace; }
+.result-row .tz-date { font-size: 11px; color: #64748b; font-weight: 500; }
+.result-row .tz-offset { font-size: 10px; color: #475569; font-weight: 700; letter-spacing: 1px; }
+
+.live-clock {
+    font-family: 'Fira Code', monospace; font-size: 32px; font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+}
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-glow 2s infinite; }
+@keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-scroll">
+<div class="max-w-5xl mx-auto px-6 md:px-12 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-5">
+            <span class="pulse-dot"></span> Live · Browser-Based
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-3">Timezone Converter</h1>
+        <p class="text-slate-400 text-sm max-w-lg mx-auto">Enter a datetime in any timezone, get instant conversions across all selected zones.</p>
+    </div>
+
+    <!-- Live Clock -->
+    <div class="glass-card rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+            <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Your Local Time</div>
+            <div class="live-clock" id="live-clock">--:--:--</div>
+        </div>
+        <div class="text-right">
+            <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Detected Timezone</div>
+            <div class="text-sm font-bold text-slate-300" id="detected-tz">--</div>
+            <div class="text-[10px] text-slate-500 font-mono" id="detected-offset">--</div>
+        </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Input DateTime</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Date & Time</label>
+                <input type="datetime-local" id="input-datetime"
+                    class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono outline-none focus:border-indigo-500/40 transition-all"
+                    step="1">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Source Timezone</label>
+                <select id="source-tz"
+                    class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/40 transition-all appearance-none cursor-pointer">
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-4">
+            <button onclick="convertNow()" class="btn-premium px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Convert
+            </button>
+            <button onclick="useCurrentTime()" class="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:bg-white/10 transition-all">
+                Use Now
+            </button>
+        </div>
+    </div>
+
+    <!-- Target Timezones -->
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Target Timezones</h3>
+            <div class="flex gap-2">
+                <button onclick="selectAll()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-all">All</button>
+                <span class="text-slate-600">|</span>
+                <button onclick="selectNone()" class="text-[9px] font-bold text-slate-500 hover:text-rose-400 uppercase tracking-widest transition-all">None</button>
+            </div>
+        </div>
+        <div id="tz-chips" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- Results -->
+    <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Conversion Results</h3>
+            <button onclick="copyAllResults()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest transition-all">Copy All</button>
+        </div>
+        <div id="results-container" class="space-y-3">
+            <div class="text-center py-12 text-slate-600 text-xs uppercase tracking-widest font-bold">
+                Select timezones and click Convert
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const TIMEZONES = [
+    { id: 'UTC', label: 'UTC', zone: 'UTC' },
+    { id: 'EST', label: 'EST (New York)', zone: 'America/New_York' },
+    { id: 'CST', label: 'CST (Chicago)', zone: 'America/Chicago' },
+    { id: 'MST', label: 'MST (Denver)', zone: 'America/Denver' },
+    { id: 'PST', label: 'PST (Los Angeles)', zone: 'America/Los_Angeles' },
+    { id: 'IST', label: 'IST (India)', zone: 'Asia/Kolkata' },
+    { id: 'GMT', label: 'GMT (London)', zone: 'Europe/London' },
+    { id: 'CET', label: 'CET (Berlin)', zone: 'Europe/Berlin' },
+    { id: 'EET', label: 'EET (Helsinki)', zone: 'Europe/Helsinki' },
+    { id: 'JST', label: 'JST (Tokyo)', zone: 'Asia/Tokyo' },
+    { id: 'CST_CN', label: 'CST (Shanghai)', zone: 'Asia/Shanghai' },
+    { id: 'KST', label: 'KST (Seoul)', zone: 'Asia/Seoul' },
+    { id: 'SGT', label: 'SGT (Singapore)', zone: 'Asia/Singapore' },
+    { id: 'AEST', label: 'AEST (Sydney)', zone: 'Australia/Sydney' },
+    { id: 'NZST', label: 'NZST (Auckland)', zone: 'Pacific/Auckland' },
+    { id: 'AST', label: 'AST (Dubai)', zone: 'Asia/Dubai' },
+    { id: 'BRT', label: 'BRT (São Paulo)', zone: 'America/Sao_Paulo' },
+    { id: 'HST', label: 'HST (Honolulu)', zone: 'Pacific/Honolulu' },
+    { id: 'AKST', label: 'AKST (Anchorage)', zone: 'America/Anchorage' },
+    { id: 'MSK', label: 'MSK (Moscow)', zone: 'Europe/Moscow' },
+    { id: 'HKT', label: 'HKT (Hong Kong)', zone: 'Asia/Hong_Kong' },
+    { id: 'ICT', label: 'ICT (Bangkok)', zone: 'Asia/Bangkok' },
+    { id: 'PKT', label: 'PKT (Karachi)', zone: 'Asia/Karachi' },
+    { id: 'WIB', label: 'WIB (Jakarta)', zone: 'Asia/Jakarta' },
+];
+
+const DEFAULT_ACTIVE = ['UTC', 'EST', 'IST', 'GMT', 'PST', 'JST', 'CET'];
+let activeZones = new Set(DEFAULT_ACTIVE);
+
+// Populate source timezone dropdown
+function populateSourceTz() {
+    const sel = document.getElementById('source-tz');
+    const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Add local first
+    const localOpt = document.createElement('option');
+    localOpt.value = localTz; localOpt.textContent = `Local (${localTz})`;
+    sel.appendChild(localOpt);
+    TIMEZONES.forEach(tz => {
+        const opt = document.createElement('option');
+        opt.value = tz.zone; opt.textContent = `${tz.id} — ${tz.zone}`;
+        if (tz.zone === localTz) return; // skip duplicate
+        sel.appendChild(opt);
+    });
+}
+
+// Render timezone chips
+function renderChips() {
+    const container = document.getElementById('tz-chips');
+    container.innerHTML = '';
+    TIMEZONES.forEach(tz => {
+        const chip = document.createElement('div');
+        chip.className = 'tz-chip' + (activeZones.has(tz.id) ? ' active' : '');
+        chip.innerHTML = `<span class="chip-dot"></span>${tz.id}`;
+        chip.title = tz.zone;
+        chip.onclick = () => { toggleZone(tz.id); };
+        container.appendChild(chip);
+    });
+}
+
+function toggleZone(id) {
+    if (activeZones.has(id)) activeZones.delete(id); else activeZones.add(id);
+    renderChips();
+}
+function selectAll() { TIMEZONES.forEach(tz => activeZones.add(tz.id)); renderChips(); }
+function selectNone() { activeZones.clear(); renderChips(); }
+
+function useCurrentTime() {
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'),
+          d = String(now.getDate()).padStart(2,'0'), h = String(now.getHours()).padStart(2,'0'),
+          mi = String(now.getMinutes()).padStart(2,'0'), s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('input-datetime').value = `${y}-${m}-${d}T${h}:${mi}:${s}`;
+    // Set source to local
+    const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.getElementById('source-tz').value = localTz;
+    convertNow();
+}
+
+function convertNow() {
+    const dtVal = document.getElementById('input-datetime').value;
+    if (!dtVal) { showToast('Please enter a date/time'); return; }
+    const srcZone = document.getElementById('source-tz').value;
+
+    // Parse the input as if it's in the source timezone
+    // Create a formatter that gives us the UTC equivalent
+    const inputDate = new Date(dtVal);
+    // Get offset for source timezone
+    const srcFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: srcZone, year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+    const localFormatter = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+    
+    // Calculate the difference between local and source timezone
+    const localParts = parseDateParts(localFormatter.format(inputDate));
+    const srcParts = parseDateParts(srcFormatter.format(inputDate));
+    const localMs = new Date(localParts.y, localParts.m-1, localParts.d, localParts.h, localParts.mi, localParts.s).getTime();
+    const srcMs = new Date(srcParts.y, srcParts.m-1, srcParts.d, srcParts.h, srcParts.mi, srcParts.s).getTime();
+    const offsetDiff = localMs - srcMs;
+    
+    // Adjust the input date so it represents the correct moment in time
+    const adjustedDate = new Date(inputDate.getTime() + offsetDiff);
+
+    // Now convert to all active timezones
+    const container = document.getElementById('results-container');
+    container.innerHTML = '';
+    const selected = TIMEZONES.filter(tz => activeZones.has(tz.id));
+    if (selected.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-slate-600 text-xs uppercase tracking-widest font-bold">No timezones selected</div>';
+        return;
+    }
+
+    selected.forEach((tz, i) => {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz.zone, weekday: 'short', year: 'numeric', month: 'short',
+            day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: true, timeZoneName: 'short'
+        });
+        const timeFmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz.zone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+        });
+        const dateFmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz.zone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        const offsetFmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz.zone, timeZoneName: 'longOffset'
+        });
+
+        const row = document.createElement('div');
+        row.className = 'result-row';
+        row.onclick = () => { navigator.clipboard.writeText(`${tz.id}: ${fmt.format(adjustedDate)}`); showToast('Copied ' + tz.id); };
+
+        const offsetStr = offsetFmt.format(adjustedDate).split(', ').pop() || '';
+
+        row.innerHTML = `
+            <div>
+                <div class="tz-name">${tz.id} <span class="text-slate-600 font-normal normal-case" style="letter-spacing:0">${tz.zone}</span></div>
+                <div class="tz-time">${timeFmt.format(adjustedDate)}</div>
+                <div class="tz-date">${dateFmt.format(adjustedDate)}</div>
+            </div>
+            <div class="text-right">
+                <div class="tz-offset">${offsetStr}</div>
+                <div class="text-[9px] text-slate-600 mt-1 uppercase tracking-wider font-bold">Click to copy</div>
+            </div>
+        `;
+        container.appendChild(row);
+        gsap.from(row, { opacity: 0, x: -20, duration: 0.3, delay: i * 0.04 });
+    });
+}
+
+function parseDateParts(str) {
+    // Parse "MM/DD/YYYY, HH:MM:SS" format
+    const [datePart, timePart] = str.split(', ');
+    const [m, d, y] = datePart.split('/').map(Number);
+    const [h, mi, s] = timePart.split(':').map(Number);
+    return { y, m, d, h: h === 24 ? 0 : h, mi, s };
+}
+
+function copyAllResults() {
+    const rows = document.querySelectorAll('.result-row');
+    if (!rows.length) return;
+    const lines = [];
+    rows.forEach(r => {
+        const name = r.querySelector('.tz-name').textContent.trim();
+        const time = r.querySelector('.tz-time').textContent.trim();
+        const date = r.querySelector('.tz-date').textContent.trim();
+        lines.push(`${name}: ${time} — ${date}`);
+    });
+    navigator.clipboard.writeText(lines.join('\n'));
+    showToast('All results copied!');
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-2xl z-[1000] border border-white/20';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    gsap.from(t, { y: 50, opacity: 0, duration: 0.3 });
+    setTimeout(() => { gsap.to(t, { y: 50, opacity: 0, duration: 0.3, onComplete: () => t.remove() }); }, 1800);
+}
+
+// Live clock
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('live-clock').textContent = `${h}:${m}:${s}`;
+}
+
+// Init
+populateSourceTz();
+renderChips();
+const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById('detected-tz').textContent = localTz;
+const off = new Intl.DateTimeFormat('en-US', { timeZoneName: 'longOffset' }).format(new Date());
+document.getElementById('detected-offset').textContent = off.split(', ').pop() || '';
+updateClock();
+setInterval(updateClock, 1000);
+useCurrentTime();
+</script>
+{% endblock %}

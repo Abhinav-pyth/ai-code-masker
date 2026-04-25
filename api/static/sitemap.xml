@@ -4,9 +4,15 @@
     <!-- ===== PRIMARY PAGES ===== -->
     <url>
         <loc>https://ai-code-masker.vercel.app/</loc>
-        <lastmod>2026-04-08</lastmod>
+        <lastmod>2026-04-17</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://ai-code-masker.vercel.app/tools</loc>
+        <lastmod>2026-04-17</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
     </url>
     <url>
         <loc>https://ai-code-masker.vercel.app/privacy</loc>

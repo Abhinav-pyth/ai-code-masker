@@ -183,6 +183,18 @@ def dfd_creator():
 def hql_to_sql():
     return render_template('hql_to_sql.html', active_page='hql_to_sql')
 
+@app.route('/timezone-converter')
+def timezone_converter():
+    return render_template('timezone_converter.html', active_page='timezone_converter')
+
+@app.route('/workflow-engine')
+def workflow_engine():
+    return render_template('workflow_engine.html', active_page='workflow_engine')
+
+@app.route('/tools')
+def tools():
+    return render_template('tools.html', active_page='tools')
+
 @app.route('/api/proxy', methods=['POST'])
 def api_proxy():
     try:

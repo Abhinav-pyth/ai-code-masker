@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}All Developer Tools — Free Online Browser Tools{% endblock %}
+{% block meta_description %}Browse all free developer tools from AI Code Masker. API tester, SQL optimizer, HQL→SQL converter, DFD creator, JSON editor, JWT inspector, Base64, image tools, and 20+ more — all 100% browser-based.{% endblock %}
+{% block meta_keywords %}free developer tools, online dev tools, API tester, SQL optimizer, HQL converter, JSON editor, JWT tool, Base64 tool, image resize, QR generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/tools{% endblock %}
+{% block og_url %}https://ai-code-masker.vercel.app/tools{% endblock %}
+{% block og_title %}All Developer Tools | AI Code Masker{% endblock %}
+{% block og_description %}30+ free developer tools running 100% in your browser. No install, no account, no data sent to any server.{% endblock %}
+
+{% block extra_styles %}
+.tool-card {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 20px; border-radius: 16px; text-decoration: none;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.tool-card:hover {
+    border-color: rgba(99,102,241,0.3);
+    background: rgba(255,255,255,0.035);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+.tool-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: transform 0.2s;
+}
+.tool-card:hover .tool-icon { transform: scale(1.1); }
+.tool-cat-badge {
+    display: inline-block; font-size: 8px; font-weight: 900;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px; margin-bottom: 4px;
+}
+.cat-section { margin-bottom: 48px; }
+.cat-title {
+    font-size: 10px; font-weight: 900; letter-spacing: 3px;
+    text-transform: uppercase; color: #6366f1; opacity: 0.7;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(99,102,241,0.15);
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-scroll">
+    <div class="max-w-7xl mx-auto px-6 md:px-12 py-12">
+
+        <!-- Header -->
+        <div class="text-center mb-14">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                All 100% Browser-Based · No Data Sent to Server
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black text-white uppercase tracking-tight mb-4">Developer Tools</h1>
+            <p class="text-slate-400 text-base max-w-xl mx-auto">Every tool runs locally in your browser. No install, no account, no server.</p>
+        </div>
+
+        <!-- ── Dev Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">⚙️ Developer Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/api-tester" class="tool-card">
+                    <div class="tool-icon bg-amber-500/15 text-amber-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">API Tester</div><p class="text-[11px] text-slate-500 leading-relaxed">Test REST APIs with all HTTP methods. Localhost support included.</p></div>
+                </a>
+                <a href="/sql-optimizer" class="tool-card">
+                    <div class="tool-icon bg-sky-500/15 text-sky-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">SQL Optimizer</div><p class="text-[11px] text-slate-500 leading-relaxed">Detect SQL anti-patterns and get optimization suggestions.</p></div>
+                </a>
+                <a href="/hql-to-sql" class="tool-card">
+                    <div class="tool-icon bg-purple-500/15 text-purple-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">HQL → SQL</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Convert Hibernate HQL/JPQL to SQL with camelCase column mapping.</p>
+                    </div>
+                </a>
+                <a href="/dfd-creator" class="tool-card">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2m0 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg></div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">DFD Creator</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Draw Data Flow Diagrams with interactive canvas. Export PNG/SVG.</p>
+                    </div>
+                </a>
+                <a href="/json-editor" class="tool-card">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">JSON Editor</div><p class="text-[11px] text-slate-500 leading-relaxed">Format, validate and edit JSON with tree view and diff.</p></div>
+                </a>
+                <a href="/jwt-tool" class="tool-card">
+                    <div class="tool-icon bg-rose-500/15 text-rose-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">JWT Inspector</div><p class="text-[11px] text-slate-500 leading-relaxed">Decode and inspect JWT tokens — header, payload, signature.</p></div>
+                </a>
+                <a href="/html-preview" class="tool-card">
+                    <div class="tool-icon bg-orange-500/15 text-orange-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">HTML Preview</div><p class="text-[11px] text-slate-500 leading-relaxed">Live preview HTML code in a sandboxed iframe.</p></div>
+                </a>
+                <a href="/js-executor" class="tool-card">
+                    <div class="tool-icon bg-yellow-500/15 text-yellow-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">JS Executor</div><p class="text-[11px] text-slate-500 leading-relaxed">Run JavaScript snippets in a safe sandbox with console output.</p></div>
+                </a>
+                <a href="/java-to-json" class="tool-card">
+                    <div class="tool-icon bg-red-500/15 text-red-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Java → JSON</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert Java POJO class definitions to JSON schema.</p></div>
+                </a>
+                <a href="/aws-cloudwatch" class="tool-card">
+                    <div class="tool-icon bg-orange-600/15 text-orange-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">CloudWatch Fmt</div><p class="text-[11px] text-slate-500 leading-relaxed">Format and parse AWS CloudWatch log entries visually.</p></div>
+                </a>
+                <a href="/workflow-engine" class="tool-card">
+                    <div class="tool-icon bg-violet-500/15 text-violet-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2m0 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg></div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">Workflow Engine</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Build conditional workflows with nested if-else logic and output validation.</p>
+                    </div>
+                </a>
+                <a href="/timezone-converter" class="tool-card">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">Timezone Conv.</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Convert datetime between EST, UTC, IST and 20+ timezones instantly.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Encoding & Conversion ── -->
+        <div class="cat-section">
+            <div class="cat-title">🔡 Encoding &amp; Conversion</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/base64" class="tool-card">
+                    <div class="tool-icon bg-teal-500/15 text-teal-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Base64 Tool</div><p class="text-[11px] text-slate-500 leading-relaxed">Encode and decode Base64 strings instantly.</p></div>
+                </a>
+                <a href="/base64-to-pdf" class="tool-card">
+                    <div class="tool-icon bg-red-500/15 text-red-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Base64 → PDF</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert Base64 encoded strings to downloadable PDF files.</p></div>
+                </a>
+                <a href="/base64-to-image" class="tool-card">
+                    <div class="tool-icon bg-pink-500/15 text-pink-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Base64 → Image</div><p class="text-[11px] text-slate-500 leading-relaxed">Preview and download images encoded as Base64 strings.</p></div>
+                </a>
+                <a href="/url-encoder" class="tool-card">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">URL Encoder</div><p class="text-[11px] text-slate-500 leading-relaxed">Encode and decode URL components and query strings.</p></div>
+                </a>
+                <a href="/case-converter" class="tool-card">
+                    <div class="tool-icon bg-violet-500/15 text-violet-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Case Converter</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert text between camelCase, snake_case, kebab-case and more.</p></div>
+                </a>
+                <a href="/hex-rgb" class="tool-card">
+                    <div class="tool-icon bg-fuchsia-500/15 text-fuchsia-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Hex ↔ RGB</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert between hex color codes and RGB/HSL values.</p></div>
+                </a>
+                <a href="/universal-converter" class="tool-card">
+                    <div class="tool-icon bg-lime-500/15 text-lime-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Universal Conv.</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert units across length, weight, temperature and more.</p></div>
+                </a>
+                <a href="/qr-generator" class="tool-card">
+                    <div class="tool-icon bg-slate-500/15 text-slate-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h2m14 0h.01M5 4h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zm12 0h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V5a1 1 0 011-1zM5 16h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2a1 1 0 011-1z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">QR Generator</div><p class="text-[11px] text-slate-500 leading-relaxed">Generate QR codes from any text or URL instantly.</p></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Image Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">🖼️ Image Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/image-resize" class="tool-card">
+                    <div class="tool-icon bg-blue-500/15 text-blue-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Image Resize</div><p class="text-[11px] text-slate-500 leading-relaxed">Resize images to any dimension without uploading to a server.</p></div>
+                </a>
+                <a href="/image-converter" class="tool-card">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Image Converter</div><p class="text-[11px] text-slate-500 leading-relaxed">Convert images between PNG, JPEG, WebP and other formats.</p></div>
+                </a>
+                <a href="/pixel-editor" class="tool-card">
+                    <div class="tool-icon bg-pink-500/15 text-pink-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Pixel Editor</div><p class="text-[11px] text-slate-500 leading-relaxed">Edit images at pixel level with drawing tools and filters.</p></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Network Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">🌐 Network Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/my-ip" class="tool-card">
+                    <div class="tool-icon bg-green-500/15 text-green-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">My IP Address</div><p class="text-[11px] text-slate-500 leading-relaxed">See your current public IP address and location details.</p></div>
+                </a>
+                <a href="/domain-to-ip" class="tool-card">
+                    <div class="tool-icon bg-teal-500/15 text-teal-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Domain → IP</div><p class="text-[11px] text-slate-500 leading-relaxed">Resolve domain names to their IP addresses via DNS lookup.</p></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Text & Writing Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">✍️ Text &amp; Writing Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/spell-checker" class="tool-card">
+                    <div class="tool-icon bg-blue-500/15 text-blue-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Spell Checker</div><p class="text-[11px] text-slate-500 leading-relaxed">Check and correct spelling mistakes in your text.</p></div>
+                </a>
+                <a href="/translator" class="tool-card">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Translator</div><p class="text-[11px] text-slate-500 leading-relaxed">Translate text across many languages.</p></div>
+                </a>
+                <a href="/lorem-ipsum" class="tool-card">
+                    <div class="tool-icon bg-slate-500/15 text-slate-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Lorem Ipsum</div><p class="text-[11px] text-slate-500 leading-relaxed">Generate placeholder text for design and development.</p></div>
+                </a>
+                <a href="/dummy-data" class="tool-card">
+                    <div class="tool-icon bg-orange-500/15 text-orange-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Dummy Data</div><p class="text-[11px] text-slate-500 leading-relaxed">Generate realistic dummy data for testing and demos.</p></div>
+                </a>
+                <a href="/email-formation" class="tool-card">
+                    <div class="tool-icon bg-purple-500/15 text-purple-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Email Formation</div><p class="text-[11px] text-slate-500 leading-relaxed">Compose and format professional email templates.</p></div>
+                </a>
+                <a href="/sentence-formation" class="tool-card">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Sentence Builder</div><p class="text-[11px] text-slate-500 leading-relaxed">Build well-structured sentences from words and phrases.</p></div>
+                </a>
+                <a href="/naming-suggestions" class="tool-card">
+                    <div class="tool-icon bg-rose-500/15 text-rose-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+                    <div><div class="text-xs font-black text-white uppercase tracking-wider mb-1">Naming Helper</div><p class="text-[11px] text-slate-500 leading-relaxed">Get name suggestions for variables, functions, projects and more.</p></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Healthcare ── -->
+        <div class="cat-section">
+            <div class="cat-title">🏥 Healthcare &amp; Clinical</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <a href="/clinical-parser" class="tool-card" style="border-color:rgba(52,211,153,0.15)">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></div>
+                    <div>
+                        <div class="text-xs font-black text-emerald-400 uppercase tracking-wider mb-1">Clinical Parser</div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Parse HL7 v2, C-CDA and FHIR clinical documents with patient summary.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer note -->
+        <div class="text-center py-8 border-t border-white/5">
+            <p class="text-[11px] text-slate-600 uppercase tracking-widest">All tools process data locally · No server · No account · Always free</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
