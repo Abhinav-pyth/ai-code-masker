@@ -191,6 +191,10 @@ def timezone_converter():
 def workflow_engine():
     return render_template('workflow_engine.html', active_page='workflow_engine')
 
+@app.route('/json-compare')
+def json_compare():
+    return render_template('json_compare.html', active_page='json_compare')
+
 @app.route('/tools')
 def tools():
     return render_template('tools.html', active_page='tools')

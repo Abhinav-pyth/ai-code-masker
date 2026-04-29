@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+
+{% block title %}JSON Master - Compare & Edit{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .json-pane {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .glass-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(12px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .diff-added { background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-emerald); }
+    .diff-removed { background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; }
+    .diff-changed { background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; }
+    
+    .tree-node { position: relative; padding-left: 1.5rem; margin-top: 0.1rem; white-space: nowrap; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+    .tree-toggle { cursor: pointer; position: absolute; left: 0; top: 0; transition: transform 0.2s ease; color: var(--accent-indigo); }
+    .tree-toggle.collapsed { transform: rotate(-90deg); }
+    .tree-children.hidden { display: none; }
+    
+    .tree-key { color: var(--accent-indigo); font-weight: 500; }
+    .tree-value-string { color: var(--accent-emerald); }
+    .tree-value-number { color: #fbbf24; }
+    .tree-value-boolean { color: #f472b6; }
+    .tree-value-null { color: var(--text-dim); }
+    
+    .node-actions {
+        opacity: 0;
+        transition: opacity 0.2s;
+        display: inline-flex;
+        gap: 0.5rem;
+        margin-left: 1rem;
+        background: rgba(0,0,0,0.3);
+        padding: 2px 6px;
+        border-radius: 6px;
+    }
+    .tree-node:hover > .node-actions { opacity: 1; }
+    
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent-indigo); }
+    
+    #diff-output::-webkit-scrollbar { width: 6px; }
+    #diff-output::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Tool Interface Wrapper -->
+    <div class="flex-grow flex flex-col overflow-hidden bg-[#0a0a0a] relative pt-16">
+        <!-- Top Bar -->
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 bg-black/40 backdrop-blur-md shrink-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                    <svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </div>
+                <h2 class="text-[10px] font-black text-white tracking-[3px] uppercase">JSON Compare Engine</h2>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="flex bg-white/5 rounded-xl p-1">
+                    <button onclick="setView('edit')" id="btn-view-edit" class="px-4 py-1.5 rounded-lg text-[9px] font-bold transition-all uppercase tracking-widest bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">Editor</button>
+                    <button onclick="setView('compare')" id="btn-view-compare" class="px-4 py-1.5 rounded-lg text-[9px] font-bold transition-all uppercase tracking-widest text-slate-400 hover:text-white">Compare</button>
+                </div>
+                
+                <div class="h-4 w-px bg-white/10 mx-2"></div>
+                
+                <button onclick="prettifyAll()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 transition-all uppercase tracking-widest">Format All</button>
+                <button onclick="loadDemo()" class="px-3 py-1.5 bg-indigo-500/10 rounded-lg text-[9px] font-bold text-indigo-400 hover:bg-indigo-500/20 transition-all uppercase tracking-widest">Demo</button>
+            </div>
+        </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-grow flex overflow-hidden p-6 gap-6">
+        <!-- Left Side -->
+        <div class="flex-1 flex flex-col min-w-0" id="pane-left">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Source A (Left)</span>
+                <div class="flex items-center space-x-3">
+                    <button onclick="prettify('a')" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-tighter transition-all">Format</button>
+                    <button onclick="minify('a')" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-tighter transition-all">Minify</button>
+                    <div class="w-px h-3 bg-white/10"></div>
+                    <button onclick="pasteTo('a')" class="px-2 py-0.5 bg-indigo-500/10 rounded text-[8px] font-black text-indigo-400 uppercase tracking-widest hover:bg-indigo-500/20 transition-all">Paste</button>
+                    <button onclick="copyToRight()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-tighter transition-all">To Right →</button>
+                </div>
+            </div>
+            <div class="flex-grow relative glass-card rounded-2xl overflow-hidden flex flex-col">
+                <div id="editor-a-container" class="flex-grow flex flex-col p-4 overflow-hidden">
+                    <textarea id="json-a" class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-300 placeholder-slate-700 outline-none focus:ring-1 focus:ring-indigo-500/20 rounded-lg p-2 transition-all resize-none custom-scroll" placeholder='Paste JSON A here...' oninput="handleInput('a')"></textarea>
+                    <div id="tree-a" class="hidden flex-grow overflow-auto p-2 code-font text-sm custom-scroll"></div>
+                </div>
+                <!-- Search/Replace Bar -->
+                <div class="h-10 border-t border-white/5 px-4 flex items-center space-x-3 bg-black/20">
+                    <input type="text" id="search-a" placeholder="Search..." class="bg-transparent text-[10px] text-slate-400 outline-none w-24">
+                    <input type="text" id="replace-a" placeholder="Replace..." class="bg-transparent text-[10px] text-slate-400 outline-none w-24">
+                    <button onclick="doReplace('a')" class="text-[9px] font-bold text-indigo-400 hover:text-indigo-300 uppercase">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Controls (Only visible in Compare view) -->
+        <div id="compare-controls" class="hidden w-64 flex flex-col space-y-4 shrink-0">
+            <div class="glass-card rounded-2xl p-5 flex flex-col space-y-4">
+                <h3 class="text-[10px] font-black text-slate-500 tracking-[2px] uppercase mb-2">Compare Options</h3>
+                
+                <label class="flex items-center space-x-3 cursor-pointer group">
+                    <input type="checkbox" id="opt-ignore-case" class="hidden peer">
+                    <div class="w-4 h-4 rounded border border-white/10 peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition-all flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 transition-all uppercase">Ignore Case</span>
+                </label>
+
+                <label class="flex items-center space-x-3 cursor-pointer group">
+                    <input type="checkbox" id="opt-ignore-missing-left" class="hidden peer">
+                    <div class="w-4 h-4 rounded border border-white/10 peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition-all flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 transition-all uppercase">Ignore Missing (L)</span>
+                </label>
+
+                <label class="flex items-center space-x-3 cursor-pointer group">
+                    <input type="checkbox" id="opt-ignore-missing-right" class="hidden peer">
+                    <div class="w-4 h-4 rounded border border-white/10 peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition-all flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 transition-all uppercase">Ignore Missing (R)</span>
+                </label>
+
+                <div class="pt-4 border-t border-white/5">
+                    <span class="text-[9px] font-bold text-slate-600 uppercase mb-2 block">Exclude Keys (Regex)</span>
+                    <input type="text" id="opt-exclude-keys" placeholder="e.g. timestamp|id" class="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none focus:border-indigo-500/50 transition-all">
+                </div>
+
+                <button onclick="runCompare()" class="w-full py-3 bg-indigo-500 rounded-xl text-[10px] font-black text-white uppercase tracking-[2px] shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">Run Compare</button>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex-1 flex flex-col min-w-0" id="pane-right">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-black text-emerald-400 tracking-[3px] uppercase">Source B (Right)</span>
+                <div class="flex items-center space-x-3">
+                    <button onclick="prettify('b')" class="text-[9px] font-bold text-slate-500 hover:text-emerald-400 uppercase tracking-tighter transition-all">Format</button>
+                    <button onclick="minify('b')" class="text-[9px] font-bold text-slate-500 hover:text-emerald-400 uppercase tracking-tighter transition-all">Minify</button>
+                    <div class="w-px h-3 bg-white/10"></div>
+                    <button onclick="pasteTo('b')" class="px-2 py-0.5 bg-emerald-500/10 rounded text-[8px] font-black text-emerald-400 uppercase tracking-widest hover:bg-emerald-500/20 transition-all">Paste</button>
+                    <button onclick="copyToLeft()" class="text-[9px] font-bold text-slate-500 hover:text-emerald-400 uppercase tracking-tighter transition-all">← To Left</button>
+                </div>
+            </div>
+            <div class="flex-grow relative glass-card rounded-2xl overflow-hidden flex flex-col">
+                <div id="editor-b-container" class="flex-grow flex flex-col p-4 overflow-hidden">
+                    <textarea id="json-b" class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-300 placeholder-slate-700 outline-none focus:ring-1 focus:ring-emerald-500/20 rounded-lg p-2 transition-all resize-none custom-scroll" placeholder='Paste JSON B here...' oninput="handleInput('b')"></textarea>
+                    <div id="tree-b" class="hidden flex-grow overflow-auto p-2 code-font text-sm custom-scroll"></div>
+                </div>
+                <!-- Search/Replace Bar -->
+                <div class="h-10 border-t border-white/5 px-4 flex items-center space-x-3 bg-black/20">
+                    <input type="text" id="search-b" placeholder="Search..." class="bg-transparent text-[10px] text-slate-400 outline-none w-24">
+                    <input type="text" id="replace-b" placeholder="Replace..." class="bg-transparent text-[10px] text-slate-400 outline-none w-24">
+                    <button onclick="doReplace('b')" class="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 uppercase">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Search/Global Replace -->
+<div id="diff-results-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-12">
+    <div class="glass-card w-full max-w-5xl h-full flex flex-col rounded-3xl overflow-hidden">
+        <div class="h-16 border-b border-white/5 flex items-center justify-between px-8 shrink-0">
+            <h3 class="text-xs font-black text-white tracking-[2px] uppercase">Comparison Results</h3>
+            <button onclick="closeModal()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase tracking-widest">
+                <span>&times;</span>
+                <span>Close</span>
+            </button>
+        </div>
+        <div id="diff-output" class="flex-grow overflow-auto p-8 code-font text-sm">
+            <!-- Results will be injected here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentView = 'edit';
+    let dataA = null;
+    let dataB = null;
+
+    // Standardize view switching
+    function setView(view) {
+        currentView = view;
+        const btnEdit = document.getElementById('btn-view-edit');
+        const btnCompare = document.getElementById('btn-view-compare');
+        const controls = document.getElementById('compare-controls');
+        const paneLeft = document.getElementById('pane-left');
+        const paneRight = document.getElementById('pane-right');
+
+        if (view === 'edit') {
+            btnEdit.classList.add('bg-indigo-500', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            btnEdit.classList.remove('text-slate-400');
+            btnCompare.classList.remove('bg-indigo-500', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            btnCompare.classList.add('text-slate-400');
+            controls.classList.add('hidden');
+            paneLeft.classList.add('flex-1');
+            paneRight.classList.add('flex-1');
+        } else {
+            btnCompare.classList.add('bg-indigo-500', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            btnCompare.classList.remove('text-slate-400');
+            btnEdit.classList.remove('bg-indigo-500', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
+            btnEdit.classList.add('text-slate-400');
+            controls.classList.remove('hidden');
+            paneLeft.classList.remove('flex-1');
+            paneRight.classList.remove('flex-1');
+            paneLeft.style.width = 'calc(50% - 144px)';
+            paneRight.style.width = 'calc(50% - 144px)';
+        }
+        refreshPanes();
+    }
+
+    function refreshPanes() {
+        const areaA = document.getElementById('json-a');
+        const areaB = document.getElementById('json-b');
+        const treeA = document.getElementById('tree-a');
+        const treeB = document.getElementById('tree-b');
+
+        if (currentView === 'edit') {
+            areaA.classList.remove('hidden');
+            areaB.classList.remove('hidden');
+            treeA.classList.add('hidden');
+            treeB.classList.add('hidden');
+        } else {
+            if (dataA) { areaA.classList.add('hidden'); treeA.classList.remove('hidden'); }
+            else { areaA.classList.remove('hidden'); treeA.classList.add('hidden'); }
+            
+            if (dataB) { areaB.classList.add('hidden'); treeB.classList.remove('hidden'); }
+            else { areaB.classList.remove('hidden'); treeB.classList.add('hidden'); }
+        }
+        
+        // Final sanity check for pointer events and focus
+        [areaA, areaB].forEach(el => {
+            if (!el.classList.contains('hidden')) {
+                el.style.pointerEvents = 'auto';
+                el.style.zIndex = '50';
+            }
+        });
+    }
+
+    function handleInput(side) {
+        const area = document.getElementById(`json-${side}`);
+        const val = area.value.trim();
+        try {
+            if (val) {
+                const parsed = JSON.parse(val);
+                if (side === 'a') { dataA = parsed; renderTree('a', dataA); }
+                else { dataB = parsed; renderTree('b', dataB); }
+                area.classList.remove('border-red-500/50');
+            } else {
+                if (side === 'a') dataA = null; else dataB = null;
+            }
+        } catch (e) {
+            area.classList.add('border-red-500/50');
+        }
+        refreshPanes();
+    }
+
+    function prettify(side) {
+        const area = document.getElementById(`json-${side}`);
+        try {
+            const val = area.value.trim();
+            if (val) {
+                const parsed = JSON.parse(val);
+                area.value = JSON.stringify(parsed, null, 4);
+                handleInput(side);
+            }
+        } catch (e) { alert("Invalid JSON for formatting"); }
+    }
+
+    function prettifyAll() { prettify('a'); prettify('b'); }
+
+    function minify(side) {
+        const area = document.getElementById(`json-${side}`);
+        try {
+            const val = area.value.trim();
+            if (val) {
+                area.value = JSON.stringify(JSON.parse(val));
+                handleInput(side);
+            }
+        } catch (e) { alert("Invalid JSON for minifying"); }
+    }
+
+    function clearAll() {
+        document.getElementById('json-a').value = '';
+        document.getElementById('json-b').value = '';
+        dataA = dataB = null;
+        refreshPanes();
+    }
+
+    function loadDemo() {
+        const a = { id: 1, name: "Alice", active: true, meta: { roles: ["admin", "editor"] } };
+        const b = { id: 1, name: "Alice Smith", active: false, meta: { roles: ["admin"] } };
+        document.getElementById('json-a').value = JSON.stringify(a, null, 4);
+        document.getElementById('json-b').value = JSON.stringify(b, null, 4);
+        handleInput('a'); handleInput('b');
+        setView('compare');
+    }
+
+    async function pasteTo(side) {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById(`json-${side}`).value = text;
+            handleInput(side);
+        } catch (e) { alert("Please use Ctrl+V to paste manually"); }
+    }
+
+    function copyToRight() {
+        document.getElementById('json-b').value = document.getElementById('json-a').value;
+        handleInput('b');
+    }
+
+    function copyToLeft() {
+        document.getElementById('json-a').value = document.getElementById('json-b').value;
+        handleInput('a');
+    }
+
+    function doReplace(side) {
+        const s = document.getElementById(`search-${side}`).value;
+        const r = document.getElementById(`replace-${side}`).value;
+        if (!s) return;
+        const area = document.getElementById(`json-${side}`);
+        area.value = area.value.split(s).join(r);
+        handleInput(side);
+    }
+
+    // --- Tree Rendering ---
+    function renderTree(side, data) {
+        const container = document.getElementById(`tree-${side}`);
+        container.innerHTML = '';
+        if (data) renderNode(side, data, container, 'Root', '');
+    }
+
+    function renderNode(side, data, container, key, path) {
+        const node = document.createElement('div');
+        node.className = 'tree-node';
+        const isCollapsible = typeof data === 'object' && data !== null;
+        const currentPath = path ? `${path}.${key}` : key;
+
+        if (isCollapsible) {
+            const toggle = document.createElement('span');
+            toggle.className = 'tree-toggle text-indigo-500 font-black mr-2 select-none';
+            toggle.innerHTML = '&#9662;';
+            toggle.onclick = (e) => {
+                const children = node.querySelector('.tree-children');
+                const isHidden = children.classList.toggle('hidden');
+                toggle.innerHTML = isHidden ? '&#9656;' : '&#9662;';
+                toggle.classList.toggle('collapsed', isHidden);
+                e.stopPropagation();
+            };
+            node.appendChild(toggle);
+        }
+
+        const header = document.createElement('span');
+        header.innerHTML = `<span class="tree-key">${key}</span>: `;
+        node.appendChild(header);
+
+        const actions = document.createElement('div');
+        actions.className = 'node-actions';
+        actions.innerHTML = `
+            <button onclick="copyNodePath('${currentPath}')" class="text-[8px] text-slate-500 hover:text-white uppercase font-bold px-1">Path</button>
+            <button onclick="deleteNode('${side}', '${currentPath}')" class="text-[8px] text-red-500/50 hover:text-red-500 uppercase font-bold px-1">Del</button>
+        `;
+        node.appendChild(actions);
+
+        if (isCollapsible) {
+            header.innerHTML += Array.isArray(data) ? '<span class="text-slate-600">[</span>' : '<span class="text-slate-600">{</span>';
+            const children = document.createElement('div');
+            children.className = 'tree-children ml-4 border-l border-white/5 pl-4';
+            Object.keys(data).forEach(k => renderNode(side, data[k], children, k, currentPath));
+            node.appendChild(children);
+            const footer = document.createElement('div');
+            footer.innerHTML = Array.isArray(data) ? '<span class="text-slate-600">]</span>' : '<span class="text-slate-600">}</span>';
+            node.appendChild(footer);
+        } else {
+            let valSpan = document.createElement('span');
+            if (typeof data === 'string') { valSpan.className = 'tree-value-string'; valSpan.innerText = `"${data}"`; }
+            else if (typeof data === 'number') { valSpan.className = 'tree-value-number'; valSpan.innerText = data; }
+            else if (typeof data === 'boolean') { valSpan.className = 'tree-value-boolean'; valSpan.innerText = data; }
+            else { valSpan.className = 'tree-value-null'; valSpan.innerText = 'null'; }
+            node.appendChild(valSpan);
+        }
+        container.appendChild(node);
+    }
+
+    function deleteNode(side, path) {
+        if (path === 'Root') { clearAll(); return; }
+        let target = side === 'a' ? dataA : dataB;
+        const parts = path.split('.'); parts.shift();
+        let current = target;
+        for (let i = 0; i < parts.length - 1; i++) current = current[parts[i]];
+        const lastKey = parts[parts.length - 1];
+        if (Array.isArray(current)) current.splice(lastKey, 1); else delete current[lastKey];
+        document.getElementById(`json-${side}`).value = JSON.stringify(target, null, 4);
+        handleInput(side);
+    }
+
+    function copyNodePath(path) { navigator.clipboard.writeText(path); }
+
+    // --- Compare logic ---
+    function runCompare() {
+        if (!dataA || !dataB) { alert("Please provide both JSON sources"); return; }
+        const opts = {
+            ignoreCase: document.getElementById('opt-ignore-case').checked,
+            ignoreMissingL: document.getElementById('opt-ignore-missing-left').checked,
+            ignoreMissingR: document.getElementById('opt-ignore-missing-right').checked,
+            excludeKeys: document.getElementById('opt-exclude-keys').value
+        };
+        const diffs = deepDiff(dataA, dataB, opts);
+        showDiffResults(diffs);
+    }
+
+    function toggleTheme() {
+        if (typeof toggleGlobalTheme === 'function') {
+            toggleGlobalTheme();
+        }
+    }
+
+    function deepDiff(a, b, opts, path = 'root') {
+        let results = [];
+        const excludeRegex = opts.excludeKeys ? new RegExp(opts.excludeKeys) : null;
+        
+        // Handle non-object types
+        if (typeof a !== typeof b || (Array.isArray(a) !== Array.isArray(b))) {
+            results.push({ path, type: 'changed', val1: a, val2: b });
+            return results;
+        }
+
+        const keys1 = (a && typeof a === 'object') ? Object.keys(a) : [];
+        const keys2 = (b && typeof b === 'object') ? Object.keys(b) : [];
+        const allKeys = [...new Set([...keys1, ...keys2])];
+
+        allKeys.forEach(key => {
+            if (excludeRegex && excludeRegex.test(key)) return;
+            const fullPath = path === 'root' ? key : `${path}.${key}`;
+            const val1 = a ? a[key] : undefined;
+            const val2 = b ? b[key] : undefined;
+
+            // Handle Missing Keys
+            if (val1 === undefined && val2 !== undefined) {
+                if (!opts.ignoreMissingL) results.push({ path: fullPath, type: 'added', val1: undefined, val2 });
+                return;
+            }
+            if (val1 !== undefined && val2 === undefined) {
+                if (!opts.ignoreMissingR) results.push({ path: fullPath, type: 'removed', val1, val2: undefined });
+                return;
+            }
+
+            // Both exist - compare values
+            if (typeof val1 === 'object' && val1 !== null && typeof val2 === 'object' && val2 !== null) {
+                results = results.concat(deepDiff(val1, val2, opts, fullPath));
+            } else {
+                let match = val1 === val2;
+                if (opts.ignoreCase && typeof val1 === 'string' && typeof val2 === 'string') {
+                    match = val1.toLowerCase() === val2.toLowerCase();
+                }
+                if (!match) {
+                    results.push({ path: fullPath, type: 'changed', val1, val2 });
+                }
+            }
+        });
+        return results;
+    }
+
+    function showDiffResults(diffs) {
+        const output = document.getElementById('diff-output');
+        const modal = document.getElementById('diff-results-modal');
+        output.innerHTML = `<div class="mb-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Found ${diffs.length} Differences</div>`;
+        if (diffs.length === 0) {
+            output.innerHTML += '<div class="text-emerald-500 font-bold text-center py-20 uppercase tracking-widest">JSONs are identical</div>';
+        } else {
+            diffs.forEach(d => {
+                const color = d.type === 'added' ? 'text-emerald-400' : (d.type === 'removed' ? 'text-red-400' : 'text-amber-400');
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl mb-4 glass-card border border-white/5 bg-white/5 diff-${d.type}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-3"><span class="text-xs font-bold text-slate-300">${d.path}</span><span class="text-[8px] font-black uppercase ${color}">${d.type}</span></div>
+                    <div class="grid grid-cols-2 gap-4 text-[11px]">
+                        <div class="p-3 rounded-lg bg-black/40"><span class="text-[8px] text-slate-600 block mb-1 uppercase">A</span><pre class="text-slate-400 overflow-x-auto">${JSON.stringify(d.val1, null, 2)}</pre></div>
+                        <div class="p-3 rounded-lg bg-black/40"><span class="text-[8px] text-slate-600 block mb-1 uppercase">B</span><pre class="text-slate-400 overflow-x-auto">${JSON.stringify(d.val2, null, 2)}</pre></div>
+                    </div>`;
+                output.appendChild(card);
+            });
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('diff-results-modal').classList.add('hidden'); }
+
+    // Global focus & shortcut fix
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'z' || e.key === 'y')) {
+            const active = document.activeElement;
+            if (active.tagName !== 'TEXTAREA' && active.tagName !== 'INPUT') {
+                const areaA = document.getElementById('json-a');
+                if (!areaA.classList.contains('hidden')) areaA.focus();
+            }
+        }
+    });
+
+    setView('edit');
+</script>
+{% endblock %}

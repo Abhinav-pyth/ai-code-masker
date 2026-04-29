@@ -8,21 +8,33 @@
 {% block og_description %}30+ free developer tools running 100% in your browser. No install, no account, no data sent to any server.{% endblock %}
 
 {% block extra_styles %}
-.tool-card {
-    display: flex; flex-direction: column; gap: 12px;
-    padding: 20px; border-radius: 16px; text-decoration: none;
-    background: var(--card-bg);
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.05);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-}
-.tool-card:hover {
-    border-color: rgba(99,102,241,0.3);
-    background: rgba(255,255,255,0.035);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-}
+    .tool-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 2rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .tool-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+                    0 0 20px rgba(99, 102, 241, 0.1);
+    }
+    .tool-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(600px circle at var(--x) var(--y), rgba(255,255,255,0.06), transparent 40%);
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+    .tool-card:hover::after { opacity: 1; }
 .tool-icon {
     width: 40px; height: 40px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
@@ -81,6 +93,13 @@
                     <div>
                         <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">DFD Creator</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
                         <p class="text-[11px] text-slate-500 leading-relaxed">Draw Data Flow Diagrams with interactive canvas. Export PNG/SVG.</p>
+                    </div>
+                </a>
+                <a href="/json-compare" class="tool-card">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1"><div class="text-xs font-black text-white uppercase tracking-wider">JSON Master</div><span class="text-[7px] font-black bg-emerald-500/15 text-emerald-400 px-1 py-0.5 rounded uppercase">New</span></div>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">Advanced JSON comparison with exclusions and node manipulation.</p>
                     </div>
                 </a>
                 <a href="/json-editor" class="tool-card">
@@ -250,7 +269,23 @@
         <div class="text-center py-8 border-t border-white/5">
             <p class="text-[11px] text-slate-600 uppercase tracking-widest">All tools process data locally · No server · No account · Always free</p>
         </div>
-
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.addEventListener('load', () => {
+        // Spotlight effect for cards
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.onmousemove = e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--x', `${x}px`);
+                card.style.setProperty('--y', `${y}px`);
+            };
+        });
+    });
+</script>
 {% endblock %}
