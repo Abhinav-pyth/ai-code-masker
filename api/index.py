@@ -2,8 +2,10 @@ import sys
 import os
 import json
 import socket
+import ipaddress
 import requests
 from flask import Flask, request, jsonify, render_template
+from urllib.parse import urlparse
 
 # Local directory addition for module discovery
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -14,6 +16,76 @@ except ImportError:
     from . import masker_logic
 
 app = Flask(__name__)
+
+ALLOWED_PROXY_METHODS = {'GET', 'POST', 'PUT', 'PATCH', 'DELETE'}
+BLOCKED_PROXY_HEADERS = {
+    'host',
+    'content-length',
+    'transfer-encoding',
+    'connection',
+    'accept-encoding'
+}
+MAX_PROXY_BODY_BYTES = 200_000
+MAX_PROXY_RESPONSE_BYTES = 1_000_000
+PROXY_TIMEOUT_SECONDS = 15
+
+
+def _is_public_target(hostname):
+    if not hostname:
+        return False
+
+    normalized = hostname.strip().lower().strip('[]')
+    if normalized in {'localhost', 'localhost.localdomain'} or normalized.endswith('.local'):
+        return False
+
+    try:
+        addresses = [ipaddress.ip_address(normalized)]
+    except ValueError:
+        try:
+            infos = socket.getaddrinfo(normalized, None, type=socket.SOCK_STREAM)
+        except socket.gaierror:
+            return False
+
+        addresses = []
+        for info in infos:
+            try:
+                addresses.append(ipaddress.ip_address(info[4][0]))
+            except ValueError:
+                return False
+
+    return bool(addresses) and all(address.is_global for address in addresses)
+
+
+def _validate_proxy_url(url):
+    parsed = urlparse(url or '')
+    if parsed.scheme not in {'http', 'https'} or not parsed.netloc:
+        return None, 'Only absolute http:// or https:// URLs are supported.'
+
+    if not _is_public_target(parsed.hostname):
+        return None, 'Private, local, and reserved network targets are not allowed through the public proxy.'
+
+    return parsed.geturl(), None
+
+
+def _clean_proxy_headers(headers):
+    if not isinstance(headers, dict):
+        return {}
+
+    cleaned = {}
+    for key, value in headers.items():
+        if not isinstance(key, str):
+            continue
+
+        header_name = key.strip()
+        if not header_name or '\n' in header_name or '\r' in header_name:
+            continue
+
+        if header_name.lower() in BLOCKED_PROXY_HEADERS:
+            continue
+
+        cleaned[header_name] = str(value)
+
+    return cleaned
 
 @app.route('/')
 def index():
@@ -202,46 +274,54 @@ def tools():
 @app.route('/api/proxy', methods=['POST'])
 def api_proxy():
     try:
-        data = request.json
-        url = data.get('url')
-        method = data.get('method', 'GET')
-        headers = data.get('headers', {})
+        data = request.get_json(silent=True) or {}
+        url, url_error = _validate_proxy_url(data.get('url'))
+        method = (data.get('method') or 'GET').upper()
+        headers = _clean_proxy_headers(data.get('headers', {}))
         body = data.get('body')
 
-        if not url:
-            from flask import jsonify
-            return jsonify({"error": "No URL provided"}), 400
-        
-        headers.pop('Host', None)
-        headers.pop('host', None)
-        
-        if method.upper() == 'GET':
-            resp = requests.get(url, headers=headers)
-        elif method.upper() == 'POST':
-            resp = requests.post(url, headers=headers, data=body)
-        elif method.upper() == 'PUT':
-            resp = requests.put(url, headers=headers, data=body)
-        elif method.upper() == 'PATCH':
-            resp = requests.patch(url, headers=headers, data=body)
-        elif method.upper() == 'DELETE':
-            resp = requests.delete(url, headers=headers)
-        else:
-            from flask import jsonify
+        if url_error:
+            return jsonify({"error": url_error}), 400
+
+        if method not in ALLOWED_PROXY_METHODS:
             return jsonify({"error": f"Unsupported method {method}"}), 400
+
+        if body and len(str(body).encode('utf-8')) > MAX_PROXY_BODY_BYTES:
+            return jsonify({"error": "Request body is too large for the public proxy."}), 413
+
+        resp = requests.request(
+            method,
+            url,
+            headers=headers,
+            data=body if method in {'POST', 'PUT', 'PATCH'} else None,
+            timeout=PROXY_TIMEOUT_SECONDS,
+            allow_redirects=False
+        )
 
         resp_headers = dict(resp.headers)
         resp_headers.pop('Content-Encoding', None)
         resp_headers.pop('Transfer-Encoding', None)
-        
-        from flask import jsonify
+
+        content = resp.content or b''
+        truncated = len(content) > MAX_PROXY_RESPONSE_BYTES
+        if truncated:
+            content = content[:MAX_PROXY_RESPONSE_BYTES]
+
+        text = content.decode(resp.encoding or 'utf-8', errors='replace')
+        if truncated:
+            text += "\n\n[Response truncated by AI Code Masker proxy.]"
+
         return jsonify({
             "status": resp.status_code,
             "statusText": resp.reason,
             "headers": resp_headers,
-            "text": resp.text
+            "text": text
         })
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "Proxy request timed out."}), 504
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Proxy request failed: {str(e)}"}), 502
     except Exception as e:
-        from flask import jsonify
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

@@ -78,7 +78,6 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-scroll">
 <div class="relative">
     <div class="hero-gradient"></div>
     <!-- Rich Hero Section -->
@@ -317,6 +316,12 @@
     function execute() {
         const text = document.getElementById('src-input').value;
         const lang = document.getElementById('lang-select').value;
+        const engineLang = lang === 'python' ? 'python' : (lang === 'javascript' ? 'js' : 'java');
+        const maskOptions = {
+            maskIdentifiers: document.getElementById('rule-idents').checked,
+            maskSecrets: document.getElementById('rule-secrets').checked,
+            maskStrings: document.getElementById('rule-strings').checked
+        };
         const resultPre = document.getElementById('result-pre');
         const resultCode = resultPre.querySelector('code');
         const btnText = document.getElementById('btn-text');
@@ -328,9 +333,9 @@
         btnText.classList.add('hidden');
         btnSpinner.classList.remove('hidden');
         
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             if (currentMode === 'mask') {
-                const { maskedCode, mapping } = maskContent(text, lang === 'python' ? 'python' : (lang === 'javascript' ? 'js' : 'java'));
+                const { maskedCode, mapping } = maskContent(text, engineLang, [], maskOptions);
                 currentMapping = mapping;
                 resultCode.textContent = maskedCode;
                 document.getElementById('result-input').value = maskedCode;
@@ -339,7 +344,7 @@
                 try {
                     const mapText = document.getElementById('map-output').textContent;
                     const mapping = JSON.parse(mapText);
-                    const unmasked = unmaskContent(text, mapping, lang === 'python' ? 'python' : (lang === 'javascript' ? 'js' : 'java'));
+                    const unmasked = unmaskContent(text, mapping, engineLang);
                     resultCode.textContent = unmasked;
                     document.getElementById('result-input').value = unmasked;
                 } catch (e) {
@@ -357,7 +362,7 @@
             btnSpinner.classList.add('hidden');
             
             gsap.from(resultPre, { opacity: 0.5, x: 20, duration: 0.4 });
-        }, 600); // Simulate processing delay for "smoothness"
+        });
     }
 
     function loadSample() {
@@ -402,6 +407,7 @@
     }
 
     function clearAll() {
+        currentMapping = {};
         document.getElementById('src-input').value = '';
         document.getElementById('src-pre').querySelector('code').textContent = '';
         document.getElementById('result-input').value = 'Waiting for logic protection...';

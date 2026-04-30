@@ -23,44 +23,113 @@ const TOKEN_REGEX = {
 };
 
 const METHOD_LOOKAHEAD = /\s*\(/;
+const GENERATED_MASK = /^(?:EMAIL|AWS_KEY|SECRET_TOKEN|IP_ADDRESS|var|Class|method|CONST|CUSTOM|STRING)_\d+$/;
+
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function maskStringLiteral(literal, mapping, counters) {
+    let open = literal[0];
+    let close = literal[literal.length - 1];
+    let body = literal.slice(1, -1);
+
+    if ((literal.startsWith('"""') && literal.endsWith('"""')) || (literal.startsWith("'''") && literal.endsWith("'''"))) {
+        open = literal.slice(0, 3);
+        close = literal.slice(-3);
+        body = literal.slice(3, -3);
+    }
+
+    if (!body.trim()) return literal;
+
+    if (!mapping[body]) {
+        mapping[body] = `STRING_${counters.STRING++}`;
+    }
+
+    return `${open}${mapping[body]}${close}`;
+}
+
+function restoreMappedValues(value, invMapping) {
+    const entries = Object.entries(invMapping).sort((a, b) => b[0].length - a[0].length);
+    let restored = value;
+
+    for (let pass = 0; pass < 4; pass++) {
+        let next = restored;
+        entries.forEach(([masked, original]) => {
+            next = next.replace(new RegExp(escapeRegExp(masked), 'g'), () => original);
+        });
+
+        if (next === restored) break;
+        restored = next;
+    }
+
+    return restored;
+}
 
 /**
  * Main Masking Function
  */
-function maskContent(content, lang = 'python', customRules = []) {
+function maskContent(content, lang = 'python', customRules = [], options = {}) {
+    const settings = {
+        maskIdentifiers: true,
+        maskSecrets: true,
+        maskStrings: false,
+        ...options
+    };
     const mapping = {};
-    const counters = { var: 1, Class: 1, method: 1, CONST: 1, CUSTOM: 1, SECRET: 1 };
+    const counters = { var: 1, Class: 1, method: 1, CONST: 1, CUSTOM: 1, SECRET: 1, STRING: 1 };
     
-    // 1. Initial pass for sensitive patterns (entire content)
     let processedContent = content;
+
+    customRules.forEach(rule => {
+        if (rule && !mapping[rule]) {
+            mapping[rule] = `CUSTOM_${counters.CUSTOM++}`;
+        }
+    });
     
-    SENSITIVE_PATTERNS.forEach(pattern => {
-        processedContent = processedContent.replace(pattern.regex, (match, group1) => {
-            const secret = group1 || match; // Group 1 if captured (for key=value), else full match
-            if (!mapping[secret]) {
-                const masked = `${pattern.name}_${counters.SECRET++}`;
-                mapping[secret] = masked;
-            }
-            return match.replace(secret, mapping[secret]);
-        });
+    if (settings.maskSecrets) {
+        processedContent = SENSITIVE_PATTERNS.reduce((current, pattern) => {
+            return current.replace(pattern.regex, (match, group1) => {
+                const secret = group1 || match; // Group 1 if captured (for key=value), else full match
+                if (!mapping[secret]) {
+                    const masked = `${pattern.name}_${counters.SECRET++}`;
+                    mapping[secret] = masked;
+                }
+                return match.replace(secret, mapping[secret]);
+            });
+        }, processedContent);
+    }
+
+    customRules.forEach(rule => {
+        if (!rule) return;
+        processedContent = processedContent.replace(new RegExp(escapeRegExp(rule), 'g'), mapping[rule]);
     });
 
-    // 2. Main pass for code structure
+    if (!settings.maskIdentifiers && !settings.maskStrings) {
+        return { maskedCode: processedContent, mapping };
+    }
+
     const regex = TOKEN_REGEX[lang] || TOKEN_REGEX.js;
+    regex.lastIndex = 0;
+
     const finalResult = processedContent.replace(regex, (match, string, comment, identifier, offset) => {
-        if (string !== undefined) return string;
-        if (comment !== undefined) return comment;
-        if (identifier === undefined) return match;
+        if (string !== undefined) {
+            return settings.maskStrings ? maskStringLiteral(string, mapping, counters) : string;
+        }
+        if (comment !== undefined) {
+            return comment;
+        }
+        if (identifier === undefined) {
+            return match;
+        }
 
         const ident = identifier;
 
-        // Skip keywords
-        if (KEYWORDS[lang]?.has(ident)) return ident;
-        
-        // Already masked in pass 1 or previously
         if (mapping[ident]) return mapping[ident];
+        if (GENERATED_MASK.test(ident)) return ident;
+        if (!settings.maskIdentifiers) return ident;
+        if (KEYWORDS[lang]?.has(ident)) return ident;
 
-        // Determine type heuristic
         let type = 'var';
         if (ident.toUpperCase() === ident && ident.length > 1 && !/^\d/.test(ident)) {
             type = 'CONST';
@@ -91,10 +160,15 @@ function unmaskContent(content, mapping, lang = 'python') {
     });
 
     const regex = TOKEN_REGEX[lang] || TOKEN_REGEX.js;
+    regex.lastIndex = 0;
+
     return content.replace(regex, (match, string, comment, identifier) => {
-        if (string !== undefined) return string;
-        if (comment !== undefined) return comment;
-        if (identifier === undefined) return match;
+        if (string !== undefined || comment !== undefined) {
+            return restoreMappedValues(match, invMapping);
+        }
+        if (identifier === undefined) {
+            return match;
+        }
 
         return invMapping[identifier] || identifier;
     });

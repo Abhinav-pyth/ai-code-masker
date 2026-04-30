@@ -33,7 +33,7 @@ The system masks identifiers (like variable names, class names, method names) be
 
 1. Start the Flask server:
    ```bash
-   python app.py
+   python api/index.py
    ```
 2. Navigate your browser to [http://127.0.0.1:3000](http://127.0.0.1:3000)
 3. **To Mask:** Paste your sensitive code into the "Original Source Code" panel. Select your language, and click "Mask Identifiers". Copy the resulting safe code and the JSON Map.
@@ -42,16 +42,16 @@ The system masks identifiers (like variable names, class names, method names) be
 ### Using the CLI
 
 You can bypass the GUI and process entire files via the command line.
-The engine scripts are located in `.agents/skills/ai-code-masker/scripts/masker.py`.
+The engine script is located at `api/masker_logic.py`.
 
 **To Mask a file:**
 ```bash
-python .agents/skills/ai-code-masker/scripts/masker.py mask path/to/your/file.py
+python api/masker_logic.py mask path/to/your/file.py
 ```
 *Outputs: `file.py.masked` (the safe code) and `file.py.map.json` (the recovery map)*
 
 **To Restore a file:**
 ```bash
-python .agents/skills/ai-code-masker/scripts/masker.py unmask path/to/your/file.py.masked
+python api/masker_logic.py unmask path/to/your/file.py.masked
 ```
 *Outputs: `file.py.unmasked` (the fully restored file)*
