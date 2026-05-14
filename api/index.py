@@ -271,6 +271,230 @@ def json_compare():
 def tools():
     return render_template('tools.html', active_page='tools')
 
+# ── Text Tools ──────────────────────────────────────────────
+@app.route('/letter-counter')
+def letter_counter():
+    return render_template('letter_counter.html', active_page='letter_counter')
+
+@app.route('/bionic-reading')
+def bionic_reading():
+    return render_template('bionic_reading.html', active_page='bionic_reading')
+
+@app.route('/whitespace-remover')
+def whitespace_remover():
+    return render_template('whitespace_remover.html', active_page='whitespace_remover')
+
+@app.route('/font-pair-finder')
+def font_pair_finder():
+    return render_template('font_pair_finder.html', active_page='font_pair_finder')
+
+# ── Hash & Encode Tools ────────────────────────────────────
+@app.route('/md5-hash')
+def md5_hash():
+    return render_template('md5_hash.html', active_page='md5_hash')
+
+@app.route('/sha1-hash')
+def sha1_hash():
+    return render_template('sha1_hash.html', active_page='sha1_hash')
+
+@app.route('/sha224-hash')
+def sha224_hash():
+    return render_template('sha224_hash.html', active_page='sha224_hash')
+
+@app.route('/sha256-hash')
+def sha256_hash():
+    return render_template('sha256_hash.html', active_page='sha256_hash')
+
+@app.route('/sha384-hash')
+def sha384_hash():
+    return render_template('sha384_hash.html', active_page='sha384_hash')
+
+@app.route('/sha512-hash')
+def sha512_hash():
+    return render_template('sha512_hash.html', active_page='sha512_hash')
+
+@app.route('/html-encoder')
+def html_encoder():
+    return render_template('html_encoder.html', active_page='html_encoder')
+
+@app.route('/html-minifier')
+def html_minifier():
+    return render_template('html_minifier.html', active_page='html_minifier')
+
+@app.route('/css-minifier')
+def css_minifier():
+    return render_template('css_minifier.html', active_page='css_minifier')
+
+@app.route('/js-minifier')
+def js_minifier():
+    return render_template('js_minifier.html', active_page='js_minifier')
+
+# ── Formatters ──────────────────────────────────────────────
+@app.route('/html-formatter')
+def html_formatter():
+    return render_template('html_formatter.html', active_page='html_formatter')
+
+@app.route('/css-formatter')
+def css_formatter():
+    return render_template('css_formatter.html', active_page='css_formatter')
+
+@app.route('/js-formatter')
+def js_formatter():
+    return render_template('js_formatter.html', active_page='js_formatter')
+
+@app.route('/slug-generator')
+def slug_generator():
+    return render_template('slug_generator.html', active_page='slug_generator')
+
+@app.route('/code-to-image')
+def code_to_image():
+    return render_template('code_to_image.html', active_page='code_to_image')
+
+# ── CSS Tools ───────────────────────────────────────────────
+@app.route('/css-gradient-generator')
+def css_gradient_generator():
+    return render_template('css_gradient_generator.html', active_page='css_gradient_generator')
+
+@app.route('/css-box-shadow')
+def css_box_shadow():
+    return render_template('css_box_shadow.html', active_page='css_box_shadow')
+
+@app.route('/css-border-radius')
+def css_border_radius():
+    return render_template('css_border_radius.html', active_page='css_border_radius')
+
+@app.route('/css-glassmorphism')
+def css_glassmorphism():
+    return render_template('css_glassmorphism.html', active_page='css_glassmorphism')
+
+@app.route('/css-triangle-generator')
+def css_triangle_generator():
+    return render_template('css_triangle_generator.html', active_page='css_triangle_generator')
+
+@app.route('/css-glitch-generator')
+def css_glitch_generator():
+    return render_template('css_glitch_generator.html', active_page='css_glitch_generator')
+
+@app.route('/css-loader-generator')
+def css_loader_generator():
+    return render_template('css_loader_generator.html', active_page='css_loader_generator')
+
+@app.route('/css-bezier-generator')
+def css_bezier_generator():
+    return render_template('css_bezier_generator.html', active_page='css_bezier_generator')
+
+@app.route('/css-clip-path-generator')
+def css_clip_path_generator():
+    return render_template('css_clip_path_generator.html', active_page='css_clip_path_generator')
+
+@app.route('/css-pattern-generator')
+def css_pattern_generator():
+    return render_template('css_pattern_generator.html', active_page='css_pattern_generator')
+
+@app.route('/css-checkbox-generator')
+def css_checkbox_generator():
+    return render_template('css_checkbox_generator.html', active_page='css_checkbox_generator')
+
+@app.route('/css-switch-generator')
+def css_switch_generator():
+    return render_template('css_switch_generator.html', active_page='css_switch_generator')
+
+# ── Color Tools ─────────────────────────────────────────────
+@app.route('/color-palette')
+def color_palette():
+    return render_template('color_palette.html', active_page='color_palette')
+
+@app.route('/hex-to-rgba')
+def hex_to_rgba():
+    return render_template('hex_to_rgba.html', active_page='hex_to_rgba')
+
+@app.route('/rgba-to-hex')
+def rgba_to_hex():
+    return render_template('rgba_to_hex.html', active_page='rgba_to_hex')
+
+@app.route('/color-shades')
+def color_shades():
+    return render_template('color_shades.html', active_page='color_shades')
+
+@app.route('/color-mixer')
+def color_mixer():
+    return render_template('color_mixer.html', active_page='color_mixer')
+
+# ── Image Tools ─────────────────────────────────────────────
+@app.route('/image-cropper')
+def image_cropper():
+    return render_template('image_cropper.html', active_page='image_cropper')
+
+@app.route('/image-filters')
+def image_filters():
+    return render_template('image_filters.html', active_page='image_filters')
+
+@app.route('/image-color-picker')
+def image_color_picker():
+    return render_template('image_color_picker.html', active_page='image_color_picker')
+
+@app.route('/image-color-extractor')
+def image_color_extractor():
+    return render_template('image_color_extractor.html', active_page='image_color_extractor')
+
+@app.route('/image-avg-color')
+def image_avg_color():
+    return render_template('image_avg_color.html', active_page='image_avg_color')
+
+@app.route('/image-to-base64')
+def image_to_base64():
+    return render_template('image_to_base64.html', active_page='image_to_base64')
+
+@app.route('/svg-blob-generator')
+def svg_blob_generator():
+    return render_template('svg_blob_generator.html', active_page='svg_blob_generator')
+
+@app.route('/photo-censor')
+def photo_censor():
+    return render_template('photo_censor.html', active_page='photo_censor')
+
+# ── Misc Tools ──────────────────────────────────────────────
+@app.route('/password-generator')
+def password_generator():
+    return render_template('password_generator.html', active_page='password_generator')
+
+@app.route('/list-randomizer')
+def list_randomizer():
+    return render_template('list_randomizer.html', active_page='list_randomizer')
+
+@app.route('/barcode-generator')
+def barcode_generator():
+    return render_template('barcode_generator.html', active_page='barcode_generator')
+
+@app.route('/og-meta-generator')
+def og_meta_generator():
+    return render_template('og_meta_generator.html', active_page='og_meta_generator')
+
+# ── Social Media Tools ──────────────────────────────────────
+@app.route('/tweet-generator')
+def tweet_generator():
+    return render_template('tweet_generator.html', active_page='tweet_generator')
+
+@app.route('/instagram-post-generator')
+def instagram_post_generator():
+    return render_template('instagram_post_generator.html', active_page='instagram_post_generator')
+
+@app.route('/whatsapp-generator')
+def whatsapp_generator():
+    return render_template('whatsapp_generator.html', active_page='whatsapp_generator')
+
+@app.route('/imessage-generator')
+def imessage_generator():
+    return render_template('imessage_generator.html', active_page='imessage_generator')
+
+@app.route('/yt-thumbnail')
+def yt_thumbnail():
+    return render_template('yt_thumbnail.html', active_page='yt_thumbnail')
+
+@app.route('/rn-shadow-generator')
+def rn_shadow_generator():
+    return render_template('rn_shadow_generator.html', active_page='rn_shadow_generator')
+
 @app.route('/api/proxy', methods=['POST'])
 def api_proxy():
     try:
