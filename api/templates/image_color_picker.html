@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Image Color Picker{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-color-picker{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image Color Picker</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer">📁 Choose Image<input type="file" accept="image/*" onchange="loadImg(event)" class="hidden"></label>
+            <span class="text-[10px] text-slate-500">Click anywhere on the image to pick a color</span>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 glass-card rounded-2xl p-4 overflow-auto">
+                <canvas id="cp-canvas" class="max-w-full cursor-crosshair"></canvas>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div id="cp-preview" class="h-32 rounded-2xl border border-white/10" style="background:#6366f1"></div>
+                <div class="glass-card rounded-2xl p-4 flex flex-col gap-2">
+                    <div class="flex justify-between"><span class="text-[10px] text-slate-500 font-bold uppercase">HEX</span><span id="cp-hex" class="code-font text-sm text-indigo-300 cursor-pointer" onclick="navigator.clipboard.writeText(this.textContent)">#6366f1</span></div>
+                    <div class="flex justify-between"><span class="text-[10px] text-slate-500 font-bold uppercase">RGB</span><span id="cp-rgb" class="code-font text-sm text-indigo-300 cursor-pointer" onclick="navigator.clipboard.writeText(this.textContent)">rgb(99,102,241)</span></div>
+                    <div class="flex justify-between"><span class="text-[10px] text-slate-500 font-bold uppercase">HSL</span><span id="cp-hsl" class="code-font text-sm text-indigo-300 cursor-pointer" onclick="navigator.clipboard.writeText(this.textContent)">hsl(239,86%,67%)</span></div>
+                </div>
+                <div class="text-[10px] text-slate-500 font-bold uppercase">Picked Colors</div>
+                <div id="cp-history" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+const canvas=document.getElementById('cp-canvas'),ctx=canvas.getContext('2d');const history=[];
+function loadImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);};img.src=ev.target.result;};r.readAsDataURL(f);}
+canvas.addEventListener('click',e=>{const rect=canvas.getBoundingClientRect();const x=Math.floor((e.clientX-rect.left)*(canvas.width/rect.width));const y=Math.floor((e.clientY-rect.top)*(canvas.height/rect.height));const d=ctx.getImageData(x,y,1,1).data;const hex='#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+    document.getElementById('cp-preview').style.background=hex;document.getElementById('cp-hex').textContent=hex;
+    document.getElementById('cp-rgb').textContent=`rgb(${d[0]},${d[1]},${d[2]})`;
+    const max=Math.max(d[0],d[1],d[2])/255,min=Math.min(d[0],d[1],d[2])/255,l=(max+min)/2;let h=0,s=0;if(max!==min){const delta=max-min;s=l>.5?delta/(2-max-min):delta/(max+min);if(max===d[0]/255)h=((d[1]/255-d[2]/255)/delta+(d[1]<d[2]?6:0))*60;else if(max===d[1]/255)h=((d[2]/255-d[0]/255)/delta+2)*60;else h=((d[0]/255-d[1]/255)/delta+4)*60;}
+    document.getElementById('cp-hsl').textContent=`hsl(${Math.round(h)},${Math.round(s*100)}%,${Math.round(l*100)}%)`;
+    history.unshift(hex);if(history.length>20)history.pop();
+    document.getElementById('cp-history').innerHTML=history.map(c=>`<div class="w-8 h-8 rounded-lg cursor-pointer border border-white/10" style="background:${c}" onclick="navigator.clipboard.writeText('${c}')" title="${c}"></div>`).join('');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}URL Slug Generator — SEO-Friendly Slugs{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/slug-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">URL Slug Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow">
+        <div class="glass-card rounded-2xl p-6">
+            <label class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase block mb-3">Title or String</label>
+            <input id="slug-input" oninput="genSlug()" type="text" class="w-full bg-transparent border-b border-white/10 pb-3 text-lg text-white outline-none placeholder-slate-700 code-font" placeholder="Enter your page title or any string...">
+        </div>
+        <div class="glass-card rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Generated Slug</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('slug-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <input id="slug-output" readonly type="text" class="w-full bg-transparent text-lg text-indigo-300 outline-none code-font">
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <input type="checkbox" id="opt-lower" checked onchange="genSlug()" class="accent-indigo-500"> Lowercase
+            </label>
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <input type="radio" name="sep" value="-" checked onchange="genSlug()" class="accent-indigo-500"> Hyphens
+            </label>
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                <input type="radio" name="sep" value="_" onchange="genSlug()" class="accent-indigo-500"> Underscores
+            </label>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function genSlug(){
+    let t=document.getElementById('slug-input').value;
+    const sep=document.querySelector('input[name="sep"]:checked').value;
+    const lower=document.getElementById('opt-lower').checked;
+    if(lower)t=t.toLowerCase();
+    t=t.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    t=t.replace(/[^a-zA-Z0-9\s-_]/g,'').replace(/[\s_-]+/g,sep).replace(new RegExp(`^[${sep}]+|[${sep}]+$`,'g'),'');
+    document.getElementById('slug-output').value=t;
+}
+</script>
+{% endblock %}

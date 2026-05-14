@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}CSS Clip Path Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-clip-path-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Clip Path Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-2">
+            <button onclick="setClip('polygon(50% 0%, 0% 100%, 100% 100%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Triangle</button>
+            <button onclick="setClip('polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Diamond</button>
+            <button onclick="setClip('polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Hexagon</button>
+            <button onclick="setClip('polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Star</button>
+            <button onclick="setClip('polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Octagon</button>
+            <button onclick="setClip('circle(50% at 50% 50%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Circle</button>
+            <button onclick="setClip('ellipse(50% 35% at 50% 50%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Ellipse</button>
+            <button onclick="setClip('inset(10% 20% 10% 20% round 10px)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Inset</button>
+            <button onclick="setClip('polygon(0% 0%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%)')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Message</button>
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[350px]">
+            <div id="clip-box" class="w-64 h-64 bg-gradient-to-br from-indigo-500 to-purple-600 transition-all duration-500"></div>
+        </div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('clip-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <code id="clip-code" class="code-font text-sm text-indigo-300 block"></code>
+        </div>
+        <div>
+            <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase block mb-2">Custom Clip Path</label>
+            <input id="clip-custom" type="text" onchange="setClip(this.value)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white outline-none code-font" placeholder="polygon(50% 0%, 0% 100%, 100% 100%)">
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function setClip(v){
+    document.getElementById('clip-box').style.clipPath=v;
+    document.getElementById('clip-code').textContent=`clip-path: ${v};`;
+    document.getElementById('clip-custom').value=v;
+}
+setClip('polygon(50% 0%, 0% 100%, 100% 100%)');
+</script>
+{% endblock %}

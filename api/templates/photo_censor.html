@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Photo Censor Tool{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/photo-censor{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Photo Censor</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer">📁 Choose Image<input type="file" accept="image/*" onchange="loadImg(event)" class="hidden"></label>
+            <select id="pc-mode" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                <option value="blur">Blur</option><option value="pixel">Pixelate</option><option value="black">Black Bar</option>
+            </select>
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Size: <span id="v-sz" class="text-indigo-400">30</span>px</label>
+            <input type="range" id="pc-size" min="10" max="100" value="30" oninput="document.getElementById('v-sz').textContent=this.value" class="w-20 accent-indigo-500">
+            <button onclick="download()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all">Download</button>
+        </div>
+        <div class="text-[10px] text-slate-500">Click and drag on image to censor areas</div>
+        <div class="flex-1 glass-card rounded-2xl p-4 overflow-auto">
+            <canvas id="pc-canvas" class="max-w-full cursor-crosshair"></canvas>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+let img=null,painting=false;const canvas=document.getElementById('pc-canvas'),ctx=canvas.getContext('2d');
+function loadImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);};img.src=ev.target.result;};r.readAsDataURL(f);}
+function censor(x,y){const mode=document.getElementById('pc-mode').value,size=+document.getElementById('pc-size').value;
+    if(mode==='blur'){ctx.filter=`blur(${size/3}px)`;ctx.drawImage(canvas,x-size/2,y-size/2,size,size,x-size/2,y-size/2,size,size);ctx.filter='none';}
+    else if(mode==='pixel'){const d=ctx.getImageData(x-size/2,y-size/2,size,size);const ps=Math.max(4,size/5);for(let py=0;py<size;py+=ps)for(let px=0;px<size;px+=ps){const i=(Math.floor(py)*size+Math.floor(px))*4;ctx.fillStyle=`rgb(${d.data[i]},${d.data[i+1]},${d.data[i+2]})`;ctx.fillRect(x-size/2+px,y-size/2+py,ps,ps);}}
+    else{ctx.fillStyle='#000';ctx.fillRect(x-size/2,y-size/2,size,size);}
+}
+canvas.addEventListener('mousedown',()=>painting=true);
+canvas.addEventListener('mouseup',()=>painting=false);
+canvas.addEventListener('mouseleave',()=>painting=false);
+canvas.addEventListener('mousemove',e=>{if(!painting||!img)return;const rect=canvas.getBoundingClientRect();censor((e.clientX-rect.left)*(canvas.width/rect.width),(e.clientY-rect.top)*(canvas.height/rect.height));});
+function download(){if(!img)return;const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='censored.png';a.click();}
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Code to Image Converter{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/code-to-image{% endblock %}
+{% block extra_styles %}
+#code-canvas{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;padding:40px;display:inline-block;max-width:100%;}
+#code-inner{background:#1e1e2e;border-radius:12px;padding:24px;font-family:'Space Mono',monospace;font-size:14px;color:#cdd6f4;white-space:pre-wrap;word-break:break-all;line-height:1.7;min-width:400px;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.dots{display:flex;gap:8px;margin-bottom:16px;}.dot{width:12px;height:12px;border-radius:50%;}.dot-r{background:#ff5f56;}.dot-y{background:#ffbd2e;}.dot-g{background:#27c93f;}
+{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Code to Image Converter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <select id="bg-theme" onchange="updateBg()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                <option value="linear-gradient(135deg,#667eea,#764ba2)">Purple</option>
+                <option value="linear-gradient(135deg,#f093fb,#f5576c)">Pink</option>
+                <option value="linear-gradient(135deg,#4facfe,#00f2fe)">Ocean</option>
+                <option value="linear-gradient(135deg,#43e97b,#38f9d7)">Green</option>
+                <option value="linear-gradient(135deg,#fa709a,#fee140)">Sunset</option>
+                <option value="#1a1a2e">Dark</option>
+            </select>
+            <button onclick="doCapture()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download PNG</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Your Code</span>
+                <textarea id="ci-input" oninput="updatePreview()" rows="12" class="glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Paste your code here...">function hello() {
+  console.log("Hello, World!");
+  return 42;
+}</textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Preview</span>
+                <div class="overflow-auto glass-card rounded-2xl p-4">
+                    <div id="code-canvas">
+                        <div id="code-inner">
+                            <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+                            <div id="code-text"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function updatePreview(){document.getElementById('code-text').textContent=document.getElementById('ci-input').value;}
+function updateBg(){document.getElementById('code-canvas').style.background=document.getElementById('bg-theme').value;}
+function doCapture(){
+    html2canvas(document.getElementById('code-canvas'),{scale:2,backgroundColor:null}).then(canvas=>{
+        const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='code-snapshot.png';a.click();
+    });
+}
+updatePreview();
+</script>
+{% endblock %}

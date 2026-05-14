@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Tweet Screenshot Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/tweet-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Tweet Screenshot Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-72 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Display Name</label>
+            <input id="tw-name" type="text" value="John Doe" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Username</label>
+            <input id="tw-user" type="text" value="@johndoe" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Tweet Text</label>
+            <textarea id="tw-text" rows="4" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none">Just discovered an amazing tool! 🚀</textarea>
+            <label class="text-[10px] font-black text-slate-500 uppercase">Likes</label>
+            <input id="tw-likes" type="text" value="1,234" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Retweets</label>
+            <input id="tw-rts" type="text" value="567" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase"><input type="checkbox" id="tw-verified" checked onchange="upd()" class="accent-indigo-500"> Verified</label>
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase"><input type="checkbox" id="tw-dark" checked onchange="upd()" class="accent-indigo-500"> Dark Mode</label>
+            <button onclick="capture()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download</button>
+        </div>
+        <div class="flex-1 flex items-start justify-center pt-8">
+            <div id="tweet-card" style="padding:24px;border-radius:16px;max-width:550px;width:100%">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);flex-shrink:0"></div>
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:4px"><span id="t-name" style="font-weight:700;font-size:15px"></span><span id="t-badge">✓</span><span id="t-user" style="font-size:14px;opacity:0.5"></span></div>
+                        <p id="t-text" style="font-size:16px;line-height:1.5;margin:8px 0 16px;white-space:pre-wrap"></p>
+                        <div style="font-size:13px;opacity:0.5;margin-bottom:12px" id="t-date"></div>
+                        <div style="border-top:1px solid rgba(128,128,128,0.2);padding-top:12px;display:flex;gap:24px;font-size:13px;opacity:0.6"><span>💬 42</span><span id="t-rts">🔄 567</span><span id="t-likes">❤️ 1,234</span><span>📤</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function upd(){
+    const dark=document.getElementById('tw-dark').checked;const card=document.getElementById('tweet-card');
+    card.style.background=dark?'#15202b':'#fff';card.style.color=dark?'#e7e9ea':'#0f1419';
+    document.getElementById('t-name').textContent=document.getElementById('tw-name').value;
+    document.getElementById('t-user').textContent=document.getElementById('tw-user').value;
+    document.getElementById('t-text').textContent=document.getElementById('tw-text').value;
+    document.getElementById('t-likes').textContent='❤️ '+document.getElementById('tw-likes').value;
+    document.getElementById('t-rts').textContent='🔄 '+document.getElementById('tw-rts').value;
+    document.getElementById('t-badge').style.display=document.getElementById('tw-verified').checked?'':'none';
+    const now=new Date();document.getElementById('t-date').textContent=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' · '+now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function capture(){html2canvas(document.getElementById('tweet-card'),{scale:2}).then(c=>{const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='tweet.png';a.click();});}
+upd();
+</script>
+{% endblock %}

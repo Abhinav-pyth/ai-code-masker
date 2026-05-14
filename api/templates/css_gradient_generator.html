@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}CSS Gradient Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-gradient-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Gradient Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Type:</label>
+            <select id="g-type" onchange="updateGrad()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                <option value="linear">Linear</option><option value="radial">Radial</option><option value="conic">Conic</option>
+            </select>
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Angle:</label>
+            <input type="range" id="g-angle" min="0" max="360" value="135" oninput="updateGrad()" class="w-24 accent-indigo-500">
+            <span id="g-angle-val" class="text-[10px] text-indigo-400 font-bold">135°</span>
+        </div>
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Color 1:</label>
+            <input type="color" id="g-c1" value="#6366f1" oninput="updateGrad()" class="w-10 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Color 2:</label>
+            <input type="color" id="g-c2" value="#ec4899" oninput="updateGrad()" class="w-10 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Color 3:</label>
+            <input type="color" id="g-c3" value="#f59e0b" oninput="updateGrad()" class="w-10 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="flex items-center gap-1 text-[10px] text-slate-400"><input type="checkbox" id="g-use3" onchange="updateGrad()" class="accent-indigo-500"> Use 3rd</label>
+        </div>
+        <div id="g-preview" class="w-full h-48 rounded-2xl border border-white/10 transition-all duration-300"></div>
+        <div class="flex flex-wrap gap-2 mb-2">
+            <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Presets:</span>
+            <button onclick="preset('#667eea','#764ba2',135)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,#667eea,#764ba2)"></button>
+            <button onclick="preset('#f093fb','#f5576c',135)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,#f093fb,#f5576c)"></button>
+            <button onclick="preset('#4facfe','#00f2fe',135)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"></button>
+            <button onclick="preset('#43e97b','#38f9d7',135)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,#43e97b,#38f9d7)"></button>
+            <button onclick="preset('#fa709a','#fee140',90)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(90deg,#fa709a,#fee140)"></button>
+            <button onclick="preset('#a18cd1','#fbc2eb',135)" class="w-8 h-8 rounded-lg" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)"></button>
+        </div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('g-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <code id="g-code" class="code-font text-sm text-indigo-300 block"></code>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function updateGrad(){
+    const type=document.getElementById('g-type').value;
+    const angle=document.getElementById('g-angle').value;
+    const c1=document.getElementById('g-c1').value;
+    const c2=document.getElementById('g-c2').value;
+    const c3=document.getElementById('g-c3').value;
+    const use3=document.getElementById('g-use3').checked;
+    document.getElementById('g-angle-val').textContent=angle+'°';
+    const colors=use3?`${c1}, ${c2}, ${c3}`:`${c1}, ${c2}`;
+    let css;
+    if(type==='linear')css=`linear-gradient(${angle}deg, ${colors})`;
+    else if(type==='radial')css=`radial-gradient(circle, ${colors})`;
+    else css=`conic-gradient(from ${angle}deg, ${colors})`;
+    document.getElementById('g-preview').style.background=css;
+    document.getElementById('g-code').textContent=`background: ${css};`;
+}
+function preset(c1,c2,a){document.getElementById('g-c1').value=c1;document.getElementById('g-c2').value=c2;document.getElementById('g-angle').value=a;document.getElementById('g-use3').checked=false;updateGrad();}
+updateGrad();
+</script>
+{% endblock %}

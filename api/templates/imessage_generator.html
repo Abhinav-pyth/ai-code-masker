@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}iMessage Chat Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/imessage-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">iMessage Chat Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-72 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3 overflow-auto max-h-[80vh]">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Contact Name</label>
+            <input id="im-name" type="text" value="Mom" oninput="render()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <div id="im-msgs" class="flex flex-col gap-2"></div>
+            <div class="flex gap-2">
+                <button onclick="addMsg('sent')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold bg-blue-600/20 border border-blue-500/30 text-blue-300 hover:bg-blue-600/40 transition-all">+ Sent</button>
+                <button onclick="addMsg('received')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">+ Received</button>
+            </div>
+            <button onclick="capture()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download</button>
+        </div>
+        <div class="flex-1 flex items-start justify-center pt-4">
+            <div id="im-card" style="width:380px;border-radius:20px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#000">
+                <div style="padding:12px 16px;text-align:center;border-bottom:1px solid #222"><div style="font-size:10px;color:#666">Today</div><div id="im-hname" style="color:#fff;font-size:17px;font-weight:600;margin-top:4px">Mom</div></div>
+                <div id="im-chat" style="padding:16px 12px;min-height:300px;display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let messages=[{type:'received',text:'Are you coming for dinner?'},{type:'sent',text:'Yes! Be there at 7 🍕'},{type:'received',text:'Great! See you soon ❤️'},{type:'sent',text:'Love you mom!'}];
+function render(){
+    document.getElementById('im-hname').textContent=document.getElementById('im-name').value;
+    document.getElementById('im-chat').innerHTML=messages.map(m=>`<div style="align-self:${m.type==='sent'?'flex-end':'flex-start'};background:${m.type==='sent'?'#0b93f6':'#2c2c2e'};color:#fff;padding:8px 14px;border-radius:18px;max-width:75%;font-size:16px;line-height:1.4">${m.text}</div>`).join('');
+    document.getElementById('im-msgs').innerHTML=messages.map((m,i)=>`<div class="flex gap-1 items-center"><input type="text" value="${m.text}" onchange="messages[${i}].text=this.value;render()" class="flex-grow bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] text-white outline-none"><button onclick="messages.splice(${i},1);render()" class="text-red-400 text-xs">✕</button></div>`).join('');
+}
+function addMsg(type){messages.push({type,text:'New message'});render();}
+function capture(){html2canvas(document.getElementById('im-card'),{scale:2,backgroundColor:'#000'}).then(c=>{const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='imessage.png';a.click();});}
+render();
+</script>
+{% endblock %}

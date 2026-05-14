@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}CSS Background Pattern Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-pattern-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Background Pattern Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color 1:</label>
+            <input type="color" id="p-c1" value="#1e1b4b" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color 2:</label>
+            <input type="color" id="p-c2" value="#312e81" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Size: <span id="v-sz" class="text-indigo-400">20</span>px</label>
+            <input type="range" id="p-size" min="5" max="80" value="20" oninput="upd()" class="w-24 accent-indigo-500">
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" id="patterns-grid"></div>
+        <div class="flex-1 glass-card rounded-2xl min-h-[200px] transition-all duration-300" id="pat-preview"></div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('pat-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <pre id="pat-code" class="code-font text-xs text-indigo-300 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+const patterns=[
+    {name:'Stripes',fn:(c1,c2,s)=>`repeating-linear-gradient(45deg,${c1},${c1} ${s/4}px,${c2} ${s/4}px,${c2} ${s/2}px)`},
+    {name:'Dots',fn:(c1,c2,s)=>`radial-gradient(circle,${c2} 1px,${c1} 1px);background-size:${s}px ${s}px`},
+    {name:'Grid',fn:(c1,c2,s)=>`linear-gradient(${c2} 1px,transparent 1px),linear-gradient(90deg,${c2} 1px,transparent 1px);background-size:${s}px ${s}px`},
+    {name:'Zigzag',fn:(c1,c2,s)=>`linear-gradient(135deg,${c2} 25%,transparent 25%),linear-gradient(225deg,${c2} 25%,transparent 25%),linear-gradient(315deg,${c2} 25%,transparent 25%),linear-gradient(45deg,${c2} 25%,transparent 25%);background-size:${s}px ${s}px`},
+    {name:'Checkerboard',fn:(c1,c2,s)=>`conic-gradient(${c2} 25%,${c1} 25% 50%,${c2} 50% 75%,${c1} 75%);background-size:${s}px ${s}px`},
+    {name:'Waves',fn:(c1,c2,s)=>`radial-gradient(circle at 50% 0,transparent ${s*0.6}px,${c2} ${s*0.6}px,${c2} ${s*0.7}px,transparent ${s*0.7}px),radial-gradient(circle at 50% ${s}px,transparent ${s*0.6}px,${c2} ${s*0.6}px,${c2} ${s*0.7}px,transparent ${s*0.7}px);background-size:${s}px ${s}px;background-color:${c1}`},
+    {name:'Diamonds',fn:(c1,c2,s)=>`linear-gradient(45deg,${c2} 25%,transparent 25%,transparent 75%,${c2} 75%),linear-gradient(45deg,${c2} 25%,transparent 25%,transparent 75%,${c2} 75%);background-size:${s}px ${s}px;background-position:0 0,${s/2}px ${s/2}px`},
+    {name:'Hrzntl Lines',fn:(c1,c2,s)=>`repeating-linear-gradient(0deg,${c1},${c1} ${s-1}px,${c2} ${s-1}px,${c2} ${s}px)`},
+];
+let selected=0;
+function renderGrid(){
+    const c1=document.getElementById('p-c1').value,c2=document.getElementById('p-c2').value,s=+document.getElementById('p-size').value;
+    document.getElementById('patterns-grid').innerHTML=patterns.map((p,i)=>`<div onclick="select(${i})" class="rounded-xl h-20 cursor-pointer border-2 ${i===selected?'border-indigo-500':'border-white/5'} hover:border-indigo-400 transition-all" style="background:${p.fn(c1,c2,s)}" title="${p.name}"></div>`).join('');
+}
+function select(i){selected=i;upd();}
+function upd(){
+    const c1=document.getElementById('p-c1').value,c2=document.getElementById('p-c2').value,s=+document.getElementById('p-size').value;
+    document.getElementById('v-sz').textContent=s;
+    const css=patterns[selected].fn(c1,c2,s);
+    document.getElementById('pat-preview').style.cssText=`background:${css};min-height:200px;border-radius:16px;`;
+    document.getElementById('pat-code').textContent=`background: ${css};`;
+    renderGrid();
+}
+upd();
+</script>
+{% endblock %}

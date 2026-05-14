@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Image Cropper{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-cropper{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image Cropper</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer">📁 Choose Image<input type="file" id="ic-file" accept="image/*" onchange="loadImg(event)" class="hidden"></label>
+            <button onclick="doCrop()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all">✂ Crop & Download</button>
+            <span class="text-[10px] text-slate-500">Drag on image to select crop area</span>
+        </div>
+        <div class="flex-1 glass-card rounded-2xl p-4 overflow-auto relative min-h-[300px]" id="crop-container">
+            <canvas id="crop-canvas" class="max-w-full cursor-crosshair"></canvas>
+            <div id="crop-overlay" class="absolute border-2 border-indigo-400 bg-indigo-400/10 pointer-events-none hidden" style="z-index:10"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+let img=null,crop={x:0,y:0,w:0,h:0},dragging=false,startX,startY;
+const canvas=document.getElementById('crop-canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('crop-overlay'),container=document.getElementById('crop-container');
+function loadImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{img=new Image();img.onload=()=>{canvas.width=img.width;canvas.height=img.height;ctx.drawImage(img,0,0);overlay.classList.add('hidden');};img.src=ev.target.result;};r.readAsDataURL(f);}
+canvas.addEventListener('mousedown',e=>{if(!img)return;const rect=canvas.getBoundingClientRect();const scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;startX=e.clientX-rect.left;startY=e.clientY-rect.top;crop.x=startX*scaleX;crop.y=startY*scaleY;dragging=true;overlay.classList.remove('hidden');});
+canvas.addEventListener('mousemove',e=>{if(!dragging)return;const rect=canvas.getBoundingClientRect();const curX=e.clientX-rect.left,curY=e.clientY-rect.top;const scaleX=canvas.width/rect.width,scaleY=canvas.height/rect.height;crop.w=(curX-startX)*scaleX;crop.h=(curY-startY)*scaleY;overlay.style.left=Math.min(startX,curX)+canvas.offsetLeft+'px';overlay.style.top=Math.min(startY,curY)+canvas.offsetTop+'px';overlay.style.width=Math.abs(curX-startX)+'px';overlay.style.height=Math.abs(curY-startY)+'px';});
+document.addEventListener('mouseup',()=>{dragging=false;});
+function doCrop(){if(!img||!crop.w||!crop.h)return;const x=crop.w<0?crop.x+crop.w:crop.x,y=crop.h<0?crop.y+crop.h:crop.y,w=Math.abs(crop.w),h=Math.abs(crop.h);const c2=document.createElement('canvas');c2.width=w;c2.height=h;c2.getContext('2d').drawImage(canvas,x,y,w,h,0,0,w,h);const a=document.createElement('a');a.href=c2.toDataURL('image/png');a.download='cropped.png';a.click();}
+</script>
+{% endblock %}

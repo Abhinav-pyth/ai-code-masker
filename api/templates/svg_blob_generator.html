@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}SVG Blob Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/svg-blob-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">SVG Blob Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <button onclick="gen()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">🎲 Randomize</button>
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color:</label>
+            <input type="color" id="bl-color" value="#6366f1" oninput="gen()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Complexity: <span id="v-comp" class="text-indigo-400">6</span></label>
+            <input type="range" id="bl-comp" min="3" max="12" value="6" oninput="gen()" class="w-24 accent-indigo-500">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Size: <span id="v-size" class="text-indigo-400">300</span>px</label>
+            <input type="range" id="bl-size" min="100" max="600" value="300" oninput="gen()" class="w-24 accent-indigo-500">
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[350px]" id="blob-container"></div>
+        <div class="flex gap-2">
+            <button onclick="copySVG()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Copy SVG</button>
+            <button onclick="downloadSVG()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Download SVG</button>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+let currentSVG='';
+function gen(){
+    const color=document.getElementById('bl-color').value,comp=+document.getElementById('bl-comp').value,size=+document.getElementById('bl-size').value;
+    document.getElementById('v-comp').textContent=comp;document.getElementById('v-size').textContent=size;
+    const points=[];const cx=size/2,cy=size/2,r=size/2*0.8;
+    for(let i=0;i<comp;i++){const angle=(i/comp)*Math.PI*2;const rand=r*(0.7+Math.random()*0.6);points.push({x:cx+Math.cos(angle)*rand,y:cy+Math.sin(angle)*rand});}
+    let d=`M ${points[0].x} ${points[0].y}`;
+    for(let i=0;i<points.length;i++){const p1=points[i],p2=points[(i+1)%points.length];const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;d+=` Q ${p1.x} ${p1.y} ${mx} ${my}`;}
+    d+=' Z';
+    currentSVG=`<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><path d="${d}" fill="${color}"/></svg>`;
+    document.getElementById('blob-container').innerHTML=currentSVG;
+}
+function copySVG(){navigator.clipboard.writeText(currentSVG);}
+function downloadSVG(){const a=document.createElement('a');a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(currentSVG);a.download='blob.svg';a.click();}
+gen();
+</script>
+{% endblock %}

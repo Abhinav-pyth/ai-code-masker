@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}CSS Text Glitch Effect Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-glitch-generator{% endblock %}
+{% block extra_styles %}
+@keyframes glitch1{0%{clip-path:inset(40% 0 61% 0)}20%{clip-path:inset(92% 0 1% 0)}40%{clip-path:inset(43% 0 1% 0)}60%{clip-path:inset(25% 0 58% 0)}80%{clip-path:inset(54% 0 7% 0)}100%{clip-path:inset(58% 0 43% 0)}}
+@keyframes glitch2{0%{clip-path:inset(65% 0 13% 0)}20%{clip-path:inset(79% 0 2% 0)}40%{clip-path:inset(48% 0 38% 0)}60%{clip-path:inset(33% 0 2% 0)}80%{clip-path:inset(15% 0 62% 0)}100%{clip-path:inset(67% 0 11% 0)}}
+.glitch-wrap{position:relative;display:inline-block}.glitch-text{font-size:64px;font-weight:900;text-transform:uppercase;letter-spacing:8px}
+.glitch-text::before,.glitch-text::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+.glitch-text::before{left:2px;text-shadow:-2px 0 #ff00c1;animation:glitch1 0.65s infinite linear alternate-reverse}
+.glitch-text::after{left:-2px;text-shadow:2px 0 #00fff9;animation:glitch2 0.65s infinite linear alternate-reverse}
+{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Text Glitch Effect</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <input id="gl-text" type="text" value="GLITCH" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white outline-none w-48" placeholder="Your text">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color 1:</label>
+            <input type="color" id="gl-c1" value="#ff00c1" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color 2:</label>
+            <input type="color" id="gl-c2" value="#00fff9" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Size:</label>
+            <input type="range" id="gl-size" min="24" max="120" value="64" oninput="upd()" class="w-24 accent-indigo-500">
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-12 min-h-[250px] bg-black/40">
+            <div class="glitch-wrap"><span id="glitch-el" class="glitch-text text-white" data-text="GLITCH">GLITCH</span></div>
+        </div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('gl-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <pre id="gl-code" class="code-font text-xs text-indigo-300 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const text=document.getElementById('gl-text').value||'GLITCH';
+    const c1=document.getElementById('gl-c1').value,c2=document.getElementById('gl-c2').value;
+    const size=document.getElementById('gl-size').value;
+    const el=document.getElementById('glitch-el');
+    el.textContent=text;el.setAttribute('data-text',text);el.style.fontSize=size+'px';
+    document.getElementById('gl-code').textContent=`.glitch {\n  position: relative;\n  font-size: ${size}px;\n  font-weight: 900;\n  text-transform: uppercase;\n  letter-spacing: 8px;\n}\n.glitch::before, .glitch::after {\n  content: attr(data-text);\n  position: absolute;\n  top: 0; left: 0;\n  width: 100%; height: 100%;\n}\n.glitch::before {\n  left: 2px;\n  text-shadow: -2px 0 ${c1};\n  animation: glitch1 0.65s infinite linear alternate-reverse;\n}\n.glitch::after {\n  left: -2px;\n  text-shadow: 2px 0 ${c2};\n  animation: glitch2 0.65s infinite linear alternate-reverse;\n}`;
+}
+</script>
+{% endblock %}

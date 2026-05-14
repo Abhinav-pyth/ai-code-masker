@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}JavaScript Minifier{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/js-minifier{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JavaScript Minifier</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-4 flex-grow overflow-hidden">
+        <div class="flex gap-2 items-center">
+            <button onclick="doMinify()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">Minify</button>
+            <button onclick="doDownload()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Download .min.js</button>
+            <span id="jm-stats" class="text-[10px] text-slate-500 font-bold ml-2"></span>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input JavaScript</span>
+                <textarea id="jm-input" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Paste your JavaScript code here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Minified</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('jm-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="jm-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function doMinify(){
+    const src=document.getElementById('jm-input').value;
+    let m=src.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\n\s*/g,'\n').replace(/\s*([{}();,=+\-*/<>!&|?:])\s*/g,'$1').replace(/\n+/g,' ').replace(/\s{2,}/g,' ').trim();
+    document.getElementById('jm-output').value=m;
+    const saved=src.length-m.length;
+    document.getElementById('jm-stats').textContent=`${src.length} → ${m.length} (saved ${saved} chars, ${src.length?Math.round(saved/src.length*100):0}%)`;
+}
+function doDownload(){
+    const m=document.getElementById('jm-output').value;if(!m)return;
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([m],{type:'text/javascript'}));a.download='script.min.js';a.click();
+}
+</script>
+{% endblock %}

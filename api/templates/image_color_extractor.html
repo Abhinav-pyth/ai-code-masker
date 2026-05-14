@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Image Color Extractor{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-color-extractor{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image Color Extractor</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer inline-block w-fit">📁 Choose Image<input type="file" accept="image/*" onchange="extract(event)" class="hidden"></label>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card rounded-2xl p-4"><canvas id="ce-canvas" class="max-w-full rounded-xl"></canvas></div>
+            <div><div class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase mb-3">Dominant Colors</div><div id="ce-colors" class="flex flex-col gap-2"></div></div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function extract(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.getElementById('ce-canvas'),ctx=c.getContext('2d');c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);const d=ctx.getImageData(0,0,c.width,c.height).data;const map={};for(let i=0;i<d.length;i+=16){const r=Math.round(d[i]/32)*32,g=Math.round(d[i+1]/32)*32,b=Math.round(d[i+2]/32)*32;const k=`${r},${g},${b}`;map[k]=(map[k]||0)+1;}const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);const total=sorted.reduce((s,e)=>s+e[1],0);document.getElementById('ce-colors').innerHTML=sorted.map(([k,v])=>{const[r,g,b]=k.split(',');const hex='#'+[r,g,b].map(x=>(+x).toString(16).padStart(2,'0')).join('');const pct=Math.round(v/total*100);return`<div class="glass-card rounded-xl p-3 flex items-center gap-3 cursor-pointer" onclick="navigator.clipboard.writeText('${hex}')"><div class="w-10 h-10 rounded-lg shrink-0" style="background:${hex}"></div><div class="flex-grow"><div class="code-font text-sm text-white">${hex}</div><div class="text-[9px] text-slate-500">rgb(${r},${g},${b})</div></div><div class="text-[10px] font-bold text-indigo-400">${pct}%</div></div>`;}).join('');};img.src=ev.target.result;};r.readAsDataURL(f);}
+</script>
+{% endblock %}

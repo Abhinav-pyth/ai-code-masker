@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Instagram Post Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/instagram-post-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Instagram Post Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-72 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3 overflow-auto max-h-[80vh]">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Username</label>
+            <input id="ig-user" type="text" value="johndoe" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Caption</label>
+            <textarea id="ig-cap" rows="3" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none">Living my best life ✨ #goodvibes</textarea>
+            <label class="text-[10px] font-black text-slate-500 uppercase">Likes</label>
+            <input id="ig-likes" type="text" value="2,456" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Image BG Color</label>
+            <input type="color" id="ig-bg" value="#667eea" oninput="upd()" class="w-full h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase"><input type="checkbox" id="ig-verified" onchange="upd()" class="accent-indigo-500"> Verified</label>
+            <button onclick="capture()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download</button>
+        </div>
+        <div class="flex-1 flex items-start justify-center pt-4">
+            <div id="ig-card" style="width:400px;background:#000;border-radius:8px;overflow:hidden;font-family:-apple-system,sans-serif">
+                <div style="padding:12px 14px;display:flex;align-items:center;gap:10px">
+                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"></div>
+                    <span id="p-user" style="font-size:14px;font-weight:600;color:#fff"></span><span id="p-badge" style="display:none">✓</span>
+                </div>
+                <div id="p-img" style="width:400px;height:400px;display:flex;align-items:center;justify-content:center;font-size:48px">📷</div>
+                <div style="padding:12px 14px">
+                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:24px">♡ 💬 ✈</div>
+                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:6px" id="p-likes"></div>
+                    <div style="font-size:14px;color:#fff"><span id="p-capuser" style="font-weight:600"></span> <span id="p-cap"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function upd(){
+    document.getElementById('p-user').textContent=document.getElementById('ig-user').value;
+    document.getElementById('p-capuser').textContent=document.getElementById('ig-user').value;
+    document.getElementById('p-cap').textContent=document.getElementById('ig-cap').value;
+    document.getElementById('p-likes').textContent=document.getElementById('ig-likes').value+' likes';
+    document.getElementById('p-img').style.background=document.getElementById('ig-bg').value;
+    document.getElementById('p-badge').style.display=document.getElementById('ig-verified').checked?'inline':'none';
+}
+function capture(){html2canvas(document.getElementById('ig-card'),{scale:2}).then(c=>{const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='instagram-post.png';a.click();});}
+upd();
+</script>
+{% endblock %}

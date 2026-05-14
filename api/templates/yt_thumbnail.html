@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}YouTube Thumbnail Grabber{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/yt-thumbnail{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">YouTube Thumbnail Grabber</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="glass-card rounded-2xl p-6 flex gap-3 items-center">
+            <input id="yt-url" type="text" class="flex-grow bg-transparent border-b border-white/10 pb-2 text-sm text-white outline-none code-font" placeholder="Paste YouTube URL (e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ)">
+            <button onclick="grab()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all shrink-0">Grab</button>
+        </div>
+        <div id="yt-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function extractId(url){const m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\s]{11})/);return m?m[1]:null;}
+function grab(){
+    const id=extractId(document.getElementById('yt-url').value);
+    if(!id){document.getElementById('yt-results').innerHTML='<div class="text-red-400 text-sm">Invalid YouTube URL</div>';return;}
+    const sizes=[{name:'Max Resolution',url:`https://img.youtube.com/vi/${id}/maxresdefault.jpg`},{name:'SD Default',url:`https://img.youtube.com/vi/${id}/sddefault.jpg`},{name:'HQ Default',url:`https://img.youtube.com/vi/${id}/hqdefault.jpg`},{name:'Default',url:`https://img.youtube.com/vi/${id}/default.jpg`}];
+    document.getElementById('yt-results').innerHTML=sizes.map(s=>`<div class="glass-card rounded-2xl p-4"><div class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">${s.name}</div><img src="${s.url}" class="w-full rounded-xl mb-3" onerror="this.style.display='none'"><a href="${s.url}" download target="_blank" class="text-[10px] text-indigo-400 hover:text-white transition-all">Download ↓</a></div>`).join('');
+}
+</script>
+{% endblock %}
