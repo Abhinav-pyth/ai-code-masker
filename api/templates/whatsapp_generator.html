@@ -1,29 +1,65 @@
 {% extends "base.html" %}
 {% block title %}WhatsApp Chat Generator{% endblock %}
 {% block canonical %}https://ai-code-masker.vercel.app/whatsapp-generator{% endblock %}
+{% block extra_styles %}
+    .wa-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+    .dark-theme .wa-input { background: rgba(255,255,255,0.05); }
+{% endblock %}
 {% block content %}
-    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
-        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">WhatsApp Chat Generator</h2>
-    </div>
-    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
-        <div class="w-full lg:w-72 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3 overflow-auto max-h-[80vh]">
-            <label class="text-[10px] font-black text-slate-500 uppercase">Contact Name</label>
-            <input id="wa-name" type="text" value="Alex" oninput="render()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
-            <div id="wa-msgs" class="flex flex-col gap-2"></div>
-            <div class="flex gap-2">
-                <button onclick="addMsg('sent')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/40 transition-all">+ Sent</button>
-                <button onclick="addMsg('received')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">+ Received</button>
+    <div class="p-4 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+        <div class="w-full lg:w-80 shrink-0 glass-card rounded-2xl p-6 flex flex-col gap-4">
+            <h2 class="text-sm font-black text-emerald-600 uppercase tracking-widest mb-2">Chat Editor</h2>
+            
+            <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Contact Name</label>
+                <input id="wa-name" type="text" value="Alex" oninput="render()" class="wa-input w-full rounded-lg px-3 py-2 text-sm outline-none">
             </div>
-            <button onclick="capture()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download</button>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Profile Photo</label>
+                <label class="flex items-center justify-center h-10 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-lg cursor-pointer hover:border-emerald-500 transition-colors">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                    <input type="file" accept="image/*" onchange="loadAvatar(event)" class="hidden">
+                </label>
+            </div>
+
+            <div id="wa-msgs-ctrl" class="flex flex-col gap-2 max-h-[40vh] overflow-y-auto pr-2">
+                <!-- Messages list injected here -->
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="addMsg('sent')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-black uppercase bg-emerald-600/10 border border-emerald-500/20 text-emerald-600 hover:bg-emerald-600/20 transition-all">+ Sent</button>
+                <button onclick="addMsg('received')" class="flex-1 px-3 py-2 rounded-lg text-[10px] font-black uppercase bg-slate-100 dark:bg-white/5 border border-transparent dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-all">+ Recv</button>
+            </div>
+
+            <button onclick="capture()" class="mt-2 w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all">Download PNG</button>
         </div>
-        <div class="flex-1 flex items-start justify-center pt-4">
-            <div id="wa-card" style="width:380px;border-radius:12px;overflow:hidden;font-family:-apple-system,sans-serif">
-                <div style="background:#075e54;padding:12px 16px;display:flex;align-items:center;gap:10px">
-                    <div style="font-size:18px">←</div>
-                    <div style="width:36px;height:36px;border-radius:50%;background:#128c7e"></div>
-                    <div><div id="wa-hname" style="color:#fff;font-size:16px;font-weight:600">Alex</div><div style="color:rgba(255,255,255,0.6);font-size:12px">online</div></div>
+
+        <div class="flex-1 flex items-start justify-center">
+            <div id="wa-card" class="shadow-2xl" style="width:380px;border-radius:0;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+                <div style="background:#075e54;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="color:#fff;font-size:20px;cursor:pointer">←</div>
+                        <div id="p-wa-avatar-cont" style="width:38px;height:38px;border-radius:50%;background:#128c7e;overflow:hidden;display:flex;align-items:center;justify-content:center">
+                            <img id="p-wa-avatar" src="" style="display:none;width:100%;height:100%;object-fit:cover">
+                            <span id="p-wa-placeholder" style="color:#fff;font-size:18px">👤</span>
+                        </div>
+                        <div>
+                            <div id="p-wa-name" style="color:#fff;font-size:16px;font-weight:600;line-height:1.2">Alex</div>
+                            <div style="color:rgba(255,255,255,0.7);font-size:12px">online</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:18px;color:#fff;font-size:18px">
+                        <span>📹</span> <span>📞</span> <span>⋮</span>
+                    </div>
                 </div>
-                <div id="wa-chat" style="background:#ece5dd;padding:16px 12px;min-height:300px;display:flex;flex-direction:column;gap:4px;background-image:url('data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M0 0h200v200H0z\' fill=\'%23d9d2c5\' fill-opacity=\'.1\'/%3E%3C/svg%3E')"></div>
+                <div id="wa-chat" style="background:#e5ddd5;padding:12px;min-height:400px;display:flex;flex-direction:column;gap:6px;background-image:url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');background-size:contain">
+                    <!-- Messages rendered here -->
+                </div>
             </div>
         </div>
     </div>
@@ -32,14 +68,51 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 let messages=[{type:'received',text:'Hey! How are you?'},{type:'sent',text:'I\'m great! Thanks 😊'},{type:'received',text:'Want to grab coffee?'},{type:'sent',text:'Sure! Let\'s go ☕'}];
+
 function render(){
-    document.getElementById('wa-hname').textContent=document.getElementById('wa-name').value;
-    const chat=document.getElementById('wa-chat');const now=new Date();const time=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
-    chat.innerHTML=messages.map(m=>`<div style="align-self:${m.type==='sent'?'flex-end':'flex-start'};background:${m.type==='sent'?'#dcf8c6':'#fff'};padding:6px 10px;border-radius:8px;max-width:75%;font-size:14px;color:#303030;position:relative"><span>${m.text}</span><span style="font-size:10px;color:#999;margin-left:8px;float:right;margin-top:4px">${time}${m.type==='sent'?' ✓✓':''}</span></div>`).join('');
-    const ctrl=document.getElementById('wa-msgs');ctrl.innerHTML=messages.map((m,i)=>`<div class="flex gap-1 items-center"><input type="text" value="${m.text}" onchange="messages[${i}].text=this.value;render()" class="flex-grow bg-white/5 border border-white/10 rounded px-2 py-1 text-[10px] text-white outline-none"><button onclick="messages.splice(${i},1);render()" class="text-red-400 text-xs">✕</button></div>`).join('');
+    document.getElementById('p-wa-name').textContent=document.getElementById('wa-name').value || 'Alex';
+    const chat=document.getElementById('wa-chat');
+    const now=new Date();
+    const time=now.getHours()+':'+now.getMinutes().toString().padStart(2,'0');
+    
+    chat.innerHTML=messages.map(m=>`
+        <div style="align-self:${m.type==='sent'?'flex-end':'flex-start'};background:${m.type==='sent'?'#e7ffdb':'#fff'};padding:6px 10px;border-radius:8px;max-width:85%;font-size:14px;color:#111;position:relative;box-shadow:0 1px 0.5px rgba(0,0,0,0.13)">
+            <span style="display:inline-block;margin-right:12px">${m.text}</span>
+            <span style="font-size:10px;color:rgba(0,0,0,0.45);position:absolute;right:6px;bottom:4px;display:flex;align-items:center;gap:2px">
+                ${time} ${m.type==='sent'?'<svg class="w-3 h-3 text-blue-400" viewBox="0 0 16 11" fill="currentColor"><path d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.88a.32.32 0 01-.484.032l-.358-.325a.32.32 0 00-.484.032l-.378.48a.418.418 0 00.036.54l1.32 1.267a.32.32 0 00.484-.034l6.272-8.048a.366.366 0 00-.063-.507zM11.412 3.316l-.478-.372a.365.365 0 00-.51.063L5.068 9.88a.32.32 0 01-.484.032l-2.588-2.525a.313.313 0 00-.45 0l-.366.36a.317.317 0 000 .45l3.195 3.194a.32.32 0 00.484-.034l6.272-8.048a.366.366 0 00-.063-.507z"/></svg>':''}
+            </span>
+        </div>
+    `).join('');
+
+    const ctrl=document.getElementById('wa-msgs-ctrl');
+    ctrl.innerHTML=messages.map((m,i)=>`
+        <div class="flex gap-2 items-center bg-white/5 p-2 rounded-lg border border-white/5">
+            <input type="text" value="${m.text}" onchange="messages[${i}].text=this.value;render()" class="wa-input flex-grow bg-transparent border-0 rounded px-2 py-1 text-xs outline-none">
+            <button onclick="messages.splice(${i},1);render()" class="text-red-400 hover:bg-red-500/10 p-1 rounded">✕</button>
+        </div>
+    `).join('');
 }
-function addMsg(type){messages.push({type,text:'New message'});render();}
-function capture(){html2canvas(document.getElementById('wa-card'),{scale:2}).then(c=>{const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='whatsapp-chat.png';a.click();});}
+
+function loadAvatar(event) {
+    const output = document.getElementById('p-wa-avatar');
+    const placeholder = document.getElementById('p-wa-placeholder');
+    output.src = URL.createObjectURL(event.target.files[0]);
+    output.onload = function() {
+        URL.revokeObjectURL(output.src);
+        output.style.display = 'block';
+        placeholder.style.display = 'none';
+    }
+}
+
+function addMsg(type){messages.push({type,text:'New message...'});render();}
+function capture(){
+    html2canvas(document.getElementById('wa-card'),{scale:2, useCORS:true}).then(c=>{
+        const a=document.createElement('a');
+        a.href=c.toDataURL('image/png');
+        a.download='whatsapp-chat.png';
+        a.click();
+    });
+}
 render();
 </script>
 {% endblock %}

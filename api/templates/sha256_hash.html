@@ -1,27 +1,66 @@
 {% extends "base.html" %}
-{% block title %}SHA256 Hash Generator — Encrypt & Decrypt SHA256{% endblock %}
-{% block meta_description %}Generate SHA256 hashes from text strings using the Web Crypto API. Free online SHA256 encryption tool. 100% browser-based.{% endblock %}
+{% block title %}SHA256 Hash Generator — Secure SHA256 Encryption & Verification{% endblock %}
+{% block meta_description %}Generate secure SHA256 hashes from text strings. 100% browser-based SHA256 encryption and verification tool. No data leaves your machine.{% endblock %}
 {% block canonical %}https://ai-code-masker.vercel.app/sha256-hash{% endblock %}
 
+{% block extra_styles %}
+    .tool-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+    .dark-theme .tool-input { background: rgba(255,255,255,0.05); }
+{% endblock %}
+
 {% block content %}
-    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
-        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">SHA256 Encrypt / Decrypt</h2>
-    </div>
-    <div class="p-8 flex flex-col gap-6 flex-grow overflow-hidden">
-        <div class="flex-grow flex flex-col lg:flex-row gap-6 overflow-hidden">
-            <div class="flex-1 flex flex-col gap-2 overflow-hidden">
-                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Plain Text</span>
-                <textarea id="sha-input" oninput="doHash()"
-                    class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
-                    placeholder="Enter text to generate SHA-256 hash..."></textarea>
+    <div class="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">SHA256 Hash Tool</h1>
+                <p class="text-sm text-slate-500 font-medium">Secure, browser-side SHA-256 encryption and verification.</p>
             </div>
-            <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+            <div class="flex gap-2">
+                <button onclick="switchTab('encrypt')" id="tab-enc" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white transition-all shadow-lg shadow-indigo-500/20">Encrypt</button>
+                <button onclick="switchTab('verify')" id="tab-ver" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">Verify</button>
+                <button onclick="loadDemo()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Demo</button>
+            </div>
+        </div>
+
+        <div id="encrypt-panel" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Input Text</span>
+                <textarea id="sha-input" oninput="doHash()"
+                    class="tool-input rounded-2xl p-6 min-h-[200px] code-font text-sm outline-none resize-none"
+                    placeholder="Enter text to hash..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
                 <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">SHA-256 Hash (64 chars)</span>
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('sha-output').value);showToast('Copied!')" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">SHA-256 Output</span>
+                    <button onclick="copyOutput()" class="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">Copy Hash</button>
                 </div>
                 <textarea id="sha-output" readonly
-                    class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+                    class="tool-input rounded-2xl p-6 min-h-[200px] code-font text-sm outline-none resize-none bg-slate-50 dark:bg-black/20"
+                    placeholder="Result will appear here..."></textarea>
+            </div>
+        </div>
+
+        <div id="verify-panel" class="hidden flex flex-col gap-6">
+            <div class="glass-card rounded-2xl p-8 max-w-3xl">
+                <h3 class="text-lg font-bold mb-2">Verify SHA256 Hash</h3>
+                <p class="text-sm text-slate-500 mb-6">Compare a string against a known hash to verify its integrity.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Expected Hash</label>
+                        <input id="v-hash" type="text" placeholder="Paste hash here..." class="tool-input w-full rounded-xl px-4 py-3 code-font text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Input Text</label>
+                        <textarea id="v-text" rows="3" placeholder="Enter text to check..." class="tool-input w-full rounded-xl px-4 py-3 code-font text-sm outline-none resize-none"></textarea>
+                    </div>
+                    <button onclick="verifyHash()" class="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Check Match</button>
+                </div>
+                <div id="v-result" class="mt-6 p-4 rounded-xl hidden"></div>
             </div>
         </div>
     </div>
@@ -29,17 +68,75 @@
 
 {% block scripts %}
 <script>
-    async function doHash() {
-        const text = document.getElementById('sha-input').value;
-        if (!text) { document.getElementById('sha-output').value = ''; return; }
+    let currentMode = 'encrypt';
+
+    function switchTab(mode) {
+        currentMode = mode;
+        document.getElementById('encrypt-panel').classList.toggle('hidden', mode !== 'encrypt');
+        document.getElementById('verify-panel').classList.toggle('hidden', mode !== 'verify');
+        
+        document.getElementById('tab-enc').className = mode === 'encrypt' 
+            ? 'px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white transition-all shadow-lg'
+            : 'px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 transition-all';
+        
+        document.getElementById('tab-ver').className = mode === 'verify'
+            ? 'px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white transition-all shadow-lg'
+            : 'px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 transition-all';
+    }
+
+    async function hash(text) {
+        if (!text) return '';
         const data = new TextEncoder().encode(text);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        document.getElementById('sha-output').value = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
+
+    async function doHash() {
+        const text = document.getElementById('sha-input').value;
+        document.getElementById('sha-output').value = await hash(text);
+    }
+
+    async function verifyHash() {
+        const expected = document.getElementById('v-hash').value.trim().toLowerCase();
+        const text = document.getElementById('v-text').value;
+        const resultDiv = document.getElementById('v-result');
+        
+        if (!expected || !text) return;
+        
+        const actual = await hash(text);
+        resultDiv.classList.remove('hidden');
+        if (actual === expected) {
+            resultDiv.className = 'mt-6 p-4 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-bold text-sm';
+            resultDiv.innerHTML = '✓ SUCCESS: Hashes match perfectly.';
+        } else {
+            resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-bold text-sm';
+            resultDiv.innerHTML = '✕ FAILED: Hashes do not match.';
+        }
+    }
+
+    function loadDemo() {
+        if (currentMode === 'encrypt') {
+            document.getElementById('sha-input').value = 'AI Code Masker: Privacy-First Developer Tools';
+            doHash();
+        } else {
+            document.getElementById('v-text').value = 'Hello World';
+            document.getElementById('v-hash').value = 'a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e';
+            verifyHash();
+        }
+        showToast('Demo Loaded');
+    }
+
+    function copyOutput() {
+        const val = document.getElementById('sha-output').value;
+        if (!val) return;
+        navigator.clipboard.writeText(val);
+        showToast('Copied to Clipboard');
+    }
+
     function showToast(msg) {
         const t = document.createElement('div'); t.textContent = msg;
-        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+        t.className = 'fixed bottom-6 right-6 code-font text-xs font-black uppercase tracking-widest bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50';
         document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
     }
 </script>

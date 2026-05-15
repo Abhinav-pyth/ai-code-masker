@@ -1,91 +1,91 @@
 {% extends "base.html" %}
+{% block title %}Base64 Encode/Decode — Privacy-First Developer Tools{% endblock %}
+{% block meta_description %}Encode and decode Base64 strings locally in your browser. 100% private, no data sent to server. Support for UTF-8 and binary safe encoding.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/base64{% endblock %}
 
-{% block title %}Base64{% endblock %}
+{% block extra_styles %}
+    .tool-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+    .dark-theme .tool-input { background: rgba(255,255,255,0.05); }
+{% endblock %}
 
 {% block content %}
-<div style="min-height: 100%;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:0;margin:0;">
+    <div class="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Base64 Tool</h1>
+                <p class="text-sm text-slate-500 font-medium">Encode and decode text strings to/from Base64.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="doEncode()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Encode</button>
+                <button onclick="doDecode()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Decode</button>
+                <button onclick="loadDemo()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Demo</button>
+            </div>
+        </div>
 
-  <!-- Toolbar -->
-  <div style="backdrop-filter:blur(16px);background:rgba(30,41,59,0.7);border-bottom:1px solid rgba(99,102,241,0.2);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;">
-    <h1 style="margin:0;font-size:1.25rem;font-weight:700;letter-spacing:0.15em;color:#c7d2fe;font-family:'Segoe UI',system-ui,sans-serif;">BASE64 ENCODE / DECODE</h1>
-    <div style="display:flex;gap:10px;">
-      <button onclick="loadDemo()" style="padding:8px 20px;border:none;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Demo</button>
-      <button onclick="doEncode()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Encode</button>
-      <button onclick="doDecode()" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#e0e7ff;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Decode</button>
-      <button onclick="copyOutput()" style="padding:8px 20px;border:none;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;font-weight:600;cursor:pointer;font-size:0.85rem;letter-spacing:0.05em;transition:all 0.2s;">Copy Output</button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Input Text / Base64</span>
+                <textarea id="inputArea"
+                    class="tool-input rounded-2xl p-6 min-h-[300px] code-font text-sm outline-none resize-none"
+                    placeholder="Paste text or Base64 string here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Result Output</span>
+                    <button onclick="copyOutput()" class="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">Copy Result</button>
+                </div>
+                <textarea id="outputArea" readonly
+                    class="tool-input rounded-2xl p-6 min-h-[300px] code-font text-sm outline-none resize-none bg-slate-50 dark:bg-black/20"
+                    placeholder="Result will appear here..."></textarea>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <!-- Two-column layout -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:24px 32px;height: 100%;box-sizing:border-box;">
-
-    <!-- Left: Input -->
-    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
-      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Input</label>
-      <textarea id="inputArea" placeholder="Paste text or base64 string here..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.9rem;line-height:1.6;outline:none;transition:border-color 0.2s;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
-    </div>
-
-    <!-- Right: Output -->
-    <div class="glass-card" style="backdrop-filter:blur(20px);background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.15);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
-      <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.1em;color:#818cf8;margin-bottom:10px;text-transform:uppercase;">Output</label>
-      <textarea id="outputArea" readonly placeholder="Result will appear here..." style="flex:1;resize:none;background:rgba(15,23,42,0.5);border:1px solid rgba(99,102,241,0.1);border-radius:10px;padding:16px;color:#e2e8f0;font-size:0.9rem;line-height:1.6;outline:none;font-family:'Cascadia Code','Fira Code','Consolas',monospace;" class="code-font"></textarea>
-    </div>
-
-  </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  function loadDemo() {
-    const demo = "AI Code Masker: Privacy-first developer utilities.";
-    document.getElementById('inputArea').value = demo;
-    doEncode();
-    
-    const t = document.createElement('div');
-    t.textContent = 'Demo data loaded!';
-    t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
-    document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
-  }
-
-  function doEncode() {
-    const input = document.getElementById('inputArea').value;
-    try {
-      const encoded = btoa(unescape(encodeURIComponent(input)));
-      document.getElementById('outputArea').value = encoded;
-    } catch (e) {
-      document.getElementById('outputArea').value = 'Error encoding: ' + e.message;
+    function loadDemo() {
+        document.getElementById('inputArea').value = "AI Code Masker: Privacy-first developer utilities.";
+        doEncode();
+        showToast('Demo data loaded!');
     }
-  }
 
-  function doDecode() {
-    const input = document.getElementById('inputArea').value.trim();
-    try {
-      const decoded = decodeURIComponent(escape(atob(input)));
-      document.getElementById('outputArea').value = decoded;
-    } catch (e) {
-      document.getElementById('outputArea').value = 'Error decoding: ' + e.message;
+    function doEncode() {
+        const input = document.getElementById('inputArea').value;
+        try {
+            const encoded = btoa(unescape(encodeURIComponent(input)));
+            document.getElementById('outputArea').value = encoded;
+        } catch (e) {
+            document.getElementById('outputArea').value = 'Error encoding: ' + e.message;
+        }
     }
-  }
 
-  function copyOutput() {
-    const output = document.getElementById('outputArea');
-    if (!output.value) return;
-    navigator.clipboard.writeText(output.value).then(() => {
-      const btn = event.target;
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.style.background = 'rgba(34,197,94,0.25)';
-      btn.style.borderColor = 'rgba(34,197,94,0.4)';
-      btn.style.color = '#86efac';
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.style.background = 'rgba(99,102,241,0.15)';
-        btn.style.borderColor = 'rgba(99,102,241,0.3)';
-        btn.style.color = '#a5b4fc';
-      }, 1500);
-    });
-  }
+    function doDecode() {
+        const input = document.getElementById('inputArea').value.trim();
+        try {
+            const decoded = decodeURIComponent(escape(atob(input)));
+            document.getElementById('outputArea').value = decoded;
+        } catch (e) {
+            document.getElementById('outputArea').value = 'Error decoding: ' + e.message;
+        }
+    }
+
+    function copyOutput() {
+        const output = document.getElementById('outputArea');
+        if (!output.value) return;
+        navigator.clipboard.writeText(output.value).then(() => {
+            showToast('Copied to clipboard!');
+        });
+    }
+
+    function showToast(msg) {
+        const t = document.createElement('div'); t.textContent = msg;
+        t.className = 'fixed bottom-6 right-6 code-font text-xs font-black uppercase tracking-widest bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50';
+        document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
 </script>
 {% endblock %}

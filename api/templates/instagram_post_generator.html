@@ -1,34 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Instagram Post Generator{% endblock %}
 {% block canonical %}https://ai-code-masker.vercel.app/instagram-post-generator{% endblock %}
+{% block extra_styles %}
+    .ig-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        transition: border-color 0.2s;
+    }
+    .ig-input:focus {
+        border-color: var(--primary);
+    }
+    .dark-theme .ig-input {
+        background: rgba(255,255,255,0.05);
+    }
+{% endblock %}
 {% block content %}
-    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
-        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Instagram Post Generator</h2>
-    </div>
-    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
-        <div class="w-full lg:w-72 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3 overflow-auto max-h-[80vh]">
-            <label class="text-[10px] font-black text-slate-500 uppercase">Username</label>
-            <input id="ig-user" type="text" value="johndoe" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
-            <label class="text-[10px] font-black text-slate-500 uppercase">Caption</label>
-            <textarea id="ig-cap" rows="3" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none">Living my best life ✨ #goodvibes</textarea>
-            <label class="text-[10px] font-black text-slate-500 uppercase">Likes</label>
-            <input id="ig-likes" type="text" value="2,456" oninput="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
-            <label class="text-[10px] font-black text-slate-500 uppercase">Image BG Color</label>
-            <input type="color" id="ig-bg" value="#667eea" oninput="upd()" class="w-full h-8 rounded cursor-pointer border-0 bg-transparent">
-            <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase"><input type="checkbox" id="ig-verified" onchange="upd()" class="accent-indigo-500"> Verified</label>
-            <button onclick="capture()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">📷 Download</button>
-        </div>
-        <div class="flex-1 flex items-start justify-center pt-4">
-            <div id="ig-card" style="width:400px;background:#000;border-radius:8px;overflow:hidden;font-family:-apple-system,sans-serif">
-                <div style="padding:12px 14px;display:flex;align-items:center;gap:10px">
-                    <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"></div>
-                    <span id="p-user" style="font-size:14px;font-weight:600;color:#fff"></span><span id="p-badge" style="display:none">✓</span>
+    <div class="p-4 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+        <div class="w-full lg:w-80 shrink-0 glass-card rounded-2xl p-6 flex flex-col gap-4">
+            <h2 class="text-sm font-black text-indigo-600 uppercase tracking-widest mb-2">Editor</h2>
+            
+            <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Username</label>
+                <input id="ig-user" type="text" value="johndoe" oninput="upd()" class="ig-input w-full rounded-lg px-3 py-2 text-sm outline-none">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Caption</label>
+                <textarea id="ig-cap" rows="3" oninput="upd()" class="ig-input w-full rounded-lg px-3 py-2 text-sm outline-none resize-none">Living my best life ✨ #goodvibes</textarea>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Likes Count</label>
+                <input id="ig-likes" type="text" value="2,456" oninput="upd()" class="ig-input w-full rounded-lg px-3 py-2 text-sm outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Upload Photo</label>
+                    <label class="flex items-center justify-center h-10 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+                        <input type="file" id="ig-file" accept="image/*" onchange="loadFile(event)" class="hidden">
+                    </label>
                 </div>
-                <div id="p-img" style="width:400px;height:400px;display:flex;align-items:center;justify-content:center;font-size:48px">📷</div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">BG Color</label>
+                    <input type="color" id="ig-bg" value="#667eea" oninput="upd()" class="w-full h-10 rounded cursor-pointer border-0 bg-transparent p-0">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="ig-verified" onchange="upd()" class="w-4 h-4 rounded accent-indigo-600">
+                <label for="ig-verified" class="text-[10px] text-slate-500 font-black uppercase">Verified Account</label>
+            </div>
+
+            <button onclick="capture()" class="mt-2 w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Download PNG</button>
+        </div>
+
+        <div class="flex-1 flex items-start justify-center">
+            <div id="ig-card" class="shadow-2xl" style="width:400px;background:#fff;border-radius:0;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+                <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #efefef">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div id="p-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);padding:1px"><div style="background:#fff;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px">👤</div></div>
+                        <span id="p-user" style="font-size:13px;font-weight:600;color:#262626">johndoe</span>
+                        <svg id="p-badge" class="w-3.5 h-3.5 text-blue-500" style="display:none" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zM9.8 17.3l-4.2-4.1L7 11.8l2.8 2.7L17 7.4l1.4 1.4-8.6 8.5z"/></svg>
+                    </div>
+                    <div style="font-weight:900;font-size:18px;color:#262626">···</div>
+                </div>
+                <div id="p-img-cont" style="width:400px;height:400px;display:flex;align-items:center;justify-content:center;background:#667eea;overflow:hidden">
+                    <img id="p-main-img" src="" style="display:none;width:100%;height:100%;object-fit:cover">
+                    <span id="p-placeholder" style="font-size:48px">📷</span>
+                </div>
                 <div style="padding:12px 14px">
-                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:24px">♡ 💬 ✈</div>
-                    <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:6px" id="p-likes"></div>
-                    <div style="font-size:14px;color:#fff"><span id="p-capuser" style="font-weight:600"></span> <span id="p-cap"></span></div>
+                    <div style="display:flex;gap:16px;margin-bottom:8px;font-size:24px;color:#262626">
+                        <span>♡</span> <span>💬</span> <span>✈</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#262626;margin-bottom:6px"><span id="p-likes">2,456</span> likes</div>
+                    <div style="font-size:14px;color:#262626;line-height:1.4">
+                        <span id="p-capuser" style="font-weight:600;margin-right:4px">johndoe</span>
+                        <span id="p-cap">Living my best life ✨ #goodvibes</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,14 +89,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 function upd(){
-    document.getElementById('p-user').textContent=document.getElementById('ig-user').value;
-    document.getElementById('p-capuser').textContent=document.getElementById('ig-user').value;
-    document.getElementById('p-cap').textContent=document.getElementById('ig-cap').value;
-    document.getElementById('p-likes').textContent=document.getElementById('ig-likes').value+' likes';
-    document.getElementById('p-img').style.background=document.getElementById('ig-bg').value;
-    document.getElementById('p-badge').style.display=document.getElementById('ig-verified').checked?'inline':'none';
+    const user = document.getElementById('ig-user').value || 'johndoe';
+    document.getElementById('p-user').textContent = user;
+    document.getElementById('p-capuser').textContent = user;
+    document.getElementById('p-cap').textContent = document.getElementById('ig-cap').value;
+    document.getElementById('p-likes').textContent = document.getElementById('ig-likes').value;
+    document.getElementById('p-img-cont').style.background = document.getElementById('ig-bg').value;
+    document.getElementById('p-badge').style.display = document.getElementById('ig-verified').checked ? 'inline' : 'none';
 }
-function capture(){html2canvas(document.getElementById('ig-card'),{scale:2}).then(c=>{const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='instagram-post.png';a.click();});}
+
+function loadFile(event) {
+    const output = document.getElementById('p-main-img');
+    const placeholder = document.getElementById('p-placeholder');
+    output.src = URL.createObjectURL(event.target.files[0]);
+    output.onload = function() {
+        URL.revokeObjectURL(output.src);
+        output.style.display = 'block';
+        placeholder.style.display = 'none';
+    }
+}
+
+function capture(){
+    const card = document.getElementById('ig-card');
+    html2canvas(card, {scale: 2, useCORS: true}).then(c => {
+        const a = document.createElement('a');
+        a.href = c.toDataURL('image/png');
+        a.download = 'instagram-post.png';
+        a.click();
+    });
+}
 upd();
 </script>
 {% endblock %}
