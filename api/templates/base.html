@@ -13,6 +13,7 @@
     <meta name="theme-color" content="#0f0f1a">
     <meta name="google-site-verification" content="0118da07594017cd" />
     <link rel="canonical" href="{% block canonical %}https://ai-code-masker.vercel.app/{% endblock %}" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AI Code Masker">
@@ -314,15 +315,43 @@
                     Tools
                     <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </a>
-                <div class="mega-menu">
-                    <div class="grid grid-cols-4 gap-6">
-                        <!-- Dev Tools -->
+                                                <div class="mega-menu" style="width: 1000px; right: -150px;">
+                    <div class="grid grid-cols-5 gap-6">
                         <div>
-                            <div class="mega-col-header">Dev Tools</div>
+                            <div class="mega-col-header">Text & Writing</div>
+                            <a href="/letter-counter" class="mega-link">Letter Counter</a>
+                            <a href="/bionic-reading" class="mega-link">Bionic Reading</a>
+                            <a href="/whitespace-remover" class="mega-link">Whitespace Remover</a>
+                            <a href="/font-pair-finder" class="mega-link">Font Pair Finder</a>
+                            <a href="/spell-checker" class="mega-link">Spell Checker</a>
+                            <a href="/translator" class="mega-link">Translator</a>
+                            <a href="/lorem-ipsum" class="mega-link">Lorem Ipsum</a>
+                            <a href="/dummy-data" class="mega-link">Dummy Data</a>
+                            <a href="/email-formation" class="mega-link">Email Formation</a>
+                            <a href="/sentence-formation" class="mega-link">Sentence Builder</a>
+                            <a href="/naming-suggestions" class="mega-link">Naming Helper</a>
+                        </div>
+                        <div>
+                            <div class="mega-col-header">Hash & Encoding</div>
+                            <a href="/md5-hash" class="mega-link">MD5 Hash</a>
+                            <a href="/sha1-hash" class="mega-link">SHA1 Hash</a>
+                            <a href="/sha224-hash" class="mega-link">SHA224 Hash</a>
+                            <a href="/sha256-hash" class="mega-link">SHA256 Hash</a>
+                            <a href="/sha384-hash" class="mega-link">SHA384 Hash</a>
+                            <a href="/sha512-hash" class="mega-link">SHA512 Hash</a>
+                            <a href="/html-encoder" class="mega-link">HTML Encoder</a>
+                            <a href="/base64" class="mega-link">Base64 Tool</a>
+                            <a href="/base64-to-pdf" class="mega-link">Base64 → PDF</a>
+                            <a href="/base64-to-image" class="mega-link">Base64 → Image</a>
+                            <a href="/url-encoder" class="mega-link">URL Encoder</a>
+                        </div>
+                        <div>
+                            <div class="mega-col-header">Coding Tools</div>
                             <a href="/api-tester" class="mega-link">API Tester</a>
                             <a href="/sql-optimizer" class="mega-link">SQL Optimizer</a>
                             <a href="/hql-to-sql" class="mega-link">HQL → SQL</a>
                             <a href="/dfd-creator" class="mega-link">DFD Creator</a>
+                            <a href="/json-compare" class="mega-link">JSON Compare</a>
                             <a href="/json-editor" class="mega-link">JSON Editor</a>
                             <a href="/jwt-tool" class="mega-link">JWT Inspector</a>
                             <a href="/html-preview" class="mega-link">HTML Preview</a>
@@ -331,40 +360,76 @@
                             <a href="/aws-cloudwatch" class="mega-link">CloudWatch Fmt</a>
                             <a href="/workflow-engine" class="mega-link">Workflow Engine</a>
                             <a href="/timezone-converter" class="mega-link">Timezone Conv.</a>
+                            <a href="/html-minifier" class="mega-link">HTML Minifier</a>
+                            <a href="/css-minifier" class="mega-link">CSS Minifier</a>
+                            <a href="/js-minifier" class="mega-link">JS Minifier</a>
+                            <a href="/html-formatter" class="mega-link">HTML Formatter</a>
+                            <a href="/css-formatter" class="mega-link">CSS Formatter</a>
+                            <a href="/js-formatter" class="mega-link">JS Formatter</a>
+                            <a href="/slug-generator" class="mega-link">Slug Generator</a>
+                            <a href="/code-to-image" class="mega-link">Code to Image</a>
                         </div>
-                        <!-- Encoding -->
                         <div>
-                            <div class="mega-col-header">Encoding</div>
-                            <a href="/base64" class="mega-link">Base64 Tool</a>
-                            <a href="/base64-to-pdf" class="mega-link">Base64 → PDF</a>
-                            <a href="/base64-to-image" class="mega-link">Base64 → Image</a>
-                            <a href="/url-encoder" class="mega-link">URL Encoder</a>
-                            <a href="/case-converter" class="mega-link">Case Converter</a>
-                            <a href="/hex-rgb" class="mega-link">Hex ↔ RGB</a>
-                            <a href="/universal-converter" class="mega-link">Universal Conv.</a>
-                            <a href="/qr-generator" class="mega-link">QR Generator</a>
+                            <div class="mega-col-header">CSS Tools</div>
+                            <a href="/css-gradient-generator" class="mega-link">Gradient Gen.</a>
+                            <a href="/css-box-shadow" class="mega-link">Box Shadow</a>
+                            <a href="/css-border-radius" class="mega-link">Border Radius</a>
+                            <a href="/css-glassmorphism" class="mega-link">Glassmorphism</a>
+                            <a href="/css-triangle-generator" class="mega-link">Triangle Gen.</a>
+                            <a href="/css-glitch-generator" class="mega-link">Glitch Effect</a>
+                            <a href="/css-loader-generator" class="mega-link">Loader Gen.</a>
+                            <a href="/css-bezier-generator" class="mega-link">Cubic Bezier</a>
+                            <a href="/css-clip-path-generator" class="mega-link">Clip Path</a>
+                            <a href="/css-pattern-generator" class="mega-link">Pattern Gen.</a>
+                            <a href="/css-checkbox-generator" class="mega-link">Checkbox Styles</a>
+                            <a href="/css-switch-generator" class="mega-link">Switch/Toggle</a>
                         </div>
-                        <!-- Image & Network -->
                         <div>
-                            <div class="mega-col-header">Image</div>
+                            <div class="mega-col-header">Color Tools</div>
+                            <a href="/color-palette" class="mega-link">Color Palette</a>
+                            <a href="/hex-to-rgba" class="mega-link">HEX to RGBA</a>
+                            <a href="/rgba-to-hex" class="mega-link">RGBA to HEX</a>
+                            <a href="/color-shades" class="mega-link">Color Shades</a>
+                            <a href="/color-mixer" class="mega-link">Color Mixer</a>
+                        </div>
+                        <div>
+                            <div class="mega-col-header">Image Tools</div>
                             <a href="/image-resize" class="mega-link">Image Resize</a>
                             <a href="/image-converter" class="mega-link">Image Converter</a>
                             <a href="/pixel-editor" class="mega-link">Pixel Editor</a>
-                            <hr class="mega-divider">
-                            <div class="mega-col-header">Network</div>
+                            <a href="/image-cropper" class="mega-link">Image Cropper</a>
+                            <a href="/image-filters" class="mega-link">Image Filters</a>
+                            <a href="/image-color-picker" class="mega-link">Color Picker</a>
+                            <a href="/image-color-extractor" class="mega-link">Color Extractor</a>
+                            <a href="/image-avg-color" class="mega-link">Average Color</a>
+                            <a href="/image-to-base64" class="mega-link">Image to Base64</a>
+                            <a href="/svg-blob-generator" class="mega-link">SVG Blob Gen</a>
+                            <a href="/photo-censor" class="mega-link">Photo Censor</a>
+                        </div>
+                        <div>
+                            <div class="mega-col-header">Social Media</div>
+                            <a href="/tweet-generator" class="mega-link">Tweet Gen.</a>
+                            <a href="/instagram-post-generator" class="mega-link">IG Post Gen.</a>
+                            <a href="/whatsapp-generator" class="mega-link">WhatsApp Chat</a>
+                            <a href="/imessage-generator" class="mega-link">iMessage Chat</a>
+                            <a href="/yt-thumbnail" class="mega-link">YT Thumbnail</a>
+                            <a href="/rn-shadow-generator" class="mega-link">RN Shadow</a>
+                        </div>
+                        <div>
+                            <div class="mega-col-header">Misc & Network</div>
+                            <a href="/password-generator" class="mega-link">Password Gen.</a>
+                            <a href="/list-randomizer" class="mega-link">List Randomizer</a>
+                            <a href="/barcode-generator" class="mega-link">Barcode Gen.</a>
+                            <a href="/og-meta-generator" class="mega-link">OG Meta Gen.</a>
+                            <a href="/case-converter" class="mega-link">Case Converter</a>
+                            <a href="/universal-converter" class="mega-link">Universal Conv.</a>
+                            <a href="/qr-generator" class="mega-link">QR Generator</a>
                             <a href="/my-ip" class="mega-link">My IP Address</a>
                             <a href="/domain-to-ip" class="mega-link">Domain → IP</a>
                         </div>
-                        <!-- Text & Writing -->
                         <div>
-                            <div class="mega-col-header">Text &amp; Writing</div>
-                            <a href="/spell-checker" class="mega-link">Spell Checker</a>
-                            <a href="/translator" class="mega-link">Translator</a>
-                            <a href="/lorem-ipsum" class="mega-link">Lorem Ipsum</a>
-                            <a href="/dummy-data" class="mega-link">Dummy Data</a>
-                            <a href="/email-formation" class="mega-link">Email Formation</a>
-                            <a href="/sentence-formation" class="mega-link">Sentence Builder</a>
-                            <a href="/naming-suggestions" class="mega-link">Naming Helper</a>
+                            <div class="mega-col-header">Healthcare</div>
+                            <a href="/clinical-parser" class="mega-link">Clinical Parser</a>
                             <hr class="mega-divider">
                             <a href="/tools" class="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">All Tools →</a>
                         </div>
@@ -387,7 +452,7 @@
         </button>
 
         <!-- Mobile Nav -->
-        <div id="mobile-nav" class="mobile-nav">
+                        <div id="mobile-nav" class="mobile-nav">
             <div class="mob-section">
                 <div class="mob-section-title">Main</div>
                 <a href="/" class="mob-link">Editor</a>
@@ -395,40 +460,11 @@
                 <a href="/tools" class="mob-link">All Tools</a>
             </div>
             <div class="mob-section">
-                <div class="mob-section-title">Dev Tools</div>
-                <a href="/api-tester" class="mob-link">API Tester</a>
-                <a href="/sql-optimizer" class="mob-link">SQL Optimizer</a>
-                <a href="/hql-to-sql" class="mob-link">HQL → SQL</a>
-                <a href="/dfd-creator" class="mob-link">DFD Creator</a>
-                <a href="/json-editor" class="mob-link">JSON Editor</a>
-                <a href="/jwt-tool" class="mob-link">JWT Inspector</a>
-                <a href="/html-preview" class="mob-link">HTML Preview</a>
-                <a href="/js-executor" class="mob-link">JS Executor</a>
-                <a href="/java-to-json" class="mob-link">Java → JSON</a>
-                <a href="/workflow-engine" class="mob-link">Workflow Engine</a>
-                <a href="/timezone-converter" class="mob-link">Timezone Converter</a>
-            </div>
-            <div class="mob-section">
-                <div class="mob-section-title">Encoding</div>
-                <a href="/base64" class="mob-link">Base64 Tool</a>
-                <a href="/base64-to-pdf" class="mob-link">Base64 → PDF</a>
-                <a href="/base64-to-image" class="mob-link">Base64 → Image</a>
-                <a href="/url-encoder" class="mob-link">URL Encoder</a>
-                <a href="/case-converter" class="mob-link">Case Converter</a>
-                <a href="/hex-rgb" class="mob-link">Hex ↔ RGB</a>
-                <a href="/universal-converter" class="mob-link">Universal Converter</a>
-                <a href="/qr-generator" class="mob-link">QR Generator</a>
-            </div>
-            <div class="mob-section">
-                <div class="mob-section-title">Image &amp; Network</div>
-                <a href="/image-resize" class="mob-link">Image Resize</a>
-                <a href="/image-converter" class="mob-link">Image Converter</a>
-                <a href="/pixel-editor" class="mob-link">Pixel Editor</a>
-                <a href="/my-ip" class="mob-link">My IP Address</a>
-                <a href="/domain-to-ip" class="mob-link">Domain → IP</a>
-            </div>
-            <div class="mob-section">
-                <div class="mob-section-title">Text &amp; Writing</div>
+                <div class="mob-section-title">Text & Writing</div>
+                <a href="/letter-counter" class="mob-link">Letter Counter</a>
+                <a href="/bionic-reading" class="mob-link">Bionic Reading</a>
+                <a href="/whitespace-remover" class="mob-link">Whitespace Remover</a>
+                <a href="/font-pair-finder" class="mob-link">Font Pair Finder</a>
                 <a href="/spell-checker" class="mob-link">Spell Checker</a>
                 <a href="/translator" class="mob-link">Translator</a>
                 <a href="/lorem-ipsum" class="mob-link">Lorem Ipsum</a>
@@ -438,8 +474,107 @@
                 <a href="/naming-suggestions" class="mob-link">Naming Helper</a>
             </div>
             <div class="mob-section">
+                <div class="mob-section-title">Hash & Encoding</div>
+                <a href="/md5-hash" class="mob-link">MD5 Hash</a>
+                <a href="/sha1-hash" class="mob-link">SHA1 Hash</a>
+                <a href="/sha224-hash" class="mob-link">SHA224 Hash</a>
+                <a href="/sha256-hash" class="mob-link">SHA256 Hash</a>
+                <a href="/sha384-hash" class="mob-link">SHA384 Hash</a>
+                <a href="/sha512-hash" class="mob-link">SHA512 Hash</a>
+                <a href="/html-encoder" class="mob-link">HTML Encoder</a>
+                <a href="/base64" class="mob-link">Base64 Tool</a>
+                <a href="/base64-to-pdf" class="mob-link">Base64 → PDF</a>
+                <a href="/base64-to-image" class="mob-link">Base64 → Image</a>
+                <a href="/url-encoder" class="mob-link">URL Encoder</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Coding Tools</div>
+                <a href="/api-tester" class="mob-link">API Tester</a>
+                <a href="/sql-optimizer" class="mob-link">SQL Optimizer</a>
+                <a href="/hql-to-sql" class="mob-link">HQL → SQL</a>
+                <a href="/dfd-creator" class="mob-link">DFD Creator</a>
+                <a href="/json-compare" class="mob-link">JSON Compare</a>
+                <a href="/json-editor" class="mob-link">JSON Editor</a>
+                <a href="/jwt-tool" class="mob-link">JWT Inspector</a>
+                <a href="/html-preview" class="mob-link">HTML Preview</a>
+                <a href="/js-executor" class="mob-link">JS Executor</a>
+                <a href="/java-to-json" class="mob-link">Java → JSON</a>
+                <a href="/aws-cloudwatch" class="mob-link">CloudWatch Fmt</a>
+                <a href="/workflow-engine" class="mob-link">Workflow Engine</a>
+                <a href="/timezone-converter" class="mob-link">Timezone Conv.</a>
+                <a href="/html-minifier" class="mob-link">HTML Minifier</a>
+                <a href="/css-minifier" class="mob-link">CSS Minifier</a>
+                <a href="/js-minifier" class="mob-link">JS Minifier</a>
+                <a href="/html-formatter" class="mob-link">HTML Formatter</a>
+                <a href="/css-formatter" class="mob-link">CSS Formatter</a>
+                <a href="/js-formatter" class="mob-link">JS Formatter</a>
+                <a href="/slug-generator" class="mob-link">Slug Generator</a>
+                <a href="/code-to-image" class="mob-link">Code to Image</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">CSS Tools</div>
+                <a href="/css-gradient-generator" class="mob-link">Gradient Gen.</a>
+                <a href="/css-box-shadow" class="mob-link">Box Shadow</a>
+                <a href="/css-border-radius" class="mob-link">Border Radius</a>
+                <a href="/css-glassmorphism" class="mob-link">Glassmorphism</a>
+                <a href="/css-triangle-generator" class="mob-link">Triangle Gen.</a>
+                <a href="/css-glitch-generator" class="mob-link">Glitch Effect</a>
+                <a href="/css-loader-generator" class="mob-link">Loader Gen.</a>
+                <a href="/css-bezier-generator" class="mob-link">Cubic Bezier</a>
+                <a href="/css-clip-path-generator" class="mob-link">Clip Path</a>
+                <a href="/css-pattern-generator" class="mob-link">Pattern Gen.</a>
+                <a href="/css-checkbox-generator" class="mob-link">Checkbox Styles</a>
+                <a href="/css-switch-generator" class="mob-link">Switch/Toggle</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Color Tools</div>
+                <a href="/color-palette" class="mob-link">Color Palette</a>
+                <a href="/hex-to-rgba" class="mob-link">HEX to RGBA</a>
+                <a href="/rgba-to-hex" class="mob-link">RGBA to HEX</a>
+                <a href="/color-shades" class="mob-link">Color Shades</a>
+                <a href="/color-mixer" class="mob-link">Color Mixer</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Image Tools</div>
+                <a href="/image-resize" class="mob-link">Image Resize</a>
+                <a href="/image-converter" class="mob-link">Image Converter</a>
+                <a href="/pixel-editor" class="mob-link">Pixel Editor</a>
+                <a href="/image-cropper" class="mob-link">Image Cropper</a>
+                <a href="/image-filters" class="mob-link">Image Filters</a>
+                <a href="/image-color-picker" class="mob-link">Color Picker</a>
+                <a href="/image-color-extractor" class="mob-link">Color Extractor</a>
+                <a href="/image-avg-color" class="mob-link">Average Color</a>
+                <a href="/image-to-base64" class="mob-link">Image to Base64</a>
+                <a href="/svg-blob-generator" class="mob-link">SVG Blob Gen</a>
+                <a href="/photo-censor" class="mob-link">Photo Censor</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Social Media</div>
+                <a href="/tweet-generator" class="mob-link">Tweet Gen.</a>
+                <a href="/instagram-post-generator" class="mob-link">IG Post Gen.</a>
+                <a href="/whatsapp-generator" class="mob-link">WhatsApp Chat</a>
+                <a href="/imessage-generator" class="mob-link">iMessage Chat</a>
+                <a href="/yt-thumbnail" class="mob-link">YT Thumbnail</a>
+                <a href="/rn-shadow-generator" class="mob-link">RN Shadow</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Misc & Network</div>
+                <a href="/password-generator" class="mob-link">Password Gen.</a>
+                <a href="/list-randomizer" class="mob-link">List Randomizer</a>
+                <a href="/barcode-generator" class="mob-link">Barcode Gen.</a>
+                <a href="/og-meta-generator" class="mob-link">OG Meta Gen.</a>
+                <a href="/case-converter" class="mob-link">Case Converter</a>
+                <a href="/universal-converter" class="mob-link">Universal Conv.</a>
+                <a href="/qr-generator" class="mob-link">QR Generator</a>
+                <a href="/my-ip" class="mob-link">My IP Address</a>
+                <a href="/domain-to-ip" class="mob-link">Domain → IP</a>
+            </div>
+            <div class="mob-section">
+                <div class="mob-section-title">Healthcare</div>
+                <a href="/clinical-parser" class="mob-link">Clinical Parser</a>
+            </div>
+            <div class="mob-section">
                 <div class="mob-section-title">Other</div>
-                <a href="/aws-cloudwatch" class="mob-link">CloudWatch Formatter</a>
                 <a href="/privacy" class="mob-link">Privacy Policy</a>
             </div>
         </div>
