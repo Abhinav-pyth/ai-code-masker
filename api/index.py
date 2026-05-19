@@ -4,8 +4,14 @@ import json
 import socket
 import ipaddress
 import requests
-from flask import Flask, request, jsonify, render_template
+import re
+from flask import Flask, request, jsonify, render_template, redirect, make_response
 from urllib.parse import urlparse
+
+# Add project root to sys.path for absolute imports
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # Local directory addition for module discovery
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -14,6 +20,10 @@ try:
 except ImportError:
     # Handle Vercel's package structure variant
     from . import masker_logic
+
+# Import platform configurations and SEO helper
+from api.config import TIERS, BRAND_NAME, BRAND_SHORT, CANONICAL_HOST, BRAND_SLOGAN
+from api.seo_utils import generate_page_metadata
 
 app = Flask(__name__)
 
@@ -29,15 +39,165 @@ MAX_PROXY_BODY_BYTES = 200_000
 MAX_PROXY_RESPONSE_BYTES = 1_000_000
 PROXY_TIMEOUT_SECONDS = 15
 
+# Helper: Render simple technical markdown to stylized clean HTML
+def render_simple_markdown(md_text):
+    # Strip frontmatter if present
+    if md_text.startswith('---'):
+        parts = md_text.split('---', 2)
+        if len(parts) >= 3:
+            md_text = parts[2]
+            
+    # Escape some basic elements or parse headings/lists
+    # Code blocks
+    md_text = re.sub(r'```(\w*)\n(.*?)```', r'<pre class="code-font bg-black/40 p-4 rounded-xl border border-white/5 text-xs text-indigo-200 overflow-x-auto my-6"><code class="language-\1">\2</code></pre>', md_text, flags=re.DOTALL)
+    # Headings
+    md_text = re.sub(r'^## (.*?)$', r'<h2 class="text-xl font-black dark:text-white uppercase tracking-tight mt-8 mb-4">\1</h2>', md_text, flags=re.MULTILINE)
+    md_text = re.sub(r'^### (.*?)$', r'<h3 class="text-base font-black dark:text-white uppercase tracking-tight mt-6 mb-3">\1</h3>', md_text, flags=re.MULTILINE)
+    # Bold
+    md_text = re.sub(r'\*\*(.*?)\*\*', r'<strong class="font-extrabold dark:text-white">\1</strong>', md_text)
+    # Bullet points
+    md_text = re.sub(r'^\* (.*?)$', r'<li class="ml-4 list-disc text-slate-600 dark:text-slate-300 mb-2">\1</li>', md_text, flags=re.MULTILINE)
+    md_text = re.sub(r'^\d+\. (.*?)$', r'<li class="ml-4 list-decimal text-slate-600 dark:text-slate-300 mb-2">\1</li>', md_text, flags=re.MULTILINE)
+    
+    # Paragraphs (excluding tags already processed)
+    paragraphs = []
+    for line in md_text.split('\n\n'):
+        line_strip = line.strip()
+        if not line_strip:
+            continue
+        if line_strip.startswith('<pre') or line_strip.startswith('<h') or line_strip.startswith('<li'):
+            paragraphs.append(line_strip)
+        else:
+            paragraphs.append(f'<p class="text-slate-600 dark:text-slate-300 text-xs md:text-sm leading-relaxed mb-4">{line_strip}</p>')
+    return '\n'.join(paragraphs)
+
+# Helper: Parse local markdown files inside api/blog_posts
+def get_blog_posts():
+    posts = []
+    blog_dir = os.path.join(os.path.dirname(__file__), 'blog_posts')
+    if not os.path.exists(blog_dir):
+        return []
+    for fname in os.listdir(blog_dir):
+        if fname.endswith('.md'):
+            slug = fname[:-3]
+            with open(os.path.join(blog_dir, fname), 'r', encoding='utf-8') as f:
+                content = f.read()
+            # Simple frontmatter extractor
+            parts = content.split('---')
+            if len(parts) >= 3:
+                fm_text = parts[1]
+                body = parts[2]
+                metadata = {}
+                for line in fm_text.strip().split('\n'):
+                    if ':' in line:
+                        k, v = line.split(':', 1)
+                        metadata[k.strip()] = v.strip().strip('"')
+                posts.append({
+                    'slug': slug,
+                    'title': metadata.get('title', slug.replace('-', ' ').title()),
+                    'date': metadata.get('date', '2026-05-19'),
+                    'category': metadata.get('category', 'Security'),
+                    'reading_time': metadata.get('reading_time', '5 min read'),
+                    'summary': metadata.get('summary', ''),
+                    'body': body,
+                    'rendered_body': render_simple_markdown(body)
+                })
+    return sorted(posts, key=lambda x: x['date'], reverse=True)
+
+# Register Dynamic URL schema objects mapped to standard legacy components
+DYNAMIC_TOOLS = {
+    "code-masker": {
+        "template": "index.html",
+        "title": "AI Code Masker — Privacy-First Secret Sanitizer for ChatGPT & Claude",
+        "description": "Scrub environment secrets, passwords, and private identifiers locally before copy-pasting your code blocks into AI models.",
+        "active": "masker"
+    },
+    "json-formatter": {
+        "template": "json_editor.html",
+        "title": "JSON Formatter & Validator Online",
+        "description": "Format, beautify, inspect, validate, and compare raw JSON trees completely locally in your browser.",
+        "active": "tools"
+    },
+    "jwt-decoder": {
+        "template": "jwt_tool.html",
+        "title": "JWT JSON Web Token Inspector & Decoder",
+        "description": "Decode and analyze cryptographically signed JWT header and payload contents inside your browser.",
+        "active": "tools"
+    },
+    "api-tester": {
+        "template": "api_tester.html",
+        "title": "REST API Request Tester & Mock Client",
+        "description": "Send GET, POST, and PUT HTTP requests dynamically with custom header sets and payloads.",
+        "active": "tools"
+    },
+    "sql-optimizer": {
+        "template": "sql_optimizer.html",
+        "title": "SQL Query Performance Heuristics Optimizer",
+        "description": "Format and optimize databases query layouts with visual indexing indicators.",
+        "active": "tools"
+    },
+    "css-gradient-generator": {
+        "template": "css_gradient_generator.html",
+        "title": "Sleek CSS Gradient Designer",
+        "description": "Design custom multi-layered CSS background gradients with live CSS style copies.",
+        "active": "tools"
+    },
+    "css-glassmorphism": {
+        "template": "css_glassmorphism.html",
+        "title": "Transparent CSS Glassmorphism Backdrop Blurs",
+        "description": "Instantly render glassmorphism style rules with custom blur percentages.",
+        "active": "tools"
+    },
+    "color-palette": {
+        "template": "color_palette.html",
+        "title": "Harmonious CSS Color Palette Explorer",
+        "description": "Discover sleek modern HSL color palettes with copy-to-clipboard code clicks.",
+        "active": "tools"
+    },
+    "font-pair-finder": {
+        "template": "font_pair_finder.html",
+        "title": "Modern Google Font Pairing Finder",
+        "description": "Find harmoniously matched serif and sans-serif Google typography.",
+        "active": "tools"
+    },
+    "letter-counter": {
+        "template": "letter_counter.html",
+        "title": "Advanced Word and Letter Character Counter",
+        "description": "Count letters, words, reading duration, and content size instantly as you type.",
+        "active": "tools"
+    },
+    "tweet-generator": {
+        "template": "tweet_generator.html",
+        "title": "Visual X / Twitter Tweet Sandbox Simulator",
+        "description": "Preview your tweets in actual light or dark UI formats before publishing online.",
+        "active": "tools"
+    },
+    "whatsapp-generator": {
+        "template": "whatsapp_generator.html",
+        "title": "Interactive WhatsApp Chat UI Simulator",
+        "description": "Mock chat bubbles and profile bubbles in full high-fidelity preview styles.",
+        "active": "tools"
+    },
+    "image-resize": {
+        "template": "image_resize.html",
+        "title": "Browser-Based Image Resizer & Scaler",
+        "description": "Scale and compress PNG, JPG, and WEBP image files without uploading them to any servers.",
+        "active": "tools"
+    },
+    "qr-generator": {
+        "template": "qr_generator.html",
+        "title": "Instant QR Code Scanner & Generator",
+        "description": "Turn URLs and texts into custom downloadable vectors or high-res PNG images.",
+        "active": "tools"
+    }
+}
 
 def _is_public_target(hostname):
     if not hostname:
         return False
-
     normalized = hostname.strip().lower().strip('[]')
     if normalized in {'localhost', 'localhost.localdomain'} or normalized.endswith('.local'):
         return False
-
     try:
         addresses = [ipaddress.ip_address(normalized)]
     except ValueError:
@@ -45,87 +205,173 @@ def _is_public_target(hostname):
             infos = socket.getaddrinfo(normalized, None, type=socket.SOCK_STREAM)
         except socket.gaierror:
             return False
-
         addresses = []
         for info in infos:
             try:
                 addresses.append(ipaddress.ip_address(info[4][0]))
             except ValueError:
                 return False
-
     return bool(addresses) and all(address.is_global for address in addresses)
-
 
 def _validate_proxy_url(url):
     parsed = urlparse(url or '')
     if parsed.scheme not in {'http', 'https'} or not parsed.netloc:
         return None, 'Only absolute http:// or https:// URLs are supported.'
-
     if not _is_public_target(parsed.hostname):
         return None, 'Private, local, and reserved network targets are not allowed through the public proxy.'
-
     return parsed.geturl(), None
-
 
 def _clean_proxy_headers(headers):
     if not isinstance(headers, dict):
         return {}
-
     cleaned = {}
     for key, value in headers.items():
         if not isinstance(key, str):
             continue
-
         header_name = key.strip()
         if not header_name or '\n' in header_name or '\r' in header_name:
             continue
-
         if header_name.lower() in BLOCKED_PROXY_HEADERS:
             continue
-
         cleaned[header_name] = str(value)
-
     return cleaned
 
-@app.route('/')
-def index():
-    return render_template('index.html', active_page='masker')
+# 301 Permanent SEO Redirect rules consolidating link equity into /tools/<slug>
+@app.before_request
+def check_legacy_redirects():
+    path = request.path
+    legacy_redirects = {
+        "/json-editor": "/tools/json-formatter",
+        "/jwt-tool": "/tools/jwt-decoder",
+        "/api-tester": "/tools/api-tester",
+        "/sql-optimizer": "/tools/sql-optimizer",
+        "/css-gradient-generator": "/tools/css-gradient-generator",
+        "/css-glassmorphism": "/tools/css-glassmorphism",
+        "/color-palette": "/tools/color-palette",
+        "/font-pair-finder": "/tools/font-pair-finder",
+        "/letter-counter": "/tools/letter-counter",
+        "/tweet-generator": "/tools/tweet-generator",
+        "/whatsapp-generator": "/tools/whatsapp-generator",
+        "/image-resize": "/tools/image-resize",
+        "/qr-generator": "/tools/qr-generator"
+    }
+    if path in legacy_redirects:
+        return redirect(legacy_redirects[path], code=301)
 
-@app.route('/robots.txt')
-def robots():
-    from flask import send_from_directory
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'robots.txt')
-
+# Dynamic XML Sitemap Builder
 @app.route('/sitemap.xml')
-def sitemap():
-    from flask import send_from_directory
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'sitemap.xml')
+def dynamic_sitemap():
+    base_pages = ["", "tools", "clinical-parser", "blog", "pricing", "privacy"]
+    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    # Add main pages
+    for page in base_pages:
+        url = f"{CANONICAL_HOST}/{page}" if page else CANONICAL_HOST
+        sitemap_xml += f'  <url>\n    <loc>{url}</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n'
+    
+    # Add dynamic tools
+    for slug in DYNAMIC_TOOLS.keys():
+        sitemap_xml += f'  <url>\n    <loc>{CANONICAL_HOST}/tools/{slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n'
+        
+    # Add blog posts
+    for post in get_blog_posts():
+        sitemap_xml += f'  <url>\n    <loc>{CANONICAL_HOST}/blog/{post["slug"]}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n'
+        
+    sitemap_xml += '</urlset>'
+    response = make_response(sitemap_xml)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
+
+# Dynamic robots.txt
+@app.route('/robots.txt')
+def dynamic_robots():
+    robots_text = f"User-agent: *\nAllow: /\n\nSitemap: {CANONICAL_HOST}/sitemap.xml\n"
+    response = make_response(robots_text)
+    response.headers['Content-Type'] = 'text/plain'
+    return response
 
 @app.route('/google0118da07594017cd.html')
 def google_verification():
     from flask import send_from_directory
     return send_from_directory(os.path.join(app.root_path, 'static'), 'google0118da07594017cd.html')
 
-# Commented out other tool routes as per user request to focus on Masker
-@app.route('/json-editor')
-def json_editor():
-    return render_template('json_editor.html', active_page='json_editor')
+# Home (renders index.html containing client-side Code Masker)
+@app.route('/')
+def index():
+    meta = generate_page_metadata(
+        "AI Code Masker - Privacy-First Secret Removal for AI Sharing",
+        "Paste code templates securely to LLMs like Claude and ChatGPT by masking variables, credentials, and tokens completely locally in your browser.",
+        path="/"
+    )
+    return render_template('index.html', active_page='masker', seo=meta)
 
-@app.route('/base64')
-def base64_tool():
-    return render_template('base64.html', active_page='base64')
+# Tools Catalog
+@app.route('/tools')
+def tools():
+    meta = generate_page_metadata(
+        "All Developer Utilities & Platform Tools",
+        "Access 55+ browser-based offline coding, clinical translation, and UI design utilities instantly.",
+        path="/tools"
+    )
+    return render_template('tools.html', active_page='tools', seo=meta)
 
-@app.route('/base64-to-pdf')
-def base64_to_pdf():
-    return render_template('base64_to_pdf.html', active_page='base64_to_pdf')
+# SaaS Pricing plans
+@app.route('/pricing')
+def pricing():
+    meta = generate_page_metadata(
+        "Pricing Tiers & Professional Subscriptions",
+        "Upgrade to Professional and Enterprise tiers for fast hosted clinical parses, unlimited saved tool settings, and premium security support.",
+        path="/pricing"
+    )
+    return render_template('pricing.html', active_page='pricing', tiers=TIERS, seo=meta)
 
+# Blog catalog
+@app.route('/blog')
+def blog():
+    posts = get_blog_posts()
+    meta = generate_page_metadata(
+        "Developer Security & Local Optimization Blog",
+        "Discover practical tutorials and safety strategies regarding secret management, API validations, and in-browser developer utilities.",
+        path="/blog"
+    )
+    return render_template('blog.html', active_page='blog', posts=posts, seo=meta)
+
+# Blog post detail page
+@app.route('/blog/<slug>')
+def blog_post(slug):
+    posts = get_blog_posts()
+    post = next((p for p in posts if p['slug'] == slug), None)
+    if not post:
+        return redirect('/blog')
+        
+    meta = generate_page_metadata(
+        post['title'],
+        post['summary'],
+        path=f"/blog/{slug}"
+    )
+    return render_template('blog_post.html', active_page='blog', post=post, seo=meta)
+
+# Dynamic Tools Slug Router
+@app.route('/tools/<slug>')
+def dynamic_tool_route(slug):
+    tool = DYNAMIC_TOOLS.get(slug)
+    if not tool:
+        # Fallback to the main tools list if the slug doesn't exist
+        return redirect('/tools')
+        
+    meta = generate_page_metadata(
+        tool['title'],
+        tool['description'],
+        path=f"/tools/{slug}",
+        is_tool=True
+    )
+    return render_template(tool['template'], active_page=tool['active'], seo=meta)
+
+# Fallback Legacy Route mapping for all other 40+ offline pages to keep backwards compatibility fully active
 @app.route('/base64-to-image')
 def base64_to_image():
     return render_template('base64_to_image.html', active_page='base64_to_image')
-
-@app.route('/image-resize')
-def image_resize():
-    return render_template('image_resize.html', active_page='image_resize')
 
 @app.route('/pixel-editor')
 def pixel_editor():
@@ -159,25 +405,9 @@ def sentence_formation():
 def naming_suggestions():
     return render_template('naming_suggestions.html', active_page='naming_suggestions')
 
-@app.route('/sql-optimizer')
-def sql_optimizer():
-    return render_template('sql_optimizer.html', active_page='sql_optimizer')
-
-@app.route('/my-ip')
-def my_ip():
-    return render_template('my_ip.html', active_page='my_ip')
-
 @app.route('/domain-to-ip')
 def domain_to_ip():
     return render_template('domain_to_ip.html', active_page='domain_to_ip')
-
-@app.route('/api-tester')
-def api_tester():
-    return render_template('api_tester.html', active_page='api_tester')
-
-@app.route('/clinical-parser')
-def clinical_parser():
-    return render_template('clinical_parser.html', active_page='clinical_parser')
 
 @app.route('/url-encoder')
 def url_encoder():
@@ -186,14 +416,6 @@ def url_encoder():
 @app.route('/case-converter')
 def case_converter():
     return render_template('case_converter.html', active_page='case_converter')
-
-@app.route('/qr-generator')
-def qr_generator():
-    return render_template('qr_generator.html', active_page='qr_generator')
-
-@app.route('/jwt-tool')
-def jwt_tool():
-    return render_template('jwt_tool.html', active_page='jwt_tool')
 
 @app.route('/html-preview')
 def html_preview():
@@ -213,19 +435,19 @@ def dummy_data():
 
 @app.route('/privacy')
 def privacy():
-    return render_template('privacy.html', active_page='privacy')
-
-# API routes for masking are now moved to client-side JS for 100% privacy.
-# The server no longer processes or sees any code content.
+    meta = generate_page_metadata(
+        "Privacy Policy - 100% In-Browser Local Execution",
+        "Understand our data handling model: all your variables and data remain fully on your local machine.",
+        path="/privacy"
+    )
+    return render_template('privacy.html', active_page='privacy', seo=meta)
 
 @app.route('/api/resolve-domain', methods=['POST'])
 def api_resolve_domain():
     data = request.json
     domain = data.get('domain', '').strip()
-
     if not domain:
         return jsonify({"error": "No domain provided"}), 400
-
     try:
         ip = socket.gethostbyname(domain)
         return jsonify({"ip": ip, "domain": domain})
@@ -233,7 +455,6 @@ def api_resolve_domain():
         return jsonify({"error": f"Could not resolve domain: {domain}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/universal-converter')
 def universal_converter():
@@ -267,28 +488,10 @@ def workflow_engine():
 def json_compare():
     return render_template('json_compare.html', active_page='json_compare')
 
-@app.route('/tools')
-def tools():
-    return render_template('tools.html', active_page='tools')
-
-# ── Text Tools ──────────────────────────────────────────────
-@app.route('/letter-counter')
-def letter_counter():
-    return render_template('letter_counter.html', active_page='letter_counter')
-
-@app.route('/bionic-reading')
-def bionic_reading():
-    return render_template('bionic_reading.html', active_page='bionic_reading')
-
 @app.route('/whitespace-remover')
 def whitespace_remover():
     return render_template('whitespace_remover.html', active_page='whitespace_remover')
 
-@app.route('/font-pair-finder')
-def font_pair_finder():
-    return render_template('font_pair_finder.html', active_page='font_pair_finder')
-
-# ── Hash & Encode Tools ────────────────────────────────────
 @app.route('/md5-hash')
 def md5_hash():
     return render_template('md5_hash.html', active_page='md5_hash')
@@ -301,187 +504,14 @@ def sha1_hash():
 def sha224_hash():
     return render_template('sha224_hash.html', active_page='sha224_hash')
 
-@app.route('/sha256-hash')
-def sha256_hash():
-    return render_template('sha256_hash.html', active_page='sha256_hash')
-
-@app.route('/sha384-hash')
-def sha384_hash():
-    return render_template('sha384_hash.html', active_page='sha384_hash')
-
-@app.route('/sha512-hash')
-def sha512_hash():
-    return render_template('sha512_hash.html', active_page='sha512_hash')
-
-@app.route('/html-encoder')
-def html_encoder():
-    return render_template('html_encoder.html', active_page='html_encoder')
-
-@app.route('/html-minifier')
-def html_minifier():
-    return render_template('html_minifier.html', active_page='html_minifier')
-
-@app.route('/css-minifier')
-def css_minifier():
-    return render_template('css_minifier.html', active_page='css_minifier')
-
-@app.route('/js-minifier')
-def js_minifier():
-    return render_template('js_minifier.html', active_page='js_minifier')
-
-# ── Formatters ──────────────────────────────────────────────
-@app.route('/html-formatter')
-def html_formatter():
-    return render_template('html_formatter.html', active_page='html_formatter')
-
-@app.route('/css-formatter')
-def css_formatter():
-    return render_template('css_formatter.html', active_page='css_formatter')
-
-@app.route('/js-formatter')
-def js_formatter():
-    return render_template('js_formatter.html', active_page='js_formatter')
-
-@app.route('/slug-generator')
-def slug_generator():
-    return render_template('slug_generator.html', active_page='slug_generator')
-
-@app.route('/code-to-image')
-def code_to_image():
-    return render_template('code_to_image.html', active_page='code_to_image')
-
-# ── CSS Tools ───────────────────────────────────────────────
-@app.route('/css-gradient-generator')
-def css_gradient_generator():
-    return render_template('css_gradient_generator.html', active_page='css_gradient_generator')
-
-@app.route('/css-box-shadow')
-def css_box_shadow():
-    return render_template('css_box_shadow.html', active_page='css_box_shadow')
-
-@app.route('/css-border-radius')
-def css_border_radius():
-    return render_template('css_border_radius.html', active_page='css_border_radius')
-
-@app.route('/css-glassmorphism')
-def css_glassmorphism():
-    return render_template('css_glassmorphism.html', active_page='css_glassmorphism')
-
-@app.route('/css-triangle-generator')
-def css_triangle_generator():
-    return render_template('css_triangle_generator.html', active_page='css_triangle_generator')
-
-@app.route('/css-glitch-generator')
-def css_glitch_generator():
-    return render_template('css_glitch_generator.html', active_page='css_glitch_generator')
-
-@app.route('/css-loader-generator')
-def css_loader_generator():
-    return render_template('css_loader_generator.html', active_page='css_loader_generator')
-
-@app.route('/css-bezier-generator')
-def css_bezier_generator():
-    return render_template('css_bezier_generator.html', active_page='css_bezier_generator')
-
-@app.route('/css-clip-path-generator')
-def css_clip_path_generator():
-    return render_template('css_clip_path_generator.html', active_page='css_clip_path_generator')
-
-@app.route('/css-pattern-generator')
-def css_pattern_generator():
-    return render_template('css_pattern_generator.html', active_page='css_pattern_generator')
-
-@app.route('/css-checkbox-generator')
-def css_checkbox_generator():
-    return render_template('css_checkbox_generator.html', active_page='css_checkbox_generator')
-
-@app.route('/css-switch-generator')
-def css_switch_generator():
-    return render_template('css_switch_generator.html', active_page='css_switch_generator')
-
-# ── Color Tools ─────────────────────────────────────────────
-@app.route('/color-palette')
-def color_palette():
-    return render_template('color_palette.html', active_page='color_palette')
-
-@app.route('/hex-to-rgba')
-def hex_to_rgba():
-    return render_template('hex_to_rgba.html', active_page='hex_to_rgba')
-
-@app.route('/rgba-to-hex')
-def rgba_to_hex():
-    return render_template('rgba_to_hex.html', active_page='rgba_to_hex')
-
-@app.route('/color-shades')
-def color_shades():
-    return render_template('color_shades.html', active_page='color_shades')
-
-@app.route('/color-mixer')
-def color_mixer():
-    return render_template('color_mixer.html', active_page='color_mixer')
-
-# ── Image Tools ─────────────────────────────────────────────
-@app.route('/image-cropper')
-def image_cropper():
-    return render_template('image_cropper.html', active_page='image_cropper')
-
-@app.route('/image-filters')
-def image_filters():
-    return render_template('image_filters.html', active_page='image_filters')
-
-@app.route('/image-color-picker')
-def image_color_picker():
-    return render_template('image_color_picker.html', active_page='image_color_picker')
-
-@app.route('/image-color-extractor')
-def image_color_extractor():
-    return render_template('image_color_extractor.html', active_page='image_color_extractor')
-
-@app.route('/image-avg-color')
-def image_avg_color():
-    return render_template('image_avg_color.html', active_page='image_avg_color')
-
-@app.route('/image-to-base64')
-def image_to_base64():
-    return render_template('image_to_base64.html', active_page='image_to_base64')
-
-@app.route('/svg-blob-generator')
-def svg_blob_generator():
-    return render_template('svg_blob_generator.html', active_page='svg_blob_generator')
-
-@app.route('/photo-censor')
-def photo_censor():
-    return render_template('photo_censor.html', active_page='photo_censor')
-
-# ── Misc Tools ──────────────────────────────────────────────
-@app.route('/password-generator')
-def password_generator():
-    return render_template('password_generator.html', active_page='password_generator')
-
-@app.route('/list-randomizer')
-def list_randomizer():
-    return render_template('list_randomizer.html', active_page='list_randomizer')
-
-@app.route('/barcode-generator')
-def barcode_generator():
-    return render_template('barcode_generator.html', active_page='barcode_generator')
-
-@app.route('/og-meta-generator')
-def og_meta_generator():
-    return render_template('og_meta_generator.html', active_page='og_meta_generator')
-
-# ── Social Media Tools ──────────────────────────────────────
-@app.route('/tweet-generator')
-def tweet_generator():
-    return render_template('tweet_generator.html', active_page='tweet_generator')
-
-@app.route('/instagram-post-generator')
-def instagram_post_generator():
-    return render_template('instagram_post_generator.html', active_page='instagram_post_generator')
-
-@app.route('/whatsapp-generator')
-def whatsapp_generator():
-    return render_template('whatsapp_generator.html', active_page='whatsapp_generator')
+@app.route('/clinical-parser')
+def clinical_parser():
+    meta = generate_page_metadata(
+        "Clinical Parser - Local HL7 v2 & FHIR Translator",
+        "Inspect and format medical clinical documents locally. Your data remains fully secure on your host machine.",
+        path="/clinical-parser"
+    )
+    return render_template('clinical_parser.html', active_page='clinical_parser', seo=meta)
 
 @app.route('/imessage-generator')
 def imessage_generator():
