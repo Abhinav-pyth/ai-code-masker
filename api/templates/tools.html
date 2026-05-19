@@ -18,13 +18,13 @@
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     .tool-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
         border-color: var(--primary);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
     }
     .dark-theme .tool-card:hover {
-        background: rgba(255, 255, 255, 0.07);
-        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        background: var(--card-bg);
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.15);
     }
     
     .tool-icon {
@@ -37,11 +37,12 @@
     .cat-section { margin-bottom: 64px; }
     .cat-title {
         font-family: 'Outfit', sans-serif;
-        font-size: 11px; font-weight: 900; letter-spacing: 3px;
+        font-size: 11px; font-weight: 900; letter-spacing: 2px;
         text-transform: uppercase; color: var(--primary);
         margin-bottom: 24px; padding-bottom: 12px;
         border-bottom: 1px solid var(--border-color);
         display: flex; align-items: center; gap: 12px;
+        opacity: 0.85;
     }
     .tool-name {
         font-family: 'Outfit', sans-serif;
@@ -60,192 +61,949 @@
 
         <!-- Header -->
         <div class="text-center mb-16">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-6">
-                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
                 Privacy First · 100% Client-Side Processing
             </div>
-            <h1 class="text-4xl md:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4" style="font-family:'Outfit', sans-serif">Utility Explorer</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto font-medium" style="font-family:'Outfit', sans-serif">Browse professional utilities designed for modern developers.</p>
+            <h1 class="text-4xl md:text-6xl font-black text-textMain uppercase tracking-tight mb-4" style="font-family:'Outfit', sans-serif">Utility Explorer</h1>
+            <p class="text-textDim text-lg max-w-2xl mx-auto font-medium" style="font-family:'Outfit', sans-serif">Browse professional utilities designed for modern developers.</p>
         </div>
 
-        <!-- ── Development ── -->
-        <div class="cat-section">
-            <div class="cat-title">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                Core Development
+
+        <!-- Elegant Real-Time Search Bar -->
+        <div class="max-w-2xl mx-auto mb-16 relative">
+            <div class="relative">
+                <input type="text" id="tool-search" placeholder="Search 55+ developer tools..." 
+                       class="w-full pl-12 pr-12 py-4 bg-black/5 dark:bg-black/40 border border-border rounded-2xl text-textMain placeholder-textDim focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm font-medium" 
+                       style="font-family:'Outfit', sans-serif">
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-textDim pointer-events-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <button id="clear-search" class="absolute right-4 top-1/2 -translate-y-1/2 text-textDim hover:text-textMain transition-colors hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                <a href="/api-tester" class="tool-card">
-                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                    <div>
-                        <div class="tool-name">API Tester</div>
-                        <p class="tool-desc">Full REST client with localhost support.</p>
-                    </div>
-                </a>
-                <a href="/sql-optimizer" class="tool-card">
-                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></div>
-                    <div>
-                        <div class="tool-name">SQL Optimizer</div>
-                        <p class="tool-desc">Performance analysis and anti-pattern detection.</p>
-                    </div>
-                </a>
-                <a href="/jwt-tool" class="tool-card">
-                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></div>
-                    <div>
-                        <div class="tool-name">JWT Inspector</div>
-                        <p class="tool-desc">Securely decode and inspect token payloads.</p>
-                    </div>
-                </a>
-                <a href="/json-editor" class="tool-card">
-                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg></div>
-                    <div>
-                        <div class="tool-name">JSON Editor</div>
-                        <p class="tool-desc">Interactive JSON tree editor and validator.</p>
-                    </div>
-                </a>
-                <a href="/hql-to-sql" class="tool-card">
-                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
-                    <div>
-                        <div class="tool-name">HQL → SQL</div>
-                        <p class="tool-desc">Convert Hibernate Query Language to SQL.</p>
-                    </div>
-                </a>
+            <!-- Search Status Indicator -->
+            <div id="search-status" class="absolute left-1 -bottom-7 text-xs text-textDim hidden font-medium" style="font-family:'Outfit', sans-serif">
+                Found <span id="match-count" class="font-bold text-primary">0</span> matching tools
             </div>
         </div>
 
-        <!-- ── Web & Security ── -->
+        <!-- ── Text Tools ── -->
         <div class="cat-section">
-            <div class="cat-title">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                Web & Security
-            </div>
+            <div class="cat-title">📝 Text & Writing</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                <a href="/sha256-hash" class="tool-card">
-                    <div class="tool-icon bg-red-500/15 text-red-600 dark:text-red-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div>
-                    <div>
-                        <div class="tool-name">SHA256 Hash</div>
-                        <p class="tool-desc">Generate and verify secure SHA256 hashes.</p>
+                <a href="/letter-counter" class="tool-card" data-name="letter counter" data-desc="count letters, words, and sentences in text.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
                     </div>
-                </a>
-                <a href="/base64" class="tool-card">
-                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 12h10m-7 5h7"/></svg></div>
-                    <div>
-                        <div class="tool-name">Base64 Tool</div>
-                        <p class="tool-desc">Fast encoding and decoding for data.</p>
-                    </div>
-                </a>
-                <a href="/password-generator" class="tool-card">
-                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></div>
-                    <div>
-                        <div class="tool-name">Password Gen</div>
-                        <p class="tool-desc">Create high-entropy secure passwords.</p>
-                    </div>
-                </a>
-                <a href="/my-ip" class="tool-card">
-                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h18"/></svg></div>
-                    <div>
-                        <div class="tool-name">My IP</div>
-                        <p class="tool-desc">Check your public IP and location details.</p>
-                    </div>
-                </a>
-                <a href="/domain-to-ip" class="tool-card">
-                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9h18"/></svg></div>
-                    <div>
-                        <div class="tool-name">Domain to IP</div>
-                        <p class="tool-desc">Resolve domains to their IP addresses.</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- ── Social & Content ── -->
-        <div class="cat-section">
-            <div class="cat-title">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
-                Social & Marketing
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                <a href="/tweet-generator" class="tool-card">
-                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-                    <div>
-                        <div class="tool-name">Tweet Gen</div>
-                        <p class="tool-desc">Mock realistic Twitter posts.</p>
-                    </div>
-                </a>
-                <a href="/instagram-post-generator" class="tool-card">
-                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
-                    <div>
-                        <div class="tool-name">Instagram Gen</div>
-                        <p class="tool-desc">Create Instagram post mockups with photos.</p>
-                    </div>
-                </a>
-                <a href="/whatsapp-generator" class="tool-card">
-                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
-                    <div>
-                        <div class="tool-name">WhatsApp Chat</div>
-                        <p class="tool-desc">Generate fake WhatsApp conversation mocks.</p>
-                    </div>
-                </a>
-                <a href="/letter-counter" class="tool-card">
-                    <div class="tool-icon bg-slate-500/15 text-slate-600 dark:text-slate-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg></div>
                     <div>
                         <div class="tool-name">Letter Counter</div>
-                        <p class="tool-desc">Analyze character and word counts.</p>
+                        <p class="tool-desc">Count letters, words, and sentences in text.</p>
                     </div>
                 </a>
-                <a href="/spell-checker" class="tool-card">
-                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                <a href="/bionic-reading" class="tool-card" data-name="bionic reading" data-desc="convert text to bionic reading format for faster reading.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Bionic Reading</div>
+                        <p class="tool-desc">Convert text to bionic reading format for faster reading.</p>
+                    </div>
+                </a>
+                <a href="/whitespace-remover" class="tool-card" data-name="whitespace remover" data-desc="remove extra spaces, tabs, and line breaks.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Whitespace Remover</div>
+                        <p class="tool-desc">Remove extra spaces, tabs, and line breaks.</p>
+                    </div>
+                </a>
+                <a href="/font-pair-finder" class="tool-card" data-name="font pair finder" data-desc="find and preview google font combinations.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Font Pair Finder</div>
+                        <p class="tool-desc">Find and preview Google font combinations.</p>
+                    </div>
+                </a>
+                <a href="/spell-checker" class="tool-card" data-name="spell checker" data-desc="check and correct spelling mistakes in your text.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
                     <div>
                         <div class="tool-name">Spell Checker</div>
-                        <p class="tool-desc">Multi-language spell check and correction.</p>
+                        <p class="tool-desc">Check and correct spelling mistakes in your text.</p>
+                    </div>
+                </a>
+                <a href="/translator" class="tool-card" data-name="translator" data-desc="translate text across many languages.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Translator</div>
+                        <p class="tool-desc">Translate text across many languages.</p>
+                    </div>
+                </a>
+                <a href="/lorem-ipsum" class="tool-card" data-name="lorem ipsum" data-desc="generate placeholder text for design and development.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Lorem Ipsum</div>
+                        <p class="tool-desc">Generate placeholder text for design and development.</p>
+                    </div>
+                </a>
+                <a href="/dummy-data" class="tool-card" data-name="dummy data" data-desc="generate realistic dummy data for testing and demos.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Dummy Data</div>
+                        <p class="tool-desc">Generate realistic dummy data for testing and demos.</p>
+                    </div>
+                </a>
+                <a href="/email-formation" class="tool-card" data-name="email formation" data-desc="compose and format professional email templates.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Email Formation</div>
+                        <p class="tool-desc">Compose and format professional email templates.</p>
+                    </div>
+                </a>
+                <a href="/sentence-formation" class="tool-card" data-name="sentence builder" data-desc="build well-structured sentences from words and phrases.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Sentence Builder</div>
+                        <p class="tool-desc">Build well-structured sentences from words and phrases.</p>
+                    </div>
+                </a>
+                <a href="/naming-suggestions" class="tool-card" data-name="naming helper" data-desc="get name suggestions for variables, functions, projects and more.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Naming Helper</div>
+                        <p class="tool-desc">Get name suggestions for variables, functions, projects and more.</p>
                     </div>
                 </a>
             </div>
         </div>
 
-        <!-- ── Design & UI ── -->
+        <!-- ── Hash & Encode Tools ── -->
         <div class="cat-section">
-            <div class="cat-title">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h14a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                Design & UI
-            </div>
+            <div class="cat-title">🔒 Hash & Encoding</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                <a href="/css-gradient-generator" class="tool-card">
-                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></div>
+                <a href="/md5-hash" class="tool-card" data-name="md5 hash" data-desc="generate md5 hash of any string.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
                     <div>
-                        <div class="tool-name">Gradient Gen</div>
-                        <p class="tool-desc">Build complex CSS gradients with ease.</p>
+                        <div class="tool-name">MD5 Hash</div>
+                        <p class="tool-desc">Generate MD5 hash of any string.</p>
                     </div>
                 </a>
-                <a href="/css-glassmorphism" class="tool-card">
-                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a2 2 0 00-1.96 1.414l-.722 2.166a2 2 0 00.177 1.631l.485.727a2 2 0 01.17 2.091l-1.492 2.984a2 2 0 01-1.789 1.106h-5.914a2 2 0 01-1.789-1.106l-1.492-2.984a2 2 0 01.17-2.091l.485-.727a2 2 0 00.177-1.631l-.722-2.166a2 2 0 00-1.96-1.414l-2.387.477a2 2 0 00-1.022.547l-1.161 1.161a2 2 0 01-2.828 0l-4.243-4.243a2 2 0 010-2.828l1.161-1.161a2 2 0 00.547-1.022l.477-2.387a2 2 0 00-1.414-1.96l-2.166-.722a2 2 0 00-1.631.177l-.727.485a2 2 0 01-2.091.17l-2.984-1.492a2 2 0 01-1.106-1.789V5.914a2 2 0 011.106-1.789l2.984-1.492a2 2 0 012.091.17l.727.485a2 2 0 001.631.177l2.166-.722a2 2 0 001.96-1.414l.477-2.387a2 2 0 001.022-.547l1.161-1.161a2 2 0 012.828 0l4.243 4.243a2 2 0 010 2.828l-1.161 1.161z"/></svg></div>
+                <a href="/sha1-hash" class="tool-card" data-name="sha1 hash" data-desc="generate sha1 hash of any string.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SHA1 Hash</div>
+                        <p class="tool-desc">Generate SHA1 hash of any string.</p>
+                    </div>
+                </a>
+                <a href="/sha224-hash" class="tool-card" data-name="sha224 hash" data-desc="generate sha224 hash of any string.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SHA224 Hash</div>
+                        <p class="tool-desc">Generate SHA224 hash of any string.</p>
+                    </div>
+                </a>
+                <a href="/sha256-hash" class="tool-card" data-name="sha256 hash" data-desc="generate sha256 hash of any string.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SHA256 Hash</div>
+                        <p class="tool-desc">Generate SHA256 hash of any string.</p>
+                    </div>
+                </a>
+                <a href="/sha384-hash" class="tool-card" data-name="sha384 hash" data-desc="generate sha384 hash of any string.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SHA384 Hash</div>
+                        <p class="tool-desc">Generate SHA384 hash of any string.</p>
+                    </div>
+                </a>
+                <a href="/sha512-hash" class="tool-card" data-name="sha512 hash" data-desc="generate sha512 hash of any string.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SHA512 Hash</div>
+                        <p class="tool-desc">Generate SHA512 hash of any string.</p>
+                    </div>
+                </a>
+                <a href="/html-encoder" class="tool-card" data-name="html encoder" data-desc="encode and decode html entities.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HTML Encoder</div>
+                        <p class="tool-desc">Encode and decode HTML entities.</p>
+                    </div>
+                </a>
+                <a href="/base64" class="tool-card" data-name="base64 tool" data-desc="encode and decode base64 strings instantly.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Base64 Tool</div>
+                        <p class="tool-desc">Encode and decode Base64 strings instantly.</p>
+                    </div>
+                </a>
+                <a href="/base64-to-pdf" class="tool-card" data-name="base64 → pdf" data-desc="convert base64 encoded strings to downloadable pdf files.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Base64 → PDF</div>
+                        <p class="tool-desc">Convert Base64 encoded strings to downloadable PDF files.</p>
+                    </div>
+                </a>
+                <a href="/base64-to-image" class="tool-card" data-name="base64 → image" data-desc="preview and download images encoded as base64 strings.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Base64 → Image</div>
+                        <p class="tool-desc">Preview and download images encoded as Base64 strings.</p>
+                    </div>
+                </a>
+                <a href="/url-encoder" class="tool-card" data-name="url encoder" data-desc="encode and decode url components and query strings.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">URL Encoder</div>
+                        <p class="tool-desc">Encode and decode URL components and query strings.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Coding Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">💻 Coding Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/api-tester" class="tool-card" data-name="api tester" data-desc="test rest apis with all http methods. localhost support included.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">API Tester</div>
+                        <p class="tool-desc">Test REST APIs with all HTTP methods. Localhost support included.</p>
+                    </div>
+                </a>
+                <a href="/sql-optimizer" class="tool-card" data-name="sql optimizer" data-desc="detect sql anti-patterns and get optimization suggestions.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SQL Optimizer</div>
+                        <p class="tool-desc">Detect SQL anti-patterns and get optimization suggestions.</p>
+                    </div>
+                </a>
+                <a href="/hql-to-sql" class="tool-card" data-name="hql → sql" data-desc="convert hibernate hql/jpql to sql with camelcase column mapping.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HQL → SQL</div>
+                        <p class="tool-desc">Convert Hibernate HQL/JPQL to SQL with camelCase column mapping.</p>
+                    </div>
+                </a>
+                <a href="/dfd-creator" class="tool-card" data-name="dfd creator" data-desc="draw data flow diagrams with interactive canvas. export png/svg.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2m0 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">DFD Creator</div>
+                        <p class="tool-desc">Draw Data Flow Diagrams with interactive canvas. Export PNG/SVG.</p>
+                    </div>
+                </a>
+                <a href="/json-compare" class="tool-card" data-name="json compare" data-desc="advanced json comparison with exclusions and node manipulation.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JSON Compare</div>
+                        <p class="tool-desc">Advanced JSON comparison with exclusions and node manipulation.</p>
+                    </div>
+                </a>
+                <a href="/json-editor" class="tool-card" data-name="json editor" data-desc="format, validate and edit json with tree view and diff.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JSON Editor</div>
+                        <p class="tool-desc">Format, validate and edit JSON with tree view and diff.</p>
+                    </div>
+                </a>
+                <a href="/jwt-tool" class="tool-card" data-name="jwt inspector" data-desc="decode and inspect jwt tokens — header, payload, signature.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JWT Inspector</div>
+                        <p class="tool-desc">Decode and inspect JWT tokens — header, payload, signature.</p>
+                    </div>
+                </a>
+                <a href="/html-preview" class="tool-card" data-name="html preview" data-desc="live preview html code in a sandboxed iframe.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HTML Preview</div>
+                        <p class="tool-desc">Live preview HTML code in a sandboxed iframe.</p>
+                    </div>
+                </a>
+                <a href="/js-executor" class="tool-card" data-name="js executor" data-desc="run javascript snippets in a safe sandbox with console output.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JS Executor</div>
+                        <p class="tool-desc">Run JavaScript snippets in a safe sandbox with console output.</p>
+                    </div>
+                </a>
+                <a href="/java-to-json" class="tool-card" data-name="java → json" data-desc="convert java pojo class definitions to json schema.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Java → JSON</div>
+                        <p class="tool-desc">Convert Java POJO class definitions to JSON schema.</p>
+                    </div>
+                </a>
+                <a href="/aws-cloudwatch" class="tool-card" data-name="cloudwatch fmt" data-desc="format and parse aws cloudwatch log entries visually.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">CloudWatch Fmt</div>
+                        <p class="tool-desc">Format and parse AWS CloudWatch log entries visually.</p>
+                    </div>
+                </a>
+                <a href="/workflow-engine" class="tool-card" data-name="workflow engine" data-desc="build conditional workflows with nested if-else logic and output validation.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2m0 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Workflow Engine</div>
+                        <p class="tool-desc">Build conditional workflows with nested if-else logic and output validation.</p>
+                    </div>
+                </a>
+                <a href="/timezone-converter" class="tool-card" data-name="timezone conv." data-desc="convert datetime between est, utc, ist and 20+ timezones instantly.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Timezone Conv.</div>
+                        <p class="tool-desc">Convert datetime between EST, UTC, IST and 20+ timezones instantly.</p>
+                    </div>
+                </a>
+                <a href="/html-minifier" class="tool-card" data-name="html minifier" data-desc="minify and compress html code.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HTML Minifier</div>
+                        <p class="tool-desc">Minify and compress HTML code.</p>
+                    </div>
+                </a>
+                <a href="/css-minifier" class="tool-card" data-name="css minifier" data-desc="minify and compress css code.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">CSS Minifier</div>
+                        <p class="tool-desc">Minify and compress CSS code.</p>
+                    </div>
+                </a>
+                <a href="/js-minifier" class="tool-card" data-name="js minifier" data-desc="minify and compress javascript code.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JS Minifier</div>
+                        <p class="tool-desc">Minify and compress JavaScript code.</p>
+                    </div>
+                </a>
+                <a href="/html-formatter" class="tool-card" data-name="html formatter" data-desc="beautify and format html code.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HTML Formatter</div>
+                        <p class="tool-desc">Beautify and format HTML code.</p>
+                    </div>
+                </a>
+                <a href="/css-formatter" class="tool-card" data-name="css formatter" data-desc="beautify and format css code.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">CSS Formatter</div>
+                        <p class="tool-desc">Beautify and format CSS code.</p>
+                    </div>
+                </a>
+                <a href="/js-formatter" class="tool-card" data-name="js formatter" data-desc="beautify and format javascript code.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">JS Formatter</div>
+                        <p class="tool-desc">Beautify and format JavaScript code.</p>
+                    </div>
+                </a>
+                <a href="/slug-generator" class="tool-card" data-name="slug generator" data-desc="generate url-friendly slugs from strings.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Slug Generator</div>
+                        <p class="tool-desc">Generate URL-friendly slugs from strings.</p>
+                    </div>
+                </a>
+                <a href="/code-to-image" class="tool-card" data-name="code to image" data-desc="convert code snippets to beautiful images.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Code to Image</div>
+                        <p class="tool-desc">Convert code snippets to beautiful images.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── CSS Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">🎨 CSS Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/css-gradient-generator" class="tool-card" data-name="gradient gen." data-desc="generate css linear and radial gradients.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Gradient Gen.</div>
+                        <p class="tool-desc">Generate CSS linear and radial gradients.</p>
+                    </div>
+                </a>
+                <a href="/css-box-shadow" class="tool-card" data-name="box shadow" data-desc="generate css box-shadow properties.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Box Shadow</div>
+                        <p class="tool-desc">Generate CSS box-shadow properties.</p>
+                    </div>
+                </a>
+                <a href="/css-border-radius" class="tool-card" data-name="border radius" data-desc="generate complex css border-radius shapes.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Border Radius</div>
+                        <p class="tool-desc">Generate complex CSS border-radius shapes.</p>
+                    </div>
+                </a>
+                <a href="/css-glassmorphism" class="tool-card" data-name="glassmorphism" data-desc="generate css glassmorphism effects.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </div>
                     <div>
                         <div class="tool-name">Glassmorphism</div>
-                        <p class="tool-desc">Modern frosted glass CSS effects.</p>
+                        <p class="tool-desc">Generate CSS glassmorphism effects.</p>
                     </div>
                 </a>
-                <a href="/color-palette" class="tool-card">
-                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></div>
+                <a href="/css-triangle-generator" class="tool-card" data-name="triangle gen." data-desc="generate css triangles using borders.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Triangle Gen.</div>
+                        <p class="tool-desc">Generate CSS triangles using borders.</p>
+                    </div>
+                </a>
+                <a href="/css-glitch-generator" class="tool-card" data-name="glitch effect" data-desc="generate css glitch text effects.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Glitch Effect</div>
+                        <p class="tool-desc">Generate CSS glitch text effects.</p>
+                    </div>
+                </a>
+                <a href="/css-loader-generator" class="tool-card" data-name="loader gen." data-desc="generate css loading animations.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Loader Gen.</div>
+                        <p class="tool-desc">Generate CSS loading animations.</p>
+                    </div>
+                </a>
+                <a href="/css-bezier-generator" class="tool-card" data-name="cubic bezier" data-desc="generate css cubic-bezier transition curves.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Cubic Bezier</div>
+                        <p class="tool-desc">Generate CSS cubic-bezier transition curves.</p>
+                    </div>
+                </a>
+                <a href="/css-clip-path-generator" class="tool-card" data-name="clip path" data-desc="generate css clip-path polygons.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Clip Path</div>
+                        <p class="tool-desc">Generate CSS clip-path polygons.</p>
+                    </div>
+                </a>
+                <a href="/css-pattern-generator" class="tool-card" data-name="pattern gen." data-desc="generate css background patterns.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Pattern Gen.</div>
+                        <p class="tool-desc">Generate CSS background patterns.</p>
+                    </div>
+                </a>
+                <a href="/css-checkbox-generator" class="tool-card" data-name="checkbox styles" data-desc="generate custom css checkboxes.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Checkbox Styles</div>
+                        <p class="tool-desc">Generate custom CSS checkboxes.</p>
+                    </div>
+                </a>
+                <a href="/css-switch-generator" class="tool-card" data-name="switch/toggle" data-desc="generate css switch toggles.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8a4 4 0 110 8H8a4 4 0 110-8z M8 11a2 2 0 100-4 2 2 0 000 4z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Switch/Toggle</div>
+                        <p class="tool-desc">Generate CSS switch toggles.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Color Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">🎨 Color Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/color-palette" class="tool-card" data-name="color palette" data-desc="generate beautiful color palettes.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
                     <div>
                         <div class="tool-name">Color Palette</div>
-                        <p class="tool-desc">Generate harmonious color schemes.</p>
+                        <p class="tool-desc">Generate beautiful color palettes.</p>
                     </div>
                 </a>
-                <a href="/qr-generator" class="tool-card">
-                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg></div>
+                <a href="/hex-to-rgba" class="tool-card" data-name="hex to rgba" data-desc="convert hex colors to rgba format.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">HEX to RGBA</div>
+                        <p class="tool-desc">Convert HEX colors to RGBA format.</p>
+                    </div>
+                </a>
+                <a href="/rgba-to-hex" class="tool-card" data-name="rgba to hex" data-desc="convert rgba colors to hex format.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">RGBA to HEX</div>
+                        <p class="tool-desc">Convert RGBA colors to HEX format.</p>
+                    </div>
+                </a>
+                <a href="/color-shades" class="tool-card" data-name="color shades" data-desc="generate tints, shades, and tones for any color.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Color Shades</div>
+                        <p class="tool-desc">Generate tints, shades, and tones for any color.</p>
+                    </div>
+                </a>
+                <a href="/color-mixer" class="tool-card" data-name="color mixer" data-desc="mix multiple colors and find the result.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Color Mixer</div>
+                        <p class="tool-desc">Mix multiple colors and find the result.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Image Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">🖼️ Image Tools</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/image-resize" class="tool-card" data-name="image resize" data-desc="resize images to any dimension without uploading to a server.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Image Resize</div>
+                        <p class="tool-desc">Resize images to any dimension without uploading to a server.</p>
+                    </div>
+                </a>
+                <a href="/image-converter" class="tool-card" data-name="image converter" data-desc="convert images between png, jpeg, webp and other formats.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Image Converter</div>
+                        <p class="tool-desc">Convert images between PNG, JPEG, WebP and other formats.</p>
+                    </div>
+                </a>
+                <a href="/pixel-editor" class="tool-card" data-name="pixel editor" data-desc="edit images at pixel level with drawing tools and filters.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Pixel Editor</div>
+                        <p class="tool-desc">Edit images at pixel level with drawing tools and filters.</p>
+                    </div>
+                </a>
+                <a href="/image-cropper" class="tool-card" data-name="image cropper" data-desc="crop images easily in your browser.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Image Cropper</div>
+                        <p class="tool-desc">Crop images easily in your browser.</p>
+                    </div>
+                </a>
+                <a href="/image-filters" class="tool-card" data-name="image filters" data-desc="apply css and canvas filters to images.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Image Filters</div>
+                        <p class="tool-desc">Apply CSS and canvas filters to images.</p>
+                    </div>
+                </a>
+                <a href="/image-color-picker" class="tool-card" data-name="color picker" data-desc="extract colors directly from an image.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Color Picker</div>
+                        <p class="tool-desc">Extract colors directly from an image.</p>
+                    </div>
+                </a>
+                <a href="/image-color-extractor" class="tool-card" data-name="color extractor" data-desc="extract a full color palette from an image.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Color Extractor</div>
+                        <p class="tool-desc">Extract a full color palette from an image.</p>
+                    </div>
+                </a>
+                <a href="/image-avg-color" class="tool-card" data-name="average color" data-desc="calculate the average color of an image.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Average Color</div>
+                        <p class="tool-desc">Calculate the average color of an image.</p>
+                    </div>
+                </a>
+                <a href="/image-to-base64" class="tool-card" data-name="image to base64" data-desc="convert an image file to base64 string.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Image to Base64</div>
+                        <p class="tool-desc">Convert an image file to Base64 string.</p>
+                    </div>
+                </a>
+                <a href="/svg-blob-generator" class="tool-card" data-name="svg blob gen" data-desc="generate random svg blobs for backgrounds.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">SVG Blob Gen</div>
+                        <p class="tool-desc">Generate random SVG blobs for backgrounds.</p>
+                    </div>
+                </a>
+                <a href="/photo-censor" class="tool-card" data-name="photo censor" data-desc="blur or pixelate faces and sensitive areas.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Photo Censor</div>
+                        <p class="tool-desc">Blur or pixelate faces and sensitive areas.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Social Media Tools ── -->
+        <div class="cat-section">
+            <div class="cat-title">📱 Social Media</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/tweet-generator" class="tool-card" data-name="tweet gen." data-desc="create fake tweet screenshots.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Tweet Gen.</div>
+                        <p class="tool-desc">Create fake tweet screenshots.</p>
+                    </div>
+                </a>
+                <a href="/instagram-post-generator" class="tool-card" data-name="ig post gen." data-desc="create fake instagram post screenshots.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">IG Post Gen.</div>
+                        <p class="tool-desc">Create fake Instagram post screenshots.</p>
+                    </div>
+                </a>
+                <a href="/whatsapp-generator" class="tool-card" data-name="whatsapp chat" data-desc="create fake whatsapp chat screenshots.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">WhatsApp Chat</div>
+                        <p class="tool-desc">Create fake WhatsApp chat screenshots.</p>
+                    </div>
+                </a>
+                <a href="/imessage-generator" class="tool-card" data-name="imessage chat" data-desc="create fake imessage chat screenshots.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">iMessage Chat</div>
+                        <p class="tool-desc">Create fake iMessage chat screenshots.</p>
+                    </div>
+                </a>
+                <a href="/yt-thumbnail" class="tool-card" data-name="yt thumbnail" data-desc="download youtube video thumbnails.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">YT Thumbnail</div>
+                        <p class="tool-desc">Download YouTube video thumbnails.</p>
+                    </div>
+                </a>
+                <a href="/rn-shadow-generator" class="tool-card" data-name="rn shadow" data-desc="generate react native shadow styles.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">RN Shadow</div>
+                        <p class="tool-desc">Generate React Native shadow styles.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Misc Tools & Network ── -->
+        <div class="cat-section">
+            <div class="cat-title">🔧 Misc Tools & Network</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/password-generator" class="tool-card" data-name="password gen." data-desc="generate secure and random passwords.">
+                    <div class="tool-icon bg-pink-500/15 text-pink-600 dark:text-pink-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Password Gen.</div>
+                        <p class="tool-desc">Generate secure and random passwords.</p>
+                    </div>
+                </a>
+                <a href="/list-randomizer" class="tool-card" data-name="list randomizer" data-desc="shuffle and randomize lists or names.">
+                    <div class="tool-icon bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">List Randomizer</div>
+                        <p class="tool-desc">Shuffle and randomize lists or names.</p>
+                    </div>
+                </a>
+                <a href="/barcode-generator" class="tool-card" data-name="barcode gen." data-desc="generate standard 1d barcodes.">
+                    <div class="tool-icon bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h2m14 0h.01M5 4h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zm12 0h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V5a1 1 0 011-1zM5 16h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2a1 1 0 011-1z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Barcode Gen.</div>
+                        <p class="tool-desc">Generate standard 1D barcodes.</p>
+                    </div>
+                </a>
+                <a href="/og-meta-generator" class="tool-card" data-name="og meta gen." data-desc="generate open graph meta tags.">
+                    <div class="tool-icon bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">OG Meta Gen.</div>
+                        <p class="tool-desc">Generate Open Graph meta tags.</p>
+                    </div>
+                </a>
+                <a href="/case-converter" class="tool-card" data-name="case converter" data-desc="convert text between camelcase, snake_case, etc.">
+                    <div class="tool-icon bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Case Converter</div>
+                        <p class="tool-desc">Convert text between camelCase, snake_case, etc.</p>
+                    </div>
+                </a>
+                <a href="/universal-converter" class="tool-card" data-name="universal conv." data-desc="convert units across length, weight, etc.">
+                    <div class="tool-icon bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Universal Conv.</div>
+                        <p class="tool-desc">Convert units across length, weight, etc.</p>
+                    </div>
+                </a>
+                <a href="/qr-generator" class="tool-card" data-name="qr generator" data-desc="generate qr codes from any text or url instantly.">
+                    <div class="tool-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h2m14 0h.01M5 4h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zm12 0h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V5a1 1 0 011-1zM5 16h2a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2a1 1 0 011-1z"/></svg>
+                    </div>
                     <div>
                         <div class="tool-name">QR Generator</div>
-                        <p class="tool-desc">Instant QR code creation for links/text.</p>
+                        <p class="tool-desc">Generate QR codes from any text or URL instantly.</p>
                     </div>
                 </a>
-                <a href="/tools" class="tool-card bg-indigo-600/10 border-indigo-500/30">
-                    <div class="tool-icon bg-indigo-600 text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg></div>
+                <a href="/my-ip" class="tool-card" data-name="my ip address" data-desc="see your current public ip address and location details.">
+                    <div class="tool-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                    </div>
                     <div>
-                        <div class="tool-name text-indigo-600 dark:text-indigo-400">View All Tools</div>
-                        <p class="tool-desc">Explore our full library of 55+ utilities.</p>
+                        <div class="tool-name">My IP Address</div>
+                        <p class="tool-desc">See your current public IP address and location details.</p>
+                    </div>
+                </a>
+                <a href="/domain-to-ip" class="tool-card" data-name="domain → ip" data-desc="resolve domain names to their ip addresses via dns lookup.">
+                    <div class="tool-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Domain → IP</div>
+                        <p class="tool-desc">Resolve domain names to their IP addresses via DNS lookup.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Healthcare & Clinical ── -->
+        <div class="cat-section">
+            <div class="cat-title">🏥 Healthcare & Clinical</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                <a href="/clinical-parser" class="tool-card" data-name="clinical parser" data-desc="parse hl7 v2, c-cda and fhir clinical documents with patient summary.">
+                    <div class="tool-icon bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    </div>
+                    <div>
+                        <div class="tool-name">Clinical Parser</div>
+                        <p class="tool-desc">Parse HL7 v2, C-CDA and FHIR clinical documents with patient summary.</p>
                     </div>
                 </a>
             </div>
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('tool-search');
+        const clearBtn = document.getElementById('clear-search');
+        const searchStatus = document.getElementById('search-status');
+        const matchCountSpan = document.getElementById('match-count');
+        const cards = document.querySelectorAll('.tool-card');
+        const sections = document.querySelectorAll('.cat-section');
+
+        function filterTools() {
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (query === '') {
+                clearBtn.classList.add('hidden');
+                searchStatus.classList.add('hidden');
+                
+                cards.forEach(card => card.style.display = '');
+                sections.forEach(section => section.style.display = '');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+            searchStatus.classList.remove('hidden');
+
+            let totalMatches = 0;
+
+            sections.forEach(section => {
+                let sectionMatches = 0;
+                const sectionCards = section.querySelectorAll('.tool-card');
+                
+                sectionCards.forEach(card => {
+                    const name = card.getAttribute('data-name') || '';
+                    const desc = card.getAttribute('data-desc') || '';
+                    
+                    if (name.includes(query) || desc.includes(query)) {
+                        card.style.display = '';
+                        sectionMatches++;
+                        totalMatches++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (sectionMatches > 0) {
+                    section.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+
+            matchCountSpan.textContent = totalMatches;
+        }
+
+        searchInput.addEventListener('input', filterTools);
+
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterTools();
+            searchInput.focus();
+        });
+
+        // Escape key clears search
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.value = '';
+                filterTools();
+            }
+        });
+    });
+    </script>
 {% endblock %}

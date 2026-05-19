@@ -4,36 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Code Masker — Privacy-First Developer Tools{% endblock %} | aicomdemasker.com</title>
-
-    <meta name="description" content="{% block meta_description %}AI Code Masker is a free, privacy-first developer toolkit. Mask sensitive API keys, parse HL7/FHIR/C-CDA clinical documents, test REST APIs, and convert data — all 100% in-browser with zero data sent to any server.{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}code masking tool, AI privacy tool, HL7 parser, FHIR parser, C-CDA parser, clinical document parser, API tester, developer tools, free online tools{% endblock %}">
+    
+    <!-- Dynamic SEO and Canonical Tags -->
+    <title>{% if seo %}{{ seo.title }}{% else %}AI Code Masker + DevUtils AI — Privacy-First Developer Tools{% endif %}</title>
+    <meta name="description" content="{% if seo %}{{ seo.description }}{% else %}Free online developer tools that run 100% in-browser. Mask code secrets, parse clinical HL7 documents, test REST APIs, and convert data — all with 100% local privacy.{% endif %}">
+    <meta name="keywords" content="code masking tool, AI privacy tool, HL7 parser, FHIR parser, developer tools, free online tools, JSON formatter, JWT decoder">
     <meta name="robots" content="index, follow">
-    <meta name="author" content="ai-code-masker.vercel.app">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="google-site-verification" content="0118da07594017cd" />
-    <link rel="canonical" href="{% block canonical %}https://ai-code-masker.vercel.app/{% endblock %}" />
+    <meta name="theme-color" content="#030303">
+    
+    <link rel="canonical" href="{% if seo %}{{ seo.canonical }}{% else %}https://ai-code-masker.vercel.app/{% endif %}" />
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 
+    <!-- OpenGraph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="AI Code Masker">
-    <meta property="og:url" content="{% block og_url %}https://ai-code-masker.vercel.app/{% endblock %}">
-    <meta property="og:title" content="{% block og_title %}AI Code Masker | Privacy-First Developer Tools{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Free developer tools that run 100% in your browser. Mask code secrets, parse HL7/FHIR/C-CDA, test REST APIs and more — your data never leaves your machine.{% endblock %}">
+    <meta property="og:site_name" content="AI Code Masker + DevUtils AI">
+    <meta property="og:url" content="{% if seo %}{{ seo.canonical }}{% else %}https://ai-code-masker.vercel.app/{% endif %}">
+    <meta property="og:title" content="{% if seo %}{{ seo.title }}{% else %}AI Code Masker + DevUtils AI | Privacy-First Developer Tools{% endif %}">
+    <meta property="og:description" content="{% if seo %}{{ seo.description }}{% else %}Free developer tools that run 100% in your browser. Mask code secrets, parse clinical documents, test REST APIs — your data never leaves your machine.{% endif %}">
     <meta property="og:image" content="https://ai-code-masker.vercel.app/static/hero_platform_banner.png">
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@aicomdemasker">
-    <meta name="twitter:url" content="{% block tw_url %}https://ai-code-masker.vercel.app/{% endblock %}">
-    <meta name="twitter:title" content="{% block tw_title %}AI Code Masker | Privacy-First Developer Tools{% endblock %}">
-    <meta name="twitter:description" content="{% block tw_description %}Mask code, parse clinical documents, test APIs — all free and 100% in-browser.{% endblock %}">
+    <meta name="twitter:url" content="{% if seo %}{{ seo.canonical }}{% else %}https://ai-code-masker.vercel.app/{% endif %}">
+    <meta name="twitter:title" content="{% if seo %}{{ seo.title }}{% else %}AI Code Masker + DevUtils AI | Privacy-First Developer Tools{% endif %}">
+    <meta name="twitter:description" content="{% if seo %}{{ seo.description }}{% else %}Mask code, parse clinical documents, test APIs — all free and 100% in-browser.{% endif %}">
     <meta name="twitter:image" content="https://ai-code-masker.vercel.app/static/hero_platform_banner.png">
 
+    <!-- Schema.org Dynamic JSON-LD -->
+    {% if seo and seo.schema_html %}
+    {{ seo.schema_html | safe }}
+    {% else %}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "AI Code Masker",
+      "name": "AI Code Masker + DevUtils AI",
       "url": "https://ai-code-masker.vercel.app",
       "description": "A free, privacy-first toolkit for developers and clinical engineers.",
       "applicationCategory": "DeveloperApplication",
@@ -41,36 +46,94 @@
       "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" }
     }
     </script>
+    {% endif %}
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--bg-color)',
+                        card: 'var(--card-bg)',
+                        border: 'var(--border-color)',
+                        textMain: 'var(--text-main)',
+                        textDim: 'var(--text-dim)',
+                        primary: 'var(--primary)',
+                        primaryHover: 'var(--primary-hover)',
+                        primaryGlow: 'var(--primary-glow)',
+                        accentIndigo: 'var(--accent-indigo)',
+                        accentEmerald: 'var(--accent-emerald)',
+                        inputBg: 'var(--input-bg)',
+                        inputBorder: 'var(--input-border)',
+                        inputFocus: 'var(--input-focus)'
+                    },
+                    boxShadow: {
+                        premium: 'var(--shadow-premium)',
+                        inset: 'var(--shadow-inset)'
+                    }
+                }
+            }
+        }
+    </script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Audiowide&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Audiowide&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            /* Default Light Theme */
+        :root, body.dark-theme {
+            /* 1. Default Dark Theme (Soft Navy Slate - insp. Linear/Supabase) */
+            --bg-color: #0d0f14;
+            --card-bg: #141722;
+            --glass-bg: rgba(13, 15, 20, 0.75);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-color-hover: rgba(255, 255, 255, 0.12);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+            
             --primary: #6366f1;
             --primary-hover: #4f46e5;
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.8);
-            --text-main: #1e293b;
-            --text-dim: #64748b;
-            --border-color: rgba(0, 0, 0, 0.08);
-            --glass-bg: rgba(255, 255, 255, 0.85);
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            
             --accent-indigo: #818cf8;
             --accent-emerald: #10b981;
+            
+            --input-bg: #181d29;
+            --input-border: rgba(255, 255, 255, 0.08);
+            --input-focus: rgba(99, 102, 241, 0.35);
+            
+            --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            --code-bg: #181d29;
         }
 
-        .dark-theme {
-            --bg-color: #030303;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --glass-bg: rgba(10, 10, 10, 0.7);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+        body.light-theme {
+            /* 2. Light Theme (Warm Clean White - insp. Stripe/Vercel) */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --glass-bg: rgba(248, 250, 252, 0.85);
+            --border-color: #e2e8f0;
+            --border-color-hover: #cbd5e1;
+            --text-main: #0f172a;
+            --text-dim: #475569;
+            
+            --primary: #4f46e5;
+            --primary-hover: #3730a3;
+            --primary-glow: rgba(79, 70, 229, 0.08);
+            
+            --accent-indigo: #6366f1;
+            --accent-emerald: #059669;
+            
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-focus: rgba(79, 70, 229, 0.18);
+            
+            --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.06);
+            --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            --code-bg: #f1f5f9;
         }
 
         html, body { 
@@ -101,11 +164,11 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(0, 0, 0, 0.1); 
+            background: rgba(255, 255, 255, 0.1); 
             border-radius: 10px;
         }
-        .dark-theme ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+        .light-theme ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
         }
 
         .glass {
@@ -186,11 +249,27 @@
             }
         }
 
+        /* Keyboard layout highlights */
+        kbd {
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 9px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        }
+        .light-theme kbd {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #475569;
+        }
+
         {% block extra_styles %}{% endblock %}
     </style>
 </head>
 
-<body class="light-theme">
+<body class="dark-theme dark">
     <header class="sticky top-0 h-16 glass flex items-center justify-between px-6 md:px-12 z-[100] shrink-0">
         <div class="flex items-center space-x-4">
             <!-- Back Button for Tools -->
@@ -207,17 +286,24 @@
                     </svg>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-sm md:text-base font-black text-slate-900 dark:text-white tracking-widest uppercase logo-font">AI Code Masker</span>
-                    <p class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">100% Client-Side Privacy</p>
+                    <span class="text-xs md:text-sm font-black text-slate-900 dark:text-white tracking-widest uppercase logo-font">DevUtils AI</span>
+                    <p class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">AI & Dev Tools Suite</p>
                 </div>
             </div>
         </div>
 
+        <!-- Sticky Center Search Trigger -->
+        <button onclick="toggleCommandPalette()" class="hidden lg:flex items-center space-x-3 px-4 py-1.5 rounded-xl bg-black/20 dark:bg-white/5 border border-white/5 hover:border-slate-400 dark:hover:border-slate-700 transition-all text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <span>Search utilities</span>
+            <kbd class="text-[8px]">Ctrl+K</kbd>
+        </button>
+
         <nav class="desktop-nav hidden md:flex items-center space-x-7">
-            <a href="/" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'masker' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-900{% endif %} transition-all">Masker</a>
+            <a href="/" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'masker' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Masker</a>
             
             <div class="nav-group relative">
-                <a href="/tools" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'tools' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-900{% endif %} transition-all flex items-center gap-1">
+                <a href="/tools" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'tools' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all flex items-center gap-1">
                     Tools
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </a>
@@ -260,13 +346,20 @@
                 </div>
             </div>
 
-            <a href="/clinical-parser" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'clinical_parser' %}text-emerald-600{% else %}text-slate-500 hover:text-slate-900{% endif %} transition-all">Clinical</a>
-            <a href="/privacy" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'privacy' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-900{% endif %} transition-all">Privacy</a>
+            <a href="/clinical-parser" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'clinical_parser' %}text-emerald-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Clinical</a>
+            <a href="/blog" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'blog' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Blog</a>
+            <a href="/pricing" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'pricing' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Pricing</a>
             
             <button onclick="toggleGlobalTheme()" class="w-9 h-9 rounded-lg flex items-center justify-center bg-black/5 dark:bg-white/5 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 transition-all">
                 <svg id="global-theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                 </svg>
+            </button>
+
+            <!-- Clerk / Auth.js Placement Wrapper -->
+            <div class="h-8 w-px bg-white/10 mx-2"></div>
+            <button onclick="toggleMockAuth()" id="auth-btn" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-black hover:bg-indigo-700 text-[10px] uppercase tracking-widest shadow-md transition-all">
+                Sign In
             </button>
         </nav>
 
@@ -280,6 +373,8 @@
                 <a href="/" class="mob-link">Home</a>
                 <a href="/tools" class="mob-link">All Tools</a>
                 <a href="/clinical-parser" class="mob-link">Clinical Parser</a>
+                <a href="/blog" class="mob-link">Blog Posts</a>
+                <a href="/pricing" class="mob-link">Pricing Plans</a>
             </div>
             <div class="mob-section">
                 <div class="mob-section-title">Common Tools</div>
@@ -292,28 +387,177 @@
 
     <main>
         {% block content %}{% endblock %}
+        
+        <!-- Clipboard Success HUD Notification -->
+        <div id="clipboard-toast" class="fixed bottom-8 right-8 z-[600] hidden items-center space-x-3 px-5 py-3 rounded-xl bg-slate-900 border border-emerald-500/30 shadow-2xl text-[10px] font-black uppercase tracking-widest text-emerald-400 animate-slide-in">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <span>Copied successfully!</span>
+        </div>
+
         <footer class="mt-auto border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-black/20 px-6 md:px-12 py-6">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                    &copy; 2026 AI Code Masker. Privacy-First.
+                    &copy; 2026 AI Code Masker + DevUtils AI. All client-side tools run 100% locally.
                 </p>
                 <div class="flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest">
                     <a href="/tools" class="text-slate-500 hover:text-indigo-600 transition-colors">Dev Tools</a>
+                    <a href="/blog" class="text-slate-500 hover:text-indigo-600 transition-colors">Blog</a>
+                    <a href="/pricing" class="text-slate-500 hover:text-indigo-600 transition-colors">Pricing</a>
                     <a href="/privacy" class="text-slate-500 hover:text-indigo-600 transition-colors">Privacy</a>
                 </div>
             </div>
         </footer>
     </main>
 
+    <!-- Global Command Palette Modal Overlay -->
+    <div id="command-palette" class="fixed inset-0 z-[500] hidden items-center justify-center p-4 bg-black/60 dark:bg-black/85 backdrop-blur-sm">
+        <div class="w-full max-w-2xl rounded-2xl overflow-hidden shadow-premium border border-border flex flex-col bg-card">
+            <!-- Search Bar -->
+            <div class="h-16 border-b border-border flex items-center px-6 gap-4 bg-card">
+                <svg class="w-5 h-5 text-textDim shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="palette-search" placeholder="Search 55+ utilities by name or tag..." class="w-full h-full bg-transparent text-sm text-textMain border-0 outline-none placeholder-textDim/60 font-medium">
+                <span class="text-[9px] font-bold text-textDim border border-border rounded px-2 py-1 uppercase tracking-widest shrink-0 select-none">ESC</span>
+            </div>
+            <!-- Results list -->
+            <div id="palette-results" class="max-h-[350px] overflow-y-auto p-4 space-y-1 bg-card">
+                <!-- Injected via JavaScript -->
+            </div>
+            <!-- Info Footer -->
+            <div class="h-10 border-t border-border bg-black/5 dark:bg-white/5 px-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-textDim">
+                <span>↑↓ to navigate · enter to open</span>
+                <span>Ctrl+K to dismiss</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Command Palette script & general interactions -->
     <script>
+        // Full list of platform tools for the command palette
+        const UTILITIES = [
+            { name: "Code Masker / Secret Sanitizer", url: "/", category: "Privacy & Security", desc: "Remove sensitive keys & credentials before sharing code with LLMs" },
+            { name: "Clinical Parser (HL7 & FHIR)", url: "/clinical-parser", category: "Healthcare", desc: "Inspect and beautify clinical HL7 v2 and FHIR segments locally" },
+            { name: "API Request Tester", url: "/api-tester", category: "Coding Tools", desc: "Execute REST endpoint testing with local CORS proxy" },
+            { name: "SQL Optimizer Heuristics", url: "/sql-optimizer", category: "Coding Tools", desc: "Analyze slow queries and get indices optimization pointers" },
+            { name: "JSON Viewer & Comparer", url: "/json-compare", category: "Coding Tools", desc: "Compare and match dual JSON nodes with node exclusion options" },
+            { name: "JWT Token Inspector", url: "/jwt-tool", category: "Privacy & Security", desc: "Decode cryptographically encoded JWT headers and payloads" },
+            { name: "Base64 Encoder / Decoder", url: "/base64", category: "Encoding & Hash", desc: "Convert files and strings back and forth using standard Base64 representation" },
+            { name: "Base64 to PDF Renderer", url: "/base64-to-pdf", category: "Encoding & Hash", desc: "Convert string streams back into downloadable PDF documents" },
+            { name: "Bionic Reading Transformer", url: "/bionic-reading", category: "Text & Design", desc: "Generate visual weight text to increase reader focus" },
+            { name: "CSS Box Shadow Designer", url: "/css-box-shadow", category: "CSS & Colors", desc: "Generate layered box-shadow styles with live previews" },
+            { name: "CSS Glassmorphism Styler", url: "/css-glassmorphism", category: "CSS & Colors", desc: "Create modern transparent backdrop blurs" }
+        ];
+
+        let paletteOpen = false;
+        let selectedIndex = 0;
+        let filteredUtils = [...UTILITIES];
+
+        // Trigger Command Palette visibility
+        function toggleCommandPalette() {
+            const cp = document.getElementById('command-palette');
+            paletteOpen = !paletteOpen;
+            if (paletteOpen) {
+                cp.classList.remove('hidden');
+                cp.classList.add('flex');
+                document.getElementById('palette-search').value = "";
+                document.getElementById('palette-search').focus();
+                selectedIndex = 0;
+                filterPaletteItems();
+            } else {
+                cp.classList.remove('flex');
+                cp.classList.add('hidden');
+            }
+        }
+
+        // Render command matches
+        function filterPaletteItems() {
+            const query = document.getElementById('palette-search').value.toLowerCase().trim();
+            filteredUtils = UTILITIES.filter(u => 
+                u.name.toLowerCase().includes(query) || 
+                u.desc.toLowerCase().includes(query) ||
+                u.category.toLowerCase().includes(query)
+            );
+            
+            const resultsBox = document.getElementById('palette-results');
+            resultsBox.innerHTML = "";
+            
+            if (filteredUtils.length === 0) {
+                resultsBox.innerHTML = `<div class="p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-500">No matching utility found.</div>`;
+                return;
+            }
+            
+            filteredUtils.forEach((u, i) => {
+                const isActive = (i === selectedIndex);
+                const activeClasses = isActive 
+                    ? "bg-primary text-white" 
+                    : "hover:bg-black/5 dark:hover:bg-white/5 text-textMain";
+                
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl cursor-pointer flex items-center justify-between transition-colors ${activeClasses}`;
+                card.onclick = () => window.location.href = u.url;
+                
+                card.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black tracking-wide">${u.name}</span>
+                        <span class="text-[9px] ${isActive ? 'text-white/80' : 'text-textDim'} font-medium mt-1 leading-normal max-w-lg">${u.desc}</span>
+                    </div>
+                    <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${isActive ? 'bg-white/20 text-white' : 'bg-black/5 dark:bg-white/5 text-textDim'}">${u.category}</span>
+                `;
+                resultsBox.appendChild(card);
+            });
+        }
+
+        // Key listeners for search palette and universal shortcuts
+        window.addEventListener('keydown', (e) => {
+            // Close with Escape
+            if (e.key === 'Escape' && paletteOpen) {
+                toggleCommandPalette();
+                e.preventDefault();
+                return;
+            }
+            
+            // Toggle with Ctrl+K or Cmd+K
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                toggleCommandPalette();
+                e.preventDefault();
+                return;
+            }
+
+            if (paletteOpen) {
+                if (e.key === 'ArrowDown') {
+                    selectedIndex = (selectedIndex + 1) % filteredUtils.length;
+                    filterPaletteItems();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowUp') {
+                    selectedIndex = (selectedIndex - 1 + filteredUtils.length) % filteredUtils.length;
+                    filterPaletteItems();
+                    e.preventDefault();
+                } else if (e.key === 'Enter') {
+                    if (filteredUtils[selectedIndex]) {
+                        window.location.href = filteredUtils[selectedIndex].url;
+                    }
+                    e.preventDefault();
+                }
+            }
+        });
+
+        document.getElementById('palette-search').addEventListener('input', () => {
+            selectedIndex = 0;
+            filterPaletteItems();
+        });
+
+        // Toggle Mobile Nav
         function toggleMobileNav() {
             document.getElementById('mobile-nav').classList.toggle('open');
         }
 
+        // Themes
         function toggleGlobalTheme() {
             const body = document.body;
             body.classList.toggle('dark-theme');
             body.classList.toggle('light-theme');
+            body.classList.toggle('dark');
             const isDark = body.classList.contains('dark-theme');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             updateThemeIcon(!isDark);
@@ -328,16 +572,60 @@
             }
         }
 
-        (function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.body.classList.remove('light-theme');
-                document.body.classList.add('dark-theme');
-                window.addEventListener('DOMContentLoaded', () => updateThemeIcon(false));
+        // Mock Authentication Simulation (Clerk / Auth.js Placeholder Setup)
+        let loggedIn = false;
+        function toggleMockAuth() {
+            loggedIn = !loggedIn;
+            const btn = document.getElementById('auth-btn');
+            if (loggedIn) {
+                btn.innerHTML = "Profile";
+                btn.className = "px-5 py-2 rounded-xl bg-emerald-600 text-white font-black hover:bg-emerald-700 text-[10px] uppercase tracking-widest shadow-md transition-all";
+                showClipboardToast("Signed in as demo-developer!");
             } else {
+                btn.innerHTML = "Sign In";
+                btn.className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-black hover:bg-indigo-700 text-[10px] uppercase tracking-widest shadow-md transition-all";
+                showClipboardToast("Signed out!");
+            }
+        }
+
+        // Clipboard Copy Helper Notification Toast
+        function showClipboardToast(message = "Copied successfully!") {
+            const toast = document.getElementById('clipboard-toast');
+            toast.querySelector('span:nth-child(2)').innerText = message;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 2500);
+        }
+
+        // Automatic copy integration trigger
+        document.addEventListener('click', (e) => {
+            const copyBtn = e.target.closest('[data-copy-target]');
+            if (copyBtn) {
+                const targetId = copyBtn.getAttribute('data-copy-target');
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    const text = targetEl.value || targetEl.innerText;
+                    navigator.clipboard.writeText(text).then(() => {
+                        showClipboardToast();
+                    });
+                }
+            }
+        });
+
+        // Initialize theme preferences (Default Dark Theme!)
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.remove('dark-theme', 'dark');
                 document.body.classList.add('light-theme');
-                document.body.classList.remove('dark-theme');
                 window.addEventListener('DOMContentLoaded', () => updateThemeIcon(true));
+            } else {
+                document.body.classList.add('dark-theme', 'dark');
+                document.body.classList.remove('light-theme');
+                window.addEventListener('DOMContentLoaded', () => updateThemeIcon(false));
             }
         })();
     </script>

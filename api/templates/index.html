@@ -1,23 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}AI Code Masker - Privacy-First Secret Removal for AI Sharing{% endblock %}
+{% block title %}AI Code Masker + DevUtils AI - Privacy-First Developer Tools{% endblock %}
 
 {% block extra_styles %}
-.hero-gradient {
-    position: absolute;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 800px;
-    height: 600px;
-    background: radial-gradient(circle at center, var(--primary) 0%, transparent 70%);
-    filter: blur(80px);
-    z-index: -1;
-    opacity: 0.15;
+@keyframes float-glow {
+    0%, 100% { transform: translateY(0px) scale(1); opacity: 0.15; }
+    50% { transform: translateY(-30px) scale(1.08); opacity: 0.25; }
 }
 
-.editor-container {
-    height: calc(100vh - 4rem);
+.glow-blob-1 {
+    animation: float-glow 10s ease-in-out infinite;
+}
+.glow-blob-2 {
+    animation: float-glow 14s ease-in-out infinite alternate;
 }
 
 .tab-btn.active {
@@ -41,7 +36,7 @@
     margin: 0 !important;
     border: 0;
     box-sizing: border-box;
-    font-family: 'Fira Code', monospace !important;
+    font-family: 'Space Mono', monospace !important;
     white-space: pre !important;
     word-break: normal !important;
     overflow-wrap: normal !important;
@@ -55,7 +50,7 @@
     outline: none;
     resize: none;
     color: transparent !important;
-    caret-color: white;
+    caret-color: var(--text-main) !important;
     z-index: 10;
     overflow: auto;
 }
@@ -64,6 +59,7 @@
     z-index: 5;
     pointer-events: none;
     overflow: hidden !important;
+    color: var(--text-main) !important;
 }
 
 .prism-editor pre code {
@@ -71,6 +67,7 @@
     margin: 0 !important;
     background: transparent !important;
     font-family: inherit !important;
+    color: inherit !important;
 }
 
 .diff-highlight-add { background: rgba(16, 185, 129, 0.15); border-left: 2px solid #10b981; }
@@ -78,136 +75,127 @@
 {% endblock %}
 
 {% block content %}
-<div class="relative">
-    <div class="hero-gradient"></div>
-    <!-- Rich Hero Section -->
-    <section class="relative min-h-[70vh] flex items-center pt-32 pb-24 overflow-hidden">
-        <!-- Background Assets -->
-        <div class="absolute inset-0 opacity-40 pointer-events-none">
-            <div class="absolute inset-0 bg-gradient-to-r from-[#030303] via-[#030303]/80 to-transparent z-10"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-[#030303] via-transparent to-[#030303] z-10"></div>
-            <img src="/static/hero_platform_banner.png" alt="Hero Banner" class="w-full h-full object-cover object-center translate-x-1/4">
-        </div>
-        
-        <div class="absolute -top-24 -left-24 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
-        <div class="absolute top-1/2 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px]"></div>
-
+<div class="relative min-h-screen bg-background text-textMain">
+    <!-- Ambient Floating Glowing Backdrops -->
+    <div class="absolute top-12 left-1/4 w-[400px] h-[400px] bg-primary/8 dark:bg-primary/12 rounded-full blur-[120px] pointer-events-none glow-blob-1"></div>
+    <div class="absolute top-1/3 right-1/4 w-[450px] h-[450px] bg-accentIndigo/6 dark:bg-accentIndigo/10 rounded-full blur-[130px] pointer-events-none glow-blob-2"></div>
+    
+    <!-- Premium Hero Header -->
+    <section class="relative min-h-[70vh] flex items-center pt-20 pb-16 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 md:px-12 relative z-20 w-full">
-            <div class="max-w-3xl">
-                <div class="hero-badge inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-10">
-                    <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
-                    <span>Code Masker + Dev Tools + Clinical Parser</span>
-                </div>
+            <div class="max-w-4xl mx-auto text-center">
+                <span class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-8">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                    <span>AI Code Masker + DevUtils AI Platform</span>
+                </span>
                 
-                <h1 class="text-6xl md:text-8xl font-black text-white mb-8 uppercase tracking-tighter leading-[0.8] logo-font">
-                    AI CODE<br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500">MASKER.</span>
+                <h1 class="text-5xl md:text-8xl font-black text-textMain mb-8 uppercase tracking-tighter leading-tight logo-font">
+                    ZERO-TRUST<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accentIndigo to-primary">DEVELOPER UTILITIES.</span>
                 </h1>
                 
-                <p class="hero-p text-slate-300 text-lg md:text-xl mb-14 font-medium leading-relaxed max-w-2xl">
-                    A privacy-first product suite for developers and clinical engineers. Mask source code before using AI, parse HL7/FHIR/C-CDA documents, and use fast in-browser dev tools without sending sensitive data to a server.
+                <p class="text-textDim text-sm md:text-base mb-12 leading-relaxed max-w-2xl mx-auto font-medium">
+                    A premium, 100% client-side product suite. Mask source code secrets before pasting into ChatGPT/Claude, parse clinical HL7 documents, test API request variables, and format JSON structures completely locally.
                 </p>
                 
-                <div class="hero-btns flex flex-col sm:flex-row items-center gap-8">
-                    <button onclick="scrollToEditor()" class="btn-premium px-14 py-5 rounded-2xl flex items-center gap-4 group text-xs shadow-2xl shadow-indigo-500/40">
-                        Launch Masker
-                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <button onclick="scrollToEditor()" class="px-10 py-4 rounded-xl bg-primary hover:bg-primaryHover text-white font-black text-[10px] uppercase tracking-widest shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transform transition-all flex items-center gap-2">
+                        Launch Code Masker
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7m14-6l-7 7-7-7"></path></svg>
                     </button>
-                    <a href="/tools" class="px-12 py-5 rounded-2xl bg-white/5 border border-white/10 text-slate-200 font-bold hover:bg-white/10 transition-all text-xs uppercase tracking-[0.2em] backdrop-blur-md">
-                        Dev Tools
-                    </a>
-                    <a href="/clinical-parser" class="px-12 py-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold hover:bg-emerald-500/15 transition-all text-xs uppercase tracking-[0.2em] backdrop-blur-md">
-                        Clinical Parser
+                    <a href="/tools" class="px-10 py-4 rounded-xl bg-black/5 dark:bg-white/5 border border-border text-textMain font-black text-[10px] uppercase tracking-widest hover:bg-black/10 dark:hover:bg-white/10 hover:-translate-y-0.5 transform transition-all">
+                        Browse 55+ Tools
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Editor Dashboard -->
-    <section id="editor" class="max-w-7xl mx-auto px-6 md:px-12 pb-32">
-        <div class="glass-card rounded-[32px] overflow-hidden flex flex-col items-stretch">
+    <!-- Interactive Masker Editor -->
+    <section id="editor" class="max-w-7xl mx-auto px-6 md:px-12 pb-24 scroll-mt-20">
+        <div class="bg-card rounded-[32px] overflow-hidden flex flex-col items-stretch border border-border shadow-premium transition-all duration-300">
             
             <!-- Editor Toolbar -->
-            <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 bg-black/20">
+            <div class="h-14 border-b border-border flex items-center justify-between px-8 bg-slate-50/50 dark:bg-white/[0.01]">
                 <div class="flex items-center space-x-6">
-                    <div class="flex bg-black/40 rounded-xl p-1 border border-white/5">
-                        <button id="mode-mask" onclick="switchMode('mask')" class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white bg-indigo-500 shadow-lg">Protect</button>
-                        <button id="mode-restore" onclick="switchMode('restore')" class="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300">Restore</button>
+                    <div class="flex bg-slate-200/50 dark:bg-black/40 rounded-xl p-1 border border-border">
+                        <button id="mode-mask" onclick="switchMode('mask')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white bg-primary shadow-md transition-all duration-200">Protect</button>
+                        <button id="mode-restore" onclick="switchMode('restore')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-textDim hover:text-textMain transition-all duration-200">Restore</button>
                     </div>
-                    <select id="lang-select" onchange="highlight()" class="bg-transparent text-[10px] font-black text-indigo-400 uppercase tracking-widest outline-none cursor-pointer">
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="java">Java</option>
+                    <select id="lang-select" onchange="highlight()" class="bg-transparent text-[9px] font-black text-primary uppercase tracking-widest outline-none cursor-pointer">
+                        <option class="bg-card text-textMain" value="python">Python</option>
+                        <option class="bg-card text-textMain" value="javascript">JavaScript</option>
+                        <option class="bg-card text-textMain" value="java">Java</option>
                     </select>
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <button id="btn-execute" onclick="execute()" class="btn-premium px-6 py-2 rounded-xl text-[10px] flex items-center gap-2">
+                    <button id="btn-load-sample" onclick="loadSample()" class="text-[9px] font-bold text-primary hover:text-primaryHover uppercase tracking-widest transition-all">Load Sample</button>
+                    <div class="h-4 w-px bg-border"></div>
+                    <button id="btn-execute" onclick="execute()" class="px-6 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white text-[9px] font-black uppercase tracking-widest transition-all shadow-md">
                         <span id="btn-text">Execute Shift</span>
                         <div id="btn-spinner" class="loading-spinner hidden"></div>
                     </button>
-                    <div class="h-4 w-px bg-white/10"></div>
-                    <button onclick="clearAll()" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 uppercase tracking-widest transition-all">Clear</button>
+                    <div class="h-4 w-px bg-border"></div>
+                    <button onclick="clearAll()" class="text-[9px] font-bold text-textDim hover:text-rose-500 uppercase tracking-widest transition-all">Clear</button>
                 </div>
             </div>
 
-            <!-- Editor Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
-                
-                <!-- Input Section -->
-                <div class="flex flex-col border-r border-white/5">
-                    <div class="h-10 flex items-center px-8 border-b border-white/5 bg-black/10">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest" id="input-label">Source Input</span>
+            <!-- Editor Input/Output Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[480px]">
+                <!-- Input Panel -->
+                <div class="flex flex-col border-r border-border">
+                    <div class="h-10 flex items-center px-8 border-b border-border bg-slate-50/50 dark:bg-black/10">
+                        <span class="text-[8px] font-black text-textDim uppercase tracking-widest" id="input-label">Source Input</span>
                     </div>
-                    <div class="flex-grow prism-editor">
-                        <textarea id="src-input" spellcheck="false" oninput="onInput(this)" onscroll="syncScroll(this, 'src-pre')" placeholder="Paste sensitive code here..."></textarea>
+                    <div class="flex-grow prism-editor min-h-[300px]">
+                        <textarea id="src-input" class="text-textMain placeholder-textDim/50" spellcheck="false" oninput="onInput(this)" onscroll="syncScroll(this, 'src-pre')" placeholder="Paste environment variables, credentials, database passwords or proprietary logic..."></textarea>
                         <pre id="src-pre" class="language-python"><code></code></pre>
                     </div>
                 </div>
 
-                <!-- Output Section -->
-                <div class="flex flex-col bg-black/20">
-                    <div class="h-10 flex items-center justify-between px-8 border-b border-white/5">
-                        <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Masked Output</span>
+                <!-- Output Panel -->
+                <div class="flex flex-col bg-slate-50/30 dark:bg-black/20">
+                    <div class="h-10 flex items-center justify-between px-8 border-b border-border">
+                        <span class="text-[8px] font-black text-primary uppercase tracking-widest">Masked Output</span>
                         <div class="flex space-x-3">
-                            <button onclick="copyOutput()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest">Copy</button>
-                            <button onclick="downloadOutput()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest">Download</button>
+                            <button onclick="copyOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy</button>
+                            <button onclick="downloadOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Download</button>
                         </div>
                     </div>
-                    <div class="flex-grow prism-editor">
-                        <textarea id="result-input" spellcheck="false" onscroll="syncScroll(this, 'result-pre')" readonly>Waiting for logic protection...</textarea>
+                    <div class="flex-grow prism-editor min-h-[300px]">
+                        <textarea id="result-input" class="text-textMain placeholder-textDim/50" spellcheck="false" onscroll="syncScroll(this, 'result-pre')" readonly>Waiting for logic protection...</textarea>
                         <pre id="result-pre" class="language-python"><code>Waiting for logic protection...</code></pre>
                     </div>
                 </div>
             </div>
 
-            <!-- Settings / Map Footer -->
-            <div class="border-t border-white/5 bg-black/40 p-8 grid grid-cols-1 md:grid-cols-3 gap-12">
+            <!-- Settings / Heuristics Parameters -->
+            <div class="border-t border-border bg-slate-50/30 dark:bg-black/40 p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="col-span-1">
-                    <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Privacy Heuristics</h4>
-                    <div class="space-y-4">
+                    <h4 class="text-[9px] font-black text-primary uppercase tracking-widest mb-4">Privacy Heuristics</h4>
+                    <div class="space-y-3">
                         <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs font-medium text-slate-400 group-hover:text-slate-200 transition-colors">Mask Identifiers</span>
-                            <input type="checkbox" id="rule-idents" checked class="w-4 h-4 rounded bg-white/5 border border-white/10 text-indigo-500 focus:ring-indigo-500">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Identifiers</span>
+                            <input type="checkbox" id="rule-idents" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
                         </label>
                         <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs font-medium text-slate-400 group-hover:text-slate-200 transition-colors">Mask Secrets & Tokens</span>
-                            <input type="checkbox" id="rule-secrets" checked class="w-4 h-4 rounded bg-white/5 border border-white/10 text-indigo-500 focus:ring-indigo-500">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Secrets & Tokens</span>
+                            <input type="checkbox" id="rule-secrets" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
                         </label>
                         <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs font-medium text-slate-400 group-hover:text-slate-200 transition-colors">Mask Sensitive Strings</span>
-                            <input type="checkbox" id="rule-strings" class="w-4 h-4 rounded bg-white/5 border border-white/10 text-indigo-500 focus:ring-indigo-500">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Sensitive Strings</span>
+                            <input type="checkbox" id="rule-strings" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
                         </label>
                     </div>
                 </div>
                 
                 <div class="col-span-2">
                     <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Restoration Map</h4>
-                        <button onclick="copyMap()" class="text-[9px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest">Copy Map JSON</button>
+                        <h4 class="text-[9px] font-black text-primary uppercase tracking-widest">Restoration Map</h4>
+                        <button onclick="copyMap()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy Map JSON</button>
                     </div>
-                    <div id="map-output" class="h-32 w-full bg-black/40 rounded-2xl border border-white/5 p-4 text-[10px] code-font text-emerald-500/60 overflow-auto">
+                    <div id="map-output" class="h-28 w-full bg-black/5 dark:bg-black/40 rounded-xl border border-border p-4 text-[10px] code-font text-emerald-600 dark:text-emerald-500/80 overflow-auto">
                         Map values will populate here. Use these to restore your code later.
                     </div>
                 </div>
@@ -215,45 +203,117 @@
         </div>
     </section>
 
-    <!-- Why Privacy Matters -->
-    <section class="max-w-4xl mx-auto px-6 pb-20 text-center">
-        <h2 class="text-3xl font-black text-white mb-12 uppercase tracking-widest">Why it matters</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-emerald-500/10 rounded-3xl flex items-center justify-center mb-6 text-emerald-400">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                </div>
-                <h3 class="text-white font-black uppercase text-xs mb-3 tracking-widest">Zero Server Calls</h3>
-                <p class="text-slate-500 text-xs leading-relaxed">Processing happens in your RAM. Your code never hits our logs or database.</p>
+    <!-- Three Column Category Grid of Popular Utilities -->
+    <section class="max-w-7xl mx-auto px-6 md:px-12 pb-24">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">POPULAR UTILITIES INCLUDED</h2>
+            <p class="text-xs text-textDim mt-2 font-medium">Explore some of our 55+ browser tools featuring offline capability and client-side processing.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Coding utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Developer Tools</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/tools/json-formatter" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JSON Formatter & Editor</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Format, inspect, and validate nested JSON fields locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/jwt-decoder" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JWT Token Inspector</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect headers, payload fields, and key algorithms.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/api-tester" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">REST API Client Tester</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Send HTTP variables and payload packets locally.</p>
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-blue-500/10 rounded-3xl flex items-center justify-center mb-6 text-blue-400">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <h3 class="text-white font-black uppercase text-xs mb-3 tracking-widest">Smart Heuristics</h3>
-                <p class="text-slate-500 text-xs leading-relaxed">Our engine detects variable types so the masked code remains debuggable by AI.</p>
+
+            <!-- Security utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Security Tools</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/tools/sql-optimizer" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">SQL Performance Optimizer</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Analyze database tables and indexing benchmarks.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/base64" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">Base64 Converter</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Encode strings or convert file buffers locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/qr-generator" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">QR Vector Code Generator</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Generate static barcode files without leaking destinations.</p>
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="flex flex-col items-center">
-                <div class="w-16 h-16 bg-indigo-500/10 rounded-3xl flex items-center justify-center mb-6 text-indigo-400">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
-                </div>
-                <h3 class="text-white font-black uppercase text-xs mb-3 tracking-widest">Restore Anytime</h3>
-                <p class="text-slate-500 text-xs leading-relaxed">Save the generated JSON map to reverse the masking once the AI gives you the answer.</p>
+
+            <!-- Healthcare utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-accentEmerald/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-accentEmerald uppercase tracking-widest border-b border-border pb-3 mb-4">Healthcare Integrations</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HL7 v2 Message Beautifier</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Parse MSH, PID, and PV1 medical segments locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">FHIR JSON Resource Parser</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect complex FHIR patient resource payloads securely.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HIPAA Privacy Validator</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Ensure zero client information is transmitted online.</p>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </section>
 
-    <!-- Developer Tools CTA -->
-    <section class="max-w-4xl mx-auto px-6 pb-32 text-center">
-        <div class="glass-card rounded-3xl p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div class="text-left">
-                <h2 class="text-xl font-black text-white uppercase tracking-widest mb-2">30+ Developer Tools</h2>
-                <p class="text-slate-400 text-sm">API Tester, SQL Optimizer, HQL→SQL, DFD Creator, JSON Editor, Base64, Image tools, QR Generator and more — all free and client-side.</p>
+    <!-- Structured FAQ Accordion Section -->
+    <section class="max-w-4xl mx-auto px-6 pb-24">
+        <div class="text-center mb-16">
+            <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">FREQUENTLY ASKED QUESTIONS</h2>
+            <p class="text-xs text-textDim mt-2 font-medium">Everything you need to know about AI Code Masker security model.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">How does the Code Masker work offline?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    All character scanning, regular expression matching, mapping tables, and substitutions occur entirely inside your browser's heap memory using client-side JavaScript. Since no fetch requests or network calls are triggered during execution, your code remains fully isolated.
+                </p>
             </div>
-            <a href="/tools" class="btn-premium px-8 py-4 rounded-2xl text-sm shrink-0 inline-flex items-center gap-2">
-                Browse All Tools
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-            </a>
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">What happens to the Restoration Map?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    The restoration map is compiled locally and printed to the map panel. You can copy it as a local JSON string. To restore your original code later, simply toggle the "Restore" mode, paste the masked code into the input, verify your map JSON is in the restoration panel, and click execute.
+                </p>
+            </div>
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">Can I customize the masking options?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    Yes. Under the settings panel, you can choose to mask specific identifiers (functions/variables), secrets & tokens (AWS keys, OpenAI strings), or general literal strings.
+                </p>
+            </div>
         </div>
     </section>
 </div>
@@ -262,10 +322,6 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/masker.js') }}"></script>
 <script>
-    window.addEventListener('load', () => {
-        // Hero content is visible by default now
-    });
-
     let currentMode = 'mask';
     let currentMapping = {};
 
@@ -332,7 +388,6 @@
         
         if (!text.trim()) return;
 
-        // Show loading state
         btnText.classList.add('hidden');
         btnSpinner.classList.remove('hidden');
         
@@ -360,7 +415,6 @@
             resultCode.className = `language-${lang}`;
             Prism.highlightElement(resultCode);
             
-            // Restore button state
             btnText.classList.remove('hidden');
             btnSpinner.classList.add('hidden');
             
@@ -381,32 +435,19 @@
         
         document.getElementById('src-input').value = samples[lang];
         onInput(document.getElementById('src-input'));
-        
-        // Show success toast
-        showToast("Sample loaded successfully!");
+        showClipboardToast("Sample loaded successfully!");
     }
 
     function copyOutput() {
         const text = document.getElementById('result-pre').querySelector('code').textContent;
         navigator.clipboard.writeText(text);
-        showToast("Masked code copied!");
+        showClipboardToast("Masked code copied!");
     }
 
     function copyMap() {
         const text = document.getElementById('map-output').textContent;
         navigator.clipboard.writeText(text);
-        showToast("Map JSON copied!");
-    }
-
-    function showToast(msg) {
-        const toast = document.createElement('div');
-        toast.className = "fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-2xl z-[1000] border border-white/20";
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        gsap.from(toast, { y: 100, opacity: 0, duration: 0.4, ease: "back.out" });
-        setTimeout(() => {
-            gsap.to(toast, { y: 100, opacity: 0, duration: 0.4, onComplete: () => toast.remove() });
-        }, 2000);
+        showClipboardToast("Map JSON copied!");
     }
 
     function clearAll() {
