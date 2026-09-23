@@ -24,6 +24,7 @@ except ImportError:
 # Import platform configurations and SEO helper
 from api.config import TIERS, BRAND_NAME, BRAND_SHORT, CANONICAL_HOST, BRAND_SLOGAN
 from api.seo_utils import generate_page_metadata
+from api.tools_data import TOOLS as DYNAMIC_TOOLS
 
 app = Flask(__name__)
 
@@ -104,93 +105,7 @@ def get_blog_posts():
                 })
     return sorted(posts, key=lambda x: x['date'], reverse=True)
 
-# Register Dynamic URL schema objects mapped to standard legacy components
-DYNAMIC_TOOLS = {
-    "code-masker": {
-        "template": "index.html",
-        "title": "AI Code Masker — Privacy-First Secret Sanitizer for ChatGPT & Claude",
-        "description": "Scrub environment secrets, passwords, and private identifiers locally before copy-pasting your code blocks into AI models.",
-        "active": "masker"
-    },
-    "json-formatter": {
-        "template": "json_editor.html",
-        "title": "JSON Formatter & Validator Online",
-        "description": "Format, beautify, inspect, validate, and compare raw JSON trees completely locally in your browser.",
-        "active": "tools"
-    },
-    "jwt-decoder": {
-        "template": "jwt_tool.html",
-        "title": "JWT JSON Web Token Inspector & Decoder",
-        "description": "Decode and analyze cryptographically signed JWT header and payload contents inside your browser.",
-        "active": "tools"
-    },
-    "api-tester": {
-        "template": "api_tester.html",
-        "title": "REST API Request Tester & Mock Client",
-        "description": "Send GET, POST, and PUT HTTP requests dynamically with custom header sets and payloads.",
-        "active": "tools"
-    },
-    "sql-optimizer": {
-        "template": "sql_optimizer.html",
-        "title": "SQL Query Performance Heuristics Optimizer",
-        "description": "Format and optimize databases query layouts with visual indexing indicators.",
-        "active": "tools"
-    },
-    "css-gradient-generator": {
-        "template": "css_gradient_generator.html",
-        "title": "Sleek CSS Gradient Designer",
-        "description": "Design custom multi-layered CSS background gradients with live CSS style copies.",
-        "active": "tools"
-    },
-    "css-glassmorphism": {
-        "template": "css_glassmorphism.html",
-        "title": "Transparent CSS Glassmorphism Backdrop Blurs",
-        "description": "Instantly render glassmorphism style rules with custom blur percentages.",
-        "active": "tools"
-    },
-    "color-palette": {
-        "template": "color_palette.html",
-        "title": "Harmonious CSS Color Palette Explorer",
-        "description": "Discover sleek modern HSL color palettes with copy-to-clipboard code clicks.",
-        "active": "tools"
-    },
-    "font-pair-finder": {
-        "template": "font_pair_finder.html",
-        "title": "Modern Google Font Pairing Finder",
-        "description": "Find harmoniously matched serif and sans-serif Google typography.",
-        "active": "tools"
-    },
-    "letter-counter": {
-        "template": "letter_counter.html",
-        "title": "Advanced Word and Letter Character Counter",
-        "description": "Count letters, words, reading duration, and content size instantly as you type.",
-        "active": "tools"
-    },
-    "tweet-generator": {
-        "template": "tweet_generator.html",
-        "title": "Visual X / Twitter Tweet Sandbox Simulator",
-        "description": "Preview your tweets in actual light or dark UI formats before publishing online.",
-        "active": "tools"
-    },
-    "whatsapp-generator": {
-        "template": "whatsapp_generator.html",
-        "title": "Interactive WhatsApp Chat UI Simulator",
-        "description": "Mock chat bubbles and profile bubbles in full high-fidelity preview styles.",
-        "active": "tools"
-    },
-    "image-resize": {
-        "template": "image_resize.html",
-        "title": "Browser-Based Image Resizer & Scaler",
-        "description": "Scale and compress PNG, JPG, and WEBP image files without uploading them to any servers.",
-        "active": "tools"
-    },
-    "qr-generator": {
-        "template": "qr_generator.html",
-        "title": "Instant QR Code Scanner & Generator",
-        "description": "Turn URLs and texts into custom downloadable vectors or high-res PNG images.",
-        "active": "tools"
-    }
-}
+# Full tool registry lives in api/tools_data.py (imported above as DYNAMIC_TOOLS).
 
 def _is_public_target(hostname):
     if not hostname:
@@ -240,21 +155,13 @@ def _clean_proxy_headers(headers):
 @app.before_request
 def check_legacy_redirects():
     path = request.path
-    legacy_redirects = {
-        "/json-editor": "/tools/json-formatter",
-        "/jwt-tool": "/tools/jwt-decoder",
-        "/api-tester": "/tools/api-tester",
-        "/sql-optimizer": "/tools/sql-optimizer",
-        "/css-gradient-generator": "/tools/css-gradient-generator",
-        "/css-glassmorphism": "/tools/css-glassmorphism",
-        "/color-palette": "/tools/color-palette",
-        "/font-pair-finder": "/tools/font-pair-finder",
-        "/letter-counter": "/tools/letter-counter",
-        "/tweet-generator": "/tools/tweet-generator",
-        "/whatsapp-generator": "/tools/whatsapp-generator",
-        "/image-resize": "/tools/image-resize",
-        "/qr-generator": "/tools/qr-generator"
-    }
+    # Auto-built: every bare legacy path (/md5-hash, /css-formatter ...) 301s to its canonical /tools/<slug> home.
+    legacy_redirects = {}
+    for _slug, _tool in DYNAMIC_TOOLS.items():
+        for _alias in _tool.get("aliases", []):
+            legacy_redirects[_alias] = f"/tools/{_slug}"
+    legacy_redirects["/json-editor"] = "/tools/json-formatter"
+    legacy_redirects["/jwt-tool"] = "/tools/jwt-decoder"
     if path in legacy_redirects:
         return redirect(legacy_redirects[path], code=301)
 
