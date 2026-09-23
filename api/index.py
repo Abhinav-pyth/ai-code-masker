@@ -259,6 +259,31 @@ def blog_post(slug):
     )
     return render_template('blog_post.html', active_page='blog', post=post, seo=meta)
 
+# Tool page context builder — every /tools/<slug> page gets unique SEO metadata,
+# an on-page intro paragraph and an FAQ block rendered by base.html (programmatic SEO).
+def _tool_context(slug):
+    tool = dict(DYNAMIC_TOOLS[slug])
+    meta = generate_page_metadata(
+        tool['title'],
+        tool['desc'],
+        path=f"/tools/{slug}",
+        is_tool=True,
+        faqs=tool.get('faqs') or None
+    )
+    tool['url'] = f"/tools/{slug}"
+    related = [
+        {'url': t['url'], 'name': t['name'], 'short': t['short'], 'icon': t['icon'], 'svg': t['svg']}
+        for s, t in DYNAMIC_TOOLS.items()
+        if s != slug and t['cat'] == tool['cat'] and t.get('name')
+    ][:8]
+    return {
+        'seo': meta,
+        'tool_intro': tool.get('intro'),
+        'tool_faqs': tool.get('faqs') or {},
+        'related_tools': related,
+        'active_page': tool.get('active', 'tools'),
+    }
+
 # Dynamic Tools Slug Router
 @app.route('/tools/<slug>')
 def dynamic_tool_route(slug):
@@ -266,14 +291,9 @@ def dynamic_tool_route(slug):
     if not tool:
         # Fallback to the main tools list if the slug doesn't exist
         return redirect('/tools')
-        
-    meta = generate_page_metadata(
-        tool['title'],
-        tool['description'],
-        path=f"/tools/{slug}",
-        is_tool=True
-    )
-    return render_template(tool['template'], active_page=tool['active'], seo=meta)
+    ctx = _tool_context(slug)
+    related = ctx.pop('related_tools')
+    return render_template(tool['template'], related_tools=related, **ctx)
 
 # Fallback Legacy Route mapping for all other 40+ offline pages to keep backwards compatibility fully active
 @app.route('/base64-to-image')

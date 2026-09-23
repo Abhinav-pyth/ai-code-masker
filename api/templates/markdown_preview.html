@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_description %}{{ seo.description }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="glass-card p-6 md:p-8 rounded-3xl border border-border mb-6">
+        <h1 class="text-2xl font-black text-textMain uppercase tracking-tight" style="font-family:'Outfit',sans-serif">Markdown Preview</h1>
+        <p class="text-sm text-textDim mt-2 max-w-2xl leading-relaxed">{{ tool_intro }}</p>
+
+        <label class="block mt-5"><span class="text-[10px] font-black uppercase tracking-widest text-textDim"></span><textarea id="md-src" rows="10" placeholder="" class="w-full mt-1 px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono text-sm" style="background:#0b1020;color:#e2e8f0"></textarea></label><div id="md-render" class="mt-5 p-4 rounded-xl border border-border text-textMain" style="min-height:120px"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function render(){let s=document.getElementById('md-src').value;const e=x=>x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let inCode=false;s=e(s).split('\n').map(l=>{if(l.startsWith('```')){inCode=!inCode;return inCode?'<pre style="background:#0b1020;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto"><code>':'</code></pre>';}
+if(inCode)return l;
+return l.replace(/^###### (.*)$/,'<h6>$1</h6>').replace(/^##### (.*)$/,'<h5>$1</h5>').replace(/^#### (.*)$/,'<h4>$1</h4>').replace(/^### (.*)$/,'<h3>$1</h3>').replace(/^## (.*)$/,'<h2>$1</h2>').replace(/^# (.*)$/,'<h1>$1</h1>')
+.replace(/^- \[x\] (.*)$/,'<div>☑ $1</div>').replace(/^- \[ \] (.*)$/,'<div>☐ $1</div>')
+.replace(/^- (.*)$/,'<div>• $1</div>').replace(/^&gt; (.*)$/,'<blockquote style="border-left:3px solid #6366f1;padding-left:12px;color:#94a3b8">$1</blockquote>')
+.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code style="background:rgba(99,102,241,.15);padding:2px 5px;border-radius:4px">$1</code>').replace(/\[(.+?)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:#6366f1">$1</a>');}).join('<br>\n');
+document.getElementById('md-render').innerHTML=s;}
+document.getElementById('md-src').addEventListener('input',render);
+</script>
+{% endblock %}
