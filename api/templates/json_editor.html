@@ -177,6 +177,10 @@
     </style>
 </head>
 
+{% extends "base.html" %}
+
+{% block content %}
+
 <body class="gradient-bg text-slate-200 h-screen w-screen flex flex-row overflow-hidden">
     <!-- Sidebar Navigation -->
     <aside
@@ -323,6 +327,13 @@
         });
     </script>
 
+
+    <!-- Ad Slot host: SocialBar_1 -->
+    <div id="socialbar-anchor" class="socialbar-anchor"></div>
+
+{% endblock %}
+
+{% block scripts %}
     <script>
         window.addEventListener('load', () => {
             gsap.from("aside", { x: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
