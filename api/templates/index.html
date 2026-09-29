@@ -68,6 +68,86 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        /* ---------- Ad slot layout (see templates/partials/ads.html) ---------- */
+        .ad-tag-invisible {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ad-mount {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .ad-mount-leaderboard {
+            max-width: 728px;
+            min-height: 90px;
+            overflow: hidden;
+        }
+
+        .ad-slot {
+            width: 728px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .ad-slot-label {
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.4);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .ad-slot-inner {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ad-slot-native {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Leaderboards keep their 90px height so the UI does not jump */
+        .ad-mount-leaderboard .ad-slot-inner iframe {
+            min-height: 90px;
+        }
+
+        /* SocialBar_1 host: pinned to the bottom edge, click-through wrapper */
+        .socialbar-anchor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 60;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .socialbar-anchor .ad-slot {
+            width: auto;
+            pointer-events: auto;
+        }
+
+        .ad-strip-scroll {
+            overflow-x: auto;
+        }
     </style>
 </head>
 
@@ -124,7 +204,13 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col h-full bg-black/20">
+    <main class="flex-grow flex flex-col h-full bg-black/20 overflow-hidden">
+        <!-- Ad strip: 728x90 leaderboard, centred above the toolbar -->
+        <div id="ad-strip-top"
+            class="shrink-0 flex items-center justify-center px-4 py-2 border-b border-white/5 glass ad-strip-scroll">
+            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90"></div>
+        </div>
+
         <!-- Top Toolbar -->
         <div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
             <div class="flex space-x-1 p-1 bg-white/5 rounded-xl">
@@ -145,7 +231,7 @@
         </div>
 
         <!-- Editor Area -->
-        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch">
+        <div id="editor-grid" class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch">
             <!-- Left Pane (Input) -->
             <div id="input-pane" class="flex flex-col space-y-4">
                 <div
@@ -214,7 +300,85 @@
                 </div>
             </div>
         </div>
+
+        <!-- Ad footer: Native Banner + 728x90_1 leaderboard -->
+        <footer id="ad-footer"
+            class="shrink-0 border-t border-white/5 glass px-4 py-2 flex flex-col items-center gap-2 overflow-y-auto max-h-[46vh]">
+            <div class="ad-mount ad-mount-native w-full" data-ad-mount="NativeBanner_1"></div>
+            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90_1"></div>
+        </footer>
     </main>
+
+    {# ---- AD TAGS: Popunder_1, Smartlink_1, 728x90, SocialBar_1, NativeBanner_1, 728x90_1 ---- #}
+    {% include 'partials/ads.html' %}
+
+    <script>
+        /* ------------------------------------------------------------
+           Ad slot mounting.
+           The raw tag markup lives in templates/partials/ads.html and is
+           loaded at the very end of <body>. Here we relocate each tagged
+           block into its styled placeholder (data-ad-mount) so the ads sit
+           inside the workspace layout instead of breaking out of it.
+           Popunder_1 / Smartlink_1 stay where they are (they render no
+           in-page creative), and SocialBar_1 is pinned to the bottom edge.
+           Scripts are re-created on move because cloned <script> nodes do
+           not execute.
+           ------------------------------------------------------------ */
+        function mountAdSlots() {
+            const INVISIBLE = ['Popunder_1', 'Smartlink_1'];
+            const blocks = Array.from(document.querySelectorAll('[data-ad-name]'));
+
+            blocks.forEach((block) => {
+                const name = block.getAttribute('data-ad-name');
+                if (INVISIBLE.includes(name)) return; // keep executing in place
+
+                let target;
+                if (name === 'SocialBar_1') {
+                    target = document.getElementById('socialbar-anchor');
+                } else {
+                    target = document.querySelector('[data-ad-mount="' + name + '"]');
+                }
+                if (!target) return;
+
+                // Move the node itself (preserves live scripts) then re-run them.
+                target.appendChild(block);
+                block.querySelectorAll('script').forEach((oldScript) => {
+                    const fresh = document.createElement('script');
+                    if (oldScript.src) {
+                        fresh.src = oldScript.src;
+                        fresh.async = oldScript.async;
+                        if (oldScript.getAttribute('data-cfasync')) {
+                            fresh.setAttribute('data-cfasync', oldScript.getAttribute('data-cfasync'));
+                        }
+                    } else {
+                        fresh.text = oldScript.textContent;
+                    }
+                    oldScript.replaceWith(fresh);
+                });
+            });
+        }
+
+        /* Scale the fixed 728px leaderboards down on narrow screens. */
+        function scaleAdSlots() {
+            document.querySelectorAll('.leaderboard-scaler').forEach((host) => {
+                const available = host.parentElement.clientWidth - 16;
+                const ratio = Math.min(1, available / 728);
+                const inner = host.querySelector('.ad-slot');
+                if (!inner) return;
+                inner.style.transform = 'scale(' + ratio + ')';
+                inner.style.transformOrigin = 'top center';
+                host.style.height = Math.round((90 + 18) * ratio) + 'px';
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            mountAdSlots();
+            scaleAdSlots();
+            window.addEventListener('resize', scaleAdSlots);
+            // Leaderboards inject their iframe asynchronously.
+            setTimeout(scaleAdSlots, 1500);
+        });
+    </script>
 
     <script>
         let currentMode = 'mask';
@@ -222,7 +386,7 @@
         window.addEventListener('load', () => {
             gsap.from("aside", { x: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
             gsap.from(".glass", { y: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
-            gsap.from("#workspace > div", { y: 20, opacity: 0, duration: 1, delay: 0.3, stagger: 0.2, ease: "expo.out" });
+            gsap.from("#editor-grid > div", { y: 20, opacity: 0, duration: 1, delay: 0.3, stagger: 0.2, ease: "expo.out" });
         });
 
         function switchTab(mode) {
@@ -306,6 +470,9 @@
             alert("Map copied!");
         }
     </script>
+
+    <!-- Ad Slot host: SocialBar_1 (pinned to the bottom edge of the viewport) -->
+    <div id="socialbar-anchor" class="socialbar-anchor"></div>
 </body>
 
 </html>
