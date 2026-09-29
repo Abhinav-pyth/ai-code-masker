@@ -1,84 +1,245 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}JSON Editor{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Editor - Advanced Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
 
-{% block extra_styles %}
-.tree-node {
-position: relative;
-padding-left: 1.5rem;
-margin-top: 0.25rem;
-transition: all 0.2s ease;
-}
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
 
-.tree-toggle {
-cursor: pointer;
-position: absolute;
-left: 0;
-top: 0;
-transition: transform 0.2s ease;
-}
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-.tree-toggle.collapsed {
-transform: rotate(-90deg);
-}
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-.tree-children.hidden {
-display: none;
-}
+        .gradient-bg {
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #000000);
+        }
 
-.tree-key {
-color: #818cf8;
-font-weight: 500;
-}
+        .tree-node {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-top: 0.25rem;
+            transition: all 0.2s ease;
+        }
 
-.tree-value-string {
-color: #34d399;
-}
+        .tree-toggle {
+            cursor: pointer;
+            position: absolute;
+            left: 0;
+            top: 0;
+            transition: transform 0.2s ease;
+        }
 
-.tree-value-number {
-color: #fbbf24;
-}
+        .tree-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
 
-.tree-value-boolean {
-color: #f472b6;
-}
+        .tree-children.hidden {
+            display: none;
+        }
 
-.tree-value-null {
-color: #94a3b8;
-}
-{% endblock %}
+        .tree-key {
+            color: #818cf8;
+            font-weight: 500;
+        }
 
-{% block content %}
-<!-- Top Toolbar -->
-<div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
-    <div class="flex items-center space-x-4">
-        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JSON Core Utility</h2>
-    </div>
-    <div class="flex space-x-3">
-        <button onclick="loadDemo()"
-            class="px-4 py-1.5 bg-indigo-500/10 rounded-lg text-[10px] font-bold text-indigo-400 hover:bg-indigo-500/20 transition-all uppercase tracking-widest">Demo</button>
-        <button onclick="copyEditor()"
-            class="text-[10px] font-bold text-slate-500 hover:text-indigo-400 tracking-widest uppercase transition-all">Copy
-            RAW</button>
-        <button onclick="prettify()"
-            class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-indigo-400 hover:bg-white/5 transition-all uppercase">Prettify</button>
-        <button onclick="minify()"
-            class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-slate-400 hover:bg-white/5 transition-all uppercase">Minify</button>
-        <button onclick="clearAll()"
-            class="px-4 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold text-red-400 hover:bg-red-500/20 transition-all uppercase">Clear</button>
-    </div>
-</div>
+        .tree-value-string {
+            color: #34d399;
+        }
 
-<div class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 items-stretch bg-black/10">
-    <!-- Left Pane (Editor) -->
-    <div class="flex flex-col space-y-4 min-h-0">
-        <div class="flex justify-between items-center text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">
-            <span>Source JSON</span>
+        .tree-value-number {
+            color: #fbbf24;
+        }
+
+        .tree-value-boolean {
+            color: #f472b6;
+        }
+
+        .tree-value-null {
+            color: #94a3b8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ---------- Ad slot layout (see templates/partials/ads.html) ---------- */
+        .ad-tag-invisible {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ad-mount {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .ad-mount-leaderboard {
+            max-width: 728px;
+            min-height: 90px;
+            overflow: hidden;
+        }
+
+        .ad-slot {
+            width: 728px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .ad-slot-label {
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.4);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .ad-slot-inner {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ad-slot-native {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .ad-mount-leaderboard .ad-slot-inner iframe {
+            min-height: 90px;
+        }
+
+        .socialbar-anchor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 60;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .socialbar-anchor .ad-slot {
+            width: auto;
+            pointer-events: auto;
+        }
+
+        .ad-strip-scroll {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body class="gradient-bg text-slate-200 h-screen w-screen flex flex-row overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside
+        class="w-20 lg:w-64 glass border-r border-white/5 flex flex-col items-center lg:items-stretch py-8 space-y-10 z-50">
+        <div class="flex items-center px-6 space-x-3 group cursor-pointer" onclick="window.location.href='/'">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+            <div class="hidden lg:block">
+                <h1 class="text-sm font-bold text-white tracking-widest uppercase">Code Masker</h1>
+                <p class="text-[9px] text-indigo-400 font-bold uppercase opacity-80">Workspace v2.1</p>
+            </div>
         </div>
-        <div class="flex-grow glass-card rounded-3xl p-8 relative flex flex-col min-h-0">
-            <textarea id="json-input"
-                class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-100 placeholder-slate-800 outline-none resize-none overflow-y-auto"
-                placeholder='{"your": "json data..."}' oninput="refreshTree()"></textarea>
+
+        <nav class="flex-grow flex flex-col space-y-2 px-3">
+            <a href="/"
+                class="flex items-center space-x-3 text-slate-400 hover:bg-white/5 hover:text-white px-4 py-3 rounded-2xl transition-all">
+                <svg class="w-5 h-5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                    </path>
+                </svg>
+                <span class="hidden lg:block text-sm font-medium italic">Masker</span>
+            </a>
+            <a href="/json-editor"
+                class="flex items-center space-x-3 bg-white/5 text-white px-4 py-3 rounded-2xl border border-indigo-500/30 transition-all">
+                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+                <span class="hidden lg:block text-sm font-semibold italic">JSON Editor</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col h-full overflow-hidden">
+        <!-- Ad strip: 728x90 leaderboard, centred above the toolbar -->
+        <div id="ad-strip-top"
+            class="shrink-0 flex items-center justify-center px-4 py-2 border-b border-white/5 glass ad-strip-scroll">
+            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90"></div>
+        </div>
+
+        <!-- Top Toolbar -->
+        <div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
+            <div class="flex items-center space-x-4">
+                <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JSON Core Utility</h2>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="copyEditor()"
+                    class="text-[10px] font-bold text-slate-500 hover:text-indigo-400 tracking-widest uppercase transition-all">Copy
+                    RAW</button>
+                <button onclick="prettify()"
+                    class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-indigo-400 hover:bg-white/5 transition-all uppercase">Prettify</button>
+                <button onclick="minify()"
+                    class="px-4 py-1.5 glass rounded-lg text-[10px] font-bold text-slate-400 hover:bg-white/5 transition-all uppercase">Minify</button>
+                <button onclick="clearAll()"
+                    class="px-4 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold text-red-400 hover:bg-red-500/20 transition-all uppercase">Clear</button>
+            </div>
         </div>
     </div>
 
@@ -88,90 +249,150 @@ color: #94a3b8;
             <span>Structural Tree</span>
             <span id="status-badge" class="text-emerald-500/80 italic lowercase tracking-normal">synced</span>
         </div>
-        <div id="tree-container"
-            class="flex-grow glass-card rounded-3xl p-8 overflow-auto code-font text-sm leading-relaxed min-h-0">
-            <div class="text-slate-600 italic">No structure to display yet...</div>
-        </div>
-    </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    const input = document.getElementById('json-input');
-    const tree = document.getElementById('tree-container');
-    const badge = document.getElementById('status-badge');
+        <!-- Ad footer: Native Banner + 728x90_1 leaderboard -->
+        <footer id="ad-footer"
+            class="shrink-0 border-t border-white/5 glass px-4 py-2 flex flex-col items-center gap-2 overflow-y-auto max-h-[46vh]">
+            <div class="ad-mount ad-mount-native w-full" data-ad-mount="NativeBanner_1"></div>
+            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90_1"></div>
+        </footer>
+    </main>
 
-    function refreshTree() {
-        const raw = input.value.trim();
-        if (!raw) {
-            tree.innerHTML = '<div class="text-slate-600 italic">No structure to display yet...</div>';
-            badge.innerText = 'empty';
-            badge.className = 'text-slate-600 italic';
-            return;
-        }
+    {# ---- AD TAGS: Popunder_1, Smartlink_1, 728x90, SocialBar_1, NativeBanner_1, 728x90_1 ---- #}
+    {% include 'partials/ads.html' %}
 
-        try {
-            const parsed = JSON.parse(raw);
-            tree.innerHTML = '';
-            render(parsed, tree, 'Root');
-            badge.innerText = 'structurally sound';
-            badge.className = 'text-emerald-500/80 italic';
-        } catch (e) {
-            badge.innerText = 'syntax error';
-            badge.className = 'text-red-500/80 italic';
-        }
-    }
+    <script>
+        /* ------------------------------------------------------------
+           Ad slot mounting (shared with the Masker workspace).
+           tags live in templates/partials/ads.html; each tagged block is
+           relocated into its styled placeholder (data-ad-mount). Popunder_1
+           and Smartlink_1 stay put (no in-page creative) and SocialBar_1 is
+           pinned to the bottom edge. Scripts are re-created on move because
+           moved/cloned <script> nodes do not execute.
+           ------------------------------------------------------------ */
+        function mountAdSlots() {
+            const INVISIBLE = ['Popunder_1', 'Smartlink_1'];
+            const blocks = Array.from(document.querySelectorAll('[data-ad-name]'));
 
-    function render(data, container, key) {
-        const node = document.createElement('div');
-        node.className = 'tree-node';
+            blocks.forEach((block) => {
+                const name = block.getAttribute('data-ad-name');
+                if (INVISIBLE.includes(name)) return;
 
-        const isCollapsible = typeof data === 'object' && data !== null;
+                let target;
+                if (name === 'SocialBar_1') {
+                    target = document.getElementById('socialbar-anchor');
+                } else {
+                    target = document.querySelector('[data-ad-mount="' + name + '"]');
+                }
+                if (!target) return;
 
-        if (isCollapsible) {
-            const toggle = document.createElement('span');
-            toggle.className = 'tree-toggle text-indigo-500 font-black mr-2 select-none';
-            toggle.innerHTML = '&#9662;';
-            toggle.onclick = (e) => {
-                const children = node.querySelector('.tree-children');
-                const isHidden = children.classList.toggle('hidden');
-                toggle.innerHTML = isHidden ? '&#9656;' : '&#9662;';
-                toggle.classList.toggle('collapsed', isHidden);
-                e.stopPropagation();
-            };
-            node.appendChild(toggle);
-        }
-
-        const header = document.createElement('span');
-        header.innerHTML = `<span class="tree-key">${key}</span>: `;
-        node.appendChild(header);
-
-        if (isCollapsible) {
-            header.innerHTML += Array.isArray(data) ? '<span class="text-slate-600">[</span>' : '<span class="text-slate-600">{</span>';
-
-            const children = document.createElement('div');
-            children.className = 'tree-children ml-4 border-l border-white/5 pl-4';
-
-            Object.keys(data).forEach(k => {
-                render(data[k], children, k);
+                target.appendChild(block);
+                block.querySelectorAll('script').forEach((oldScript) => {
+                    const fresh = document.createElement('script');
+                    if (oldScript.src) {
+                        fresh.src = oldScript.src;
+                        fresh.async = oldScript.async;
+                        if (oldScript.getAttribute('data-cfasync')) {
+                            fresh.setAttribute('data-cfasync', oldScript.getAttribute('data-cfasync'));
+                        }
+                    } else {
+                        fresh.text = oldScript.textContent;
+                    }
+                    oldScript.replaceWith(fresh);
+                });
             });
+        }
 
-            node.appendChild(children);
-            const footer = document.createElement('div');
-            footer.innerHTML = Array.isArray(data) ? '<span class="text-slate-600">]</span>' : '<span class="text-slate-600">}</span>';
-            node.appendChild(footer);
-        } else {
-            let valSpan = document.createElement('span');
-            if (typeof data === 'string') {
-                valSpan.className = 'tree-value-string';
-                valSpan.innerText = `"${data}"`;
-            } else if (typeof data === 'number') {
-                valSpan.className = 'tree-value-number';
-                valSpan.innerText = data;
-            } else if (typeof data === 'boolean') {
-                valSpan.className = 'tree-value-boolean';
-                valSpan.innerText = data;
+        function scaleAdSlots() {
+            document.querySelectorAll('.leaderboard-scaler').forEach((host) => {
+                const available = host.parentElement.clientWidth - 16;
+                const ratio = Math.min(1, available / 728);
+                const inner = host.querySelector('.ad-slot');
+                if (!inner) return;
+                inner.style.transform = 'scale(' + ratio + ')';
+                inner.style.transformOrigin = 'top center';
+                host.style.height = Math.round((90 + 18) * ratio) + 'px';
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            mountAdSlots();
+            scaleAdSlots();
+            window.addEventListener('resize', scaleAdSlots);
+            setTimeout(scaleAdSlots, 1500);
+        });
+    </script>
+
+    <script>
+        window.addEventListener('load', () => {
+            gsap.from("aside", { x: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
+            gsap.from(".glass", { y: -50, opacity: 0, duration: 0.8, ease: "power4.out" });
+            gsap.from(".glass-card", { scale: 0.98, opacity: 0, duration: 1, delay: 0.3, stagger: 0.1, ease: "expo.out" });
+        });
+
+        const input = document.getElementById('json-input');
+        const tree = document.getElementById('tree-container');
+        const badge = document.getElementById('status-badge');
+
+        function refreshTree() {
+            const raw = input.value.trim();
+            if (!raw) {
+                tree.innerHTML = '<div class="text-slate-600 italic">No structure to display yet...</div>';
+                badge.innerText = 'empty';
+                badge.className = 'text-slate-600 italic';
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(raw);
+                tree.innerHTML = '';
+                render(parsed, tree, 'Root');
+                badge.innerText = 'structurally sound';
+                badge.className = 'text-emerald-500/80 italic';
+            } catch (e) {
+                badge.innerText = 'syntax error';
+                badge.className = 'text-red-500/80 italic';
+            }
+        }
+
+        function render(data, container, key) {
+            const node = document.createElement('div');
+            node.className = 'tree-node';
+
+            const isCollapsible = typeof data === 'object' && data !== null;
+
+            if (isCollapsible) {
+                const toggle = document.createElement('span');
+                toggle.className = 'tree-toggle text-indigo-500 font-black mr-2 select-none';
+                toggle.innerHTML = '▾';
+                toggle.onclick = (e) => {
+                    const children = node.querySelector('.tree-children');
+                    const isHidden = children.classList.toggle('hidden');
+                    toggle.innerHTML = isHidden ? '▸' : '▾';
+                    toggle.classList.toggle('collapsed', isHidden);
+                    e.stopPropagation();
+                };
+                node.appendChild(toggle);
+            }
+
+            const header = document.createElement('span');
+            header.innerHTML = `<span class="tree-key">${key}</span>: `;
+            node.appendChild(header);
+
+            if (isCollapsible) {
+                header.innerHTML += Array.isArray(data) ? '<span class="text-slate-600">[</span>' : '<span class="text-slate-600">{</span>';
+
+                const children = document.createElement('div');
+                children.className = 'tree-children ml-4 border-l border-white/5 pl-4';
+
+                Object.keys(data).forEach(k => {
+                    render(data[k], children, k);
+                });
+
+                node.appendChild(children);
+                const footer = document.createElement('div');
+                footer.innerHTML = Array.isArray(data) ? '<span class="text-slate-600">]</span>' : '<span class="text-slate-600">}</span>';
+                node.appendChild(footer);
             } else {
                 valSpan.className = 'tree-value-null';
                 valSpan.innerText = 'null';
