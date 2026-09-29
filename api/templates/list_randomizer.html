@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}List Randomizer{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/list-randomizer{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">List Randomizer</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-hidden">
+        <div class="flex gap-2">
+            <button onclick="shuffle()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">🎲 Shuffle</button>
+            <button onclick="pickOne()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all">🎯 Pick One</button>
+            <button onclick="pickN()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-amber-600 text-white hover:bg-amber-500 transition-all">Pick N</button>
+            <input type="number" id="lr-n" value="3" min="1" max="100" class="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-sm text-white outline-none">
+        </div>
+        <div id="lr-result" class="glass-card rounded-xl p-4 text-sm text-indigo-300 code-font hidden"></div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input (one item per line)</span>
+                <textarea id="lr-input" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Item 1&#10;Item 2&#10;Item 3&#10;Item 4&#10;Item 5"></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Shuffled Output</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('lr-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="lr-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function getItems(){return document.getElementById('lr-input').value.split('\n').filter(l=>l.trim());}
+function shuffle(){const items=getItems();for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}document.getElementById('lr-output').value=items.join('\n');document.getElementById('lr-result').classList.add('hidden');}
+function pickOne(){const items=getItems();if(!items.length)return;const picked=items[Math.floor(Math.random()*items.length)];const r=document.getElementById('lr-result');r.textContent='🎯 Picked: '+picked;r.classList.remove('hidden');}
+function pickN(){const items=getItems();const n=Math.min(+document.getElementById('lr-n').value,items.length);const shuffled=[...items];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}const picked=shuffled.slice(0,n);const r=document.getElementById('lr-result');r.textContent='🎯 Picked '+n+': '+picked.join(', ');r.classList.remove('hidden');}
+</script>
+{% endblock %}

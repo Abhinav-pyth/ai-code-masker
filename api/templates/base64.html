@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Base64 Encode/Decode — Privacy-First Developer Tools{% endblock %}
+{% block meta_description %}Encode and decode Base64 strings locally in your browser. 100% private, no data sent to server. Support for UTF-8 and binary safe encoding.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/base64{% endblock %}
+
+{% block extra_styles %}
+    .tool-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+    }
+    .dark-theme .tool-input { background: rgba(255,255,255,0.05); }
+{% endblock %}
+
+{% block content %}
+    <div class="p-4 md:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Base64 Tool</h1>
+                <p class="text-sm text-slate-500 font-medium">Encode and decode text strings to/from Base64.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="doEncode()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Encode</button>
+                <button onclick="doDecode()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all">Decode</button>
+                <button onclick="loadDemo()" class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Demo</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+                <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Input Text / Base64</span>
+                <textarea id="inputArea"
+                    class="tool-input rounded-2xl p-6 min-h-[300px] code-font text-sm outline-none resize-none"
+                    placeholder="Paste text or Base64 string here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Result Output</span>
+                    <button onclick="copyOutput()" class="text-[10px] font-black text-indigo-600 hover:underline uppercase tracking-widest">Copy Result</button>
+                </div>
+                <textarea id="outputArea" readonly
+                    class="tool-input rounded-2xl p-6 min-h-[300px] code-font text-sm outline-none resize-none bg-slate-50 dark:bg-black/20"
+                    placeholder="Result will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function loadDemo() {
+        document.getElementById('inputArea').value = "AI Code Masker: Privacy-first developer utilities.";
+        doEncode();
+        showToast('Demo data loaded!');
+    }
+
+    function doEncode() {
+        const input = document.getElementById('inputArea').value;
+        try {
+            const encoded = btoa(unescape(encodeURIComponent(input)));
+            document.getElementById('outputArea').value = encoded;
+        } catch (e) {
+            document.getElementById('outputArea').value = 'Error encoding: ' + e.message;
+        }
+    }
+
+    function doDecode() {
+        const input = document.getElementById('inputArea').value.trim();
+        try {
+            const decoded = decodeURIComponent(escape(atob(input)));
+            document.getElementById('outputArea').value = decoded;
+        } catch (e) {
+            document.getElementById('outputArea').value = 'Error decoding: ' + e.message;
+        }
+    }
+
+    function copyOutput() {
+        const output = document.getElementById('outputArea');
+        if (!output.value) return;
+        navigator.clipboard.writeText(output.value).then(() => {
+            showToast('Copied to clipboard!');
+        });
+    }
+
+    function showToast(msg) {
+        const t = document.createElement('div'); t.textContent = msg;
+        t.className = 'fixed bottom-6 right-6 code-font text-xs font-black uppercase tracking-widest bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50';
+        document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}HTML Encoder/Decoder{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/html-encoder{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">HTML Encoder / Decoder</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-4 flex-grow overflow-hidden">
+        <div class="flex gap-2">
+            <button onclick="doEncode()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">Encode</button>
+            <button onclick="doDecode()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all">Decode</button>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input</span>
+                <textarea id="he-input" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder='Enter HTML like <div class="test">Hello & World</div>'></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Output</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('he-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="he-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function doEncode(){const t=document.getElementById('he-input').value;const el=document.createElement('textarea');el.textContent=t;document.getElementById('he-output').value=el.innerHTML;}
+function doDecode(){const t=document.getElementById('he-input').value;const el=document.createElement('textarea');el.innerHTML=t;document.getElementById('he-output').value=el.textContent;}
+</script>
+{% endblock %}

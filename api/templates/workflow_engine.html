@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% block title %}Workflow Engine — Conditional Logic Builder{% endblock %}
+{% block meta_description %}Build conditional workflows with nested if-else logic and dynamic output validation. Free browser-based workflow engine.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/workflow-engine{% endblock %}
+
+{% block extra_styles %}
+.wf-node{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;transition:all .25s;min-width:280px}
+.wf-node:hover{border-color:rgba(99,102,241,0.3);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.wf-node.if-node{border-left:3px solid #818cf8}
+.wf-node.else-node{border-left:3px solid #f97316}
+.wf-node.output-node{border-left:3px solid #22c55e}
+.wf-node-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wf-badge{font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+.wf-badge-if{background:rgba(99,102,241,0.15);color:#a5b4fc}
+.wf-badge-else{background:rgba(249,115,22,0.15);color:#fb923c}
+.wf-badge-out{background:rgba(34,197,94,0.15);color:#4ade80}
+.wf-children{margin-left:24px;padding-left:16px;border-left:2px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.wf-input{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 12px;color:#e2e8f0;font-size:12px;outline:none;width:100%;font-family:'Fira Code',monospace;transition:border .2s}
+.wf-input:focus{border-color:rgba(99,102,241,0.4)}
+.wf-select{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 12px;color:#e2e8f0;font-size:12px;outline:none;appearance:none;cursor:pointer}
+.wf-btn{padding:6px 12px;border-radius:8px;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.wf-btn-add{background:rgba(99,102,241,0.1);color:#a5b4fc;border-color:rgba(99,102,241,0.2)}
+.wf-btn-add:hover{background:rgba(99,102,241,0.2)}
+.wf-btn-del{background:rgba(239,68,68,0.1);color:#fca5a5;border-color:rgba(239,68,68,0.2)}
+.wf-btn-del:hover{background:rgba(239,68,68,0.2)}
+.wf-btn-run{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:10px 24px;border-radius:12px;font-size:10px;font-weight:900;letter-spacing:2px}
+.wf-btn-run:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(99,102,241,0.4)}
+.wf-result{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;font-family:'Fira Code',monospace;font-size:12px;min-height:80px;white-space:pre-wrap;color:#94a3b8}
+.wf-result.pass{border-color:rgba(34,197,94,0.3);color:#4ade80}
+.wf-result.fail{border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.var-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#c7d2fe;margin:2px}
+{% endblock %}
+
+{% block content %}
+<div class="page-scroll">
+<div class="max-w-6xl mx-auto px-6 md:px-12 py-10">
+
+    <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2h2a2 2 0 012 2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>
+            Scalable · Extensible · Client-Side
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight mb-3">Workflow Engine</h1>
+        <p class="text-slate-400 text-sm max-w-xl mx-auto">Define conditional logic with nested if-else rules and validate outputs dynamically based on input data.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Input Variables -->
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Input Variables</h3>
+            <div id="vars-container" class="space-y-3"></div>
+            <button onclick="addVariable()" class="wf-btn wf-btn-add mt-4 w-full text-center">+ Add Variable</button>
+            <div class="mt-6">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Quick Presets</h4>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="loadPreset('user')" class="wf-btn wf-btn-add">User Auth</button>
+                    <button onclick="loadPreset('order')" class="wf-btn wf-btn-add">Order Flow</button>
+                    <button onclick="loadPreset('age')" class="wf-btn wf-btn-add">Age Gate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Rules -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Workflow Rules</h3>
+                <div class="flex gap-2">
+                    <button onclick="addRule(workflowRules,'if')" class="wf-btn wf-btn-add">+ If Block</button>
+                    <button onclick="addRule(workflowRules,'output')" class="wf-btn wf-btn-add">+ Output</button>
+                </div>
+            </div>
+            <div id="rules-container" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Execute & Results -->
+    <div class="mt-6 glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Execution</h3>
+            <div class="flex gap-3">
+                <button onclick="exportWorkflow()" class="wf-btn wf-btn-add">Export JSON</button>
+                <button onclick="executeWorkflow()" class="wf-btn wf-btn-run">▶ Run Workflow</button>
+            </div>
+        </div>
+        <div id="exec-result" class="wf-result">Click "Run Workflow" to execute your rules against the input variables.</div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% raw %}<script>
+let variables = [];
+let workflowRules = [];
+let nodeIdCounter = 0;
+
+function uid() { return 'n' + (++nodeIdCounter); }
+
+function addVariable(name='', value='', type='string') {
+    variables.push({ id: uid(), name, value, type });
+    renderVars();
+}
+
+function removeVariable(id) {
+    variables = variables.filter(v => v.id !== id);
+    renderVars();
+}
+
+function renderVars() {
+    const c = document.getElementById('vars-container');
+    c.innerHTML = '';
+    variables.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 items-center';
+        div.innerHTML = `
+            <input class="wf-input flex-1" placeholder="name" value="${esc(v.name)}" onchange="updVar('${v.id}','name',this.value)">
+            <select class="wf-select" onchange="updVar('${v.id}','type',this.value)">
+                <option value="string" ${v.type==='string'?'selected':''}>String</option>
+                <option value="number" ${v.type==='number'?'selected':''}>Number</option>
+                <option value="boolean" ${v.type==='boolean'?'selected':''}>Bool</option>
+            </select>
+            <input class="wf-input flex-1" placeholder="value" value="${esc(v.value)}" onchange="updVar('${v.id}','value',this.value)">
+            <button onclick="removeVariable('${v.id}')" class="wf-btn wf-btn-del">✕</button>
+        `;
+        c.appendChild(div);
+    });
+}
+
+function updVar(id, key, val) {
+    const v = variables.find(x => x.id === id);
+    if (v) v[key] = val;
+}
+
+function addRule(parent, type) {
+    const rule = { id: uid(), type, children: [] };
+    if (type === 'if') {
+        rule.variable = ''; rule.operator = '=='; rule.compareValue = '';
+        rule.elseChildren = [];
+    }
+    if (type === 'output') {
+        rule.outputKey = ''; rule.outputExpr = '';
+        rule.validation = ''; // e.g. "notEmpty", ">0", "regex:..."
+    }
+    parent.push(rule);
+    renderRules();
+}
+
+function removeRule(parent, id) {
+    const idx = parent.findIndex(r => r.id === id);
+    if (idx > -1) parent.splice(idx, 1);
+    renderRules();
+}
+
+function renderRules() {
+    const c = document.getElementById('rules-container');
+    c.innerHTML = '';
+    if (!workflowRules.length) {
+        c.innerHTML = '<div class="text-center py-8 text-slate-600 text-xs uppercase tracking-widest font-bold">Add rules to build your workflow</div>';
+        return;
+    }
+    workflowRules.forEach(r => c.appendChild(buildRuleNode(r, workflowRules)));
+}
+
+function buildRuleNode(rule, parentArr) {
+    const div = document.createElement('div');
+    const varNames = variables.map(v => v.name).filter(Boolean);
+    if (rule.type === 'if') {
+        div.className = 'wf-node if-node';
+        const varOpts = varNames.map(n => `<option value="${esc(n)}" ${rule.variable===n?'selected':''}>${esc(n)}</option>`).join('');
+        const ops = ['==','!=','>','<','>=','<=','contains','startsWith'].map(o => `<option value="${o}" ${rule.operator===o?'selected':''}>${o}</option>`).join('');
+        div.innerHTML = `
+            <div class="wf-node-header">
+                <span class="wf-badge wf-badge-if">If</span>
+                <button onclick="removeRuleById('${rule.id}')" class="wf-btn wf-btn-del">✕</button>
+            </div>
+            <div class="flex gap-2 flex-wrap items-center mb-2">
+                <select class="wf-select" onchange="updRule('${rule.id}','variable',this.value)"><option value="">variable</option>${varOpts}</select>
+                <select class="wf-select" onchange="updRule('${rule.id}','operator',this.value)">${ops}</select>
+                <input class="wf-input" style="max-width:140px" placeholder="value" value="${esc(rule.compareValue)}" onchange="updRule('${rule.id}','compareValue',this.value)">
+            </div>
+            <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 mt-3">Then</div>
+        `;
+        const thenContainer = document.createElement('div');
+        thenContainer.className = 'wf-children';
+        rule.children.forEach(ch => thenContainer.appendChild(buildRuleNode(ch, rule.children)));
+        const addBtns = document.createElement('div');
+        addBtns.className = 'flex gap-2 mt-2';
+        addBtns.innerHTML = `<button class="wf-btn wf-btn-add" onclick="addChildRule('${rule.id}','then','if')">+ If</button><button class="wf-btn wf-btn-add" onclick="addChildRule('${rule.id}','then','output')">+ Output</button>`;
+        thenContainer.appendChild(addBtns);
+        div.appendChild(thenContainer);
+
+        const elseLabel = document.createElement('div');
+        elseLabel.className = 'text-[9px] font-black text-orange-400/60 uppercase tracking-widest mb-1 mt-3';
+        elseLabel.textContent = 'Else';
+        div.appendChild(elseLabel);
+        const elseContainer = document.createElement('div');
+        elseContainer.className = 'wf-children';
+        elseContainer.style.borderColor = 'rgba(249,115,22,0.15)';
+        rule.elseChildren.forEach(ch => elseContainer.appendChild(buildRuleNode(ch, rule.elseChildren)));
+        const addBtns2 = document.createElement('div');
+        addBtns2.className = 'flex gap-2 mt-2';
+        addBtns2.innerHTML = `<button class="wf-btn wf-btn-add" onclick="addChildRule('${rule.id}','else','if')">+ If</button><button class="wf-btn wf-btn-add" onclick="addChildRule('${rule.id}','else','output')">+ Output</button>`;
+        elseContainer.appendChild(addBtns2);
+        div.appendChild(elseContainer);
+    } else if (rule.type === 'output') {
+        div.className = 'wf-node output-node';
+        const valOpts = ['none','notEmpty','isNumber','isPositive','regex:'].map(v => `<option value="${v}" ${rule.validation===v?'selected':''}>${v}</option>`).join('');
+        div.innerHTML = `
+            <div class="wf-node-header">
+                <span class="wf-badge wf-badge-out">Output</span>
+                <button onclick="removeRuleById('${rule.id}')" class="wf-btn wf-btn-del">✕</button>
+            </div>
+            <div class="flex gap-2 flex-wrap items-center">
+                <input class="wf-input" style="max-width:120px" placeholder="key" value="${esc(rule.outputKey)}" onchange="updRule('${rule.id}','outputKey',this.value)">
+                <span class="text-slate-500 text-xs">=</span>
+                <input class="wf-input flex-1" placeholder="expression (use {{var}})" value="${esc(rule.outputExpr)}" onchange="updRule('${rule.id}','outputExpr',this.value)">
+            </div>
+            <div class="mt-2 flex gap-2 items-center">
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Validate:</span>
+                <select class="wf-select" onchange="updRule('${rule.id}','validation',this.value)">${valOpts}</select>
+                ${rule.validation && rule.validation.startsWith('regex:') ? `<input class="wf-input" style="max-width:140px" placeholder="pattern" value="${esc(rule.validation.slice(6))}" onchange="updRule('${rule.id}','validation','regex:'+this.value)">` : ''}
+            </div>
+        `;
+    }
+    return div;
+}
+
+function findRuleById(rules, id) {
+    for (const r of rules) {
+        if (r.id === id) return r;
+        if (r.children) { const f = findRuleById(r.children, id); if (f) return f; }
+        if (r.elseChildren) { const f = findRuleById(r.elseChildren, id); if (f) return f; }
+    }
+    return null;
+}
+
+function removeRuleById(id) {
+    function rem(arr) {
+        const idx = arr.findIndex(r => r.id === id);
+        if (idx > -1) { arr.splice(idx, 1); return true; }
+        for (const r of arr) {
+            if (r.children && rem(r.children)) return true;
+            if (r.elseChildren && rem(r.elseChildren)) return true;
+        }
+        return false;
+    }
+    rem(workflowRules);
+    renderRules();
+}
+
+function updRule(id, key, val) {
+    const r = findRuleById(workflowRules, id);
+    if (r) r[key] = val;
+    if (key === 'validation') renderRules();
+}
+
+function addChildRule(parentId, branch, type) {
+    const parent = findRuleById(workflowRules, parentId);
+    if (!parent) return;
+    const arr = branch === 'else' ? parent.elseChildren : parent.children;
+    addRule(arr, type);
+}
+
+function getVarValue(name) {
+    const v = variables.find(x => x.name === name);
+    if (!v) return undefined;
+    if (v.type === 'number') return parseFloat(v.value) || 0;
+    if (v.type === 'boolean') return v.value === 'true';
+    return v.value;
+}
+
+function resolveExpr(expr) {
+    return expr.replace(/\{\{(\w+)\}\}/g, (_, name) => {
+        const val = getVarValue(name);
+        return val !== undefined ? String(val) : `{{${name}}}`;
+    });
+}
+
+function evalCondition(rule) {
+    const left = getVarValue(rule.variable);
+    let right = rule.compareValue;
+    if (typeof left === 'number') right = parseFloat(right) || 0;
+    if (typeof left === 'boolean') right = right === 'true';
+    switch(rule.operator) {
+        case '==': return left == right;
+        case '!=': return left != right;
+        case '>': return left > right;
+        case '<': return left < right;
+        case '>=': return left >= right;
+        case '<=': return left <= right;
+        case 'contains': return String(left).includes(String(right));
+        case 'startsWith': return String(left).startsWith(String(right));
+        default: return false;
+    }
+}
+
+function validateOutput(value, validation) {
+    if (!validation || validation === 'none') return { valid: true };
+    if (validation === 'notEmpty') return { valid: value !== '' && value !== undefined, msg: 'Value must not be empty' };
+    if (validation === 'isNumber') return { valid: !isNaN(Number(value)), msg: 'Value must be a number' };
+    if (validation === 'isPositive') return { valid: Number(value) > 0, msg: 'Value must be positive' };
+    if (validation.startsWith('regex:')) {
+        try {
+            const re = new RegExp(validation.slice(6));
+            return { valid: re.test(String(value)), msg: `Value must match /${validation.slice(6)}/` };
+        } catch(e) { return { valid: false, msg: 'Invalid regex' }; }
+    }
+    return { valid: true };
+}
+
+function executeRules(rules) {
+    const outputs = [];
+    for (const rule of rules) {
+        if (rule.type === 'if') {
+            const cond = evalCondition(rule);
+            outputs.push({ type: 'condition', rule: `${rule.variable} ${rule.operator} ${rule.compareValue}`, result: cond });
+            const branch = cond ? rule.children : rule.elseChildren;
+            const childOutputs = executeRules(branch);
+            outputs.push(...childOutputs);
+        } else if (rule.type === 'output') {
+            const resolved = resolveExpr(rule.outputExpr);
+            const vResult = validateOutput(resolved, rule.validation);
+            outputs.push({ type: 'output', key: rule.outputKey, value: resolved, validation: vResult });
+        }
+    }
+    return outputs;
+}
+
+function executeWorkflow() {
+    if (!workflowRules.length) { showToast('Add rules first'); return; }
+    const results = executeRules(workflowRules);
+    const container = document.getElementById('exec-result');
+    const allValid = results.filter(r => r.type === 'output').every(r => r.validation.valid);
+    container.className = 'wf-result ' + (allValid ? 'pass' : 'fail');
+    let text = '─── Workflow Execution Results ───\n\n';
+    results.forEach(r => {
+        if (r.type === 'condition') {
+            text += `${r.result ? '✅' : '❌'} IF ${r.rule} → ${r.result ? 'TRUE' : 'FALSE'}\n`;
+        } else {
+            const vMark = r.validation.valid ? '✅' : '⚠️';
+            text += `   ${vMark} OUTPUT "${r.key}" = ${r.value}`;
+            if (!r.validation.valid) text += `  ← FAIL: ${r.validation.msg}`;
+            text += '\n';
+        }
+    });
+    const passed = results.filter(r => r.type === 'output' && r.validation.valid).length;
+    const total = results.filter(r => r.type === 'output').length;
+    text += `\n─── ${passed}/${total} validations passed ───`;
+    container.textContent = text;
+    gsap.from(container, { opacity: 0, y: 10, duration: 0.3 });
+}
+
+function exportWorkflow() {
+    const data = { variables, rules: workflowRules };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'workflow.json'; a.click();
+    showToast('Workflow exported!');
+}
+
+function loadPreset(name) {
+    variables = []; workflowRules = []; nodeIdCounter = 0;
+    if (name === 'user') {
+        addVariable('role', 'admin', 'string');
+        addVariable('isActive', 'true', 'boolean');
+        addVariable('loginAttempts', '2', 'number');
+        addRule(workflowRules, 'if');
+        const r = workflowRules[0];
+        r.variable = 'isActive'; r.operator = '=='; r.compareValue = 'true';
+        addRule(r.children, 'if');
+        r.children[0].variable = 'role'; r.children[0].operator = '=='; r.children[0].compareValue = 'admin';
+        addRule(r.children[0].children, 'output');
+        r.children[0].children[0].outputKey = 'access'; r.children[0].children[0].outputExpr = 'full-access'; r.children[0].children[0].validation = 'notEmpty';
+        addRule(r.children[0].elseChildren, 'output');
+        r.children[0].elseChildren[0].outputKey = 'access'; r.children[0].elseChildren[0].outputExpr = 'limited'; r.children[0].elseChildren[0].validation = 'notEmpty';
+        addRule(r.elseChildren, 'output');
+        r.elseChildren[0].outputKey = 'access'; r.elseChildren[0].outputExpr = 'denied'; r.elseChildren[0].validation = 'notEmpty';
+    } else if (name === 'order') {
+        addVariable('total', '150', 'number');
+        addVariable('country', 'US', 'string');
+        addVariable('coupon', 'SAVE10', 'string');
+        addRule(workflowRules, 'if');
+        const r = workflowRules[0];
+        r.variable = 'total'; r.operator = '>'; r.compareValue = '100';
+        addRule(r.children, 'output');
+        r.children[0].outputKey = 'shipping'; r.children[0].outputExpr = 'free'; r.children[0].validation = 'notEmpty';
+        addRule(r.elseChildren, 'output');
+        r.elseChildren[0].outputKey = 'shipping'; r.elseChildren[0].outputExpr = '9.99'; r.elseChildren[0].validation = 'isPositive';
+    } else if (name === 'age') {
+        addVariable('age', '25', 'number');
+        addRule(workflowRules, 'if');
+        const r = workflowRules[0];
+        r.variable = 'age'; r.operator = '>='; r.compareValue = '18';
+        addRule(r.children, 'output');
+        r.children[0].outputKey = 'category'; r.children[0].outputExpr = 'adult'; r.children[0].validation = 'notEmpty';
+        addRule(r.elseChildren, 'output');
+        r.elseChildren[0].outputKey = 'category'; r.elseChildren[0].outputExpr = 'minor'; r.elseChildren[0].validation = 'notEmpty';
+    }
+    renderVars(); renderRules();
+    showToast('Preset loaded!');
+}
+
+function esc(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-2xl z-[1000] border border-white/20';
+    t.textContent = msg; document.body.appendChild(t);
+    gsap.from(t, { y: 50, opacity: 0, duration: 0.3 });
+    setTimeout(() => { gsap.to(t, { y: 50, opacity: 0, duration: 0.3, onComplete: () => t.remove() }); }, 1800);
+}
+
+// Init with age preset
+loadPreset('user');
+</script>{% endraw %}
+{% endblock %}

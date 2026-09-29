@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}JavaScript Formatter — Beautify JS{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/js-formatter{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">JavaScript Formatter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-4 flex-grow overflow-hidden">
+        <div class="flex gap-2">
+            <button onclick="doFormat()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">Format</button>
+            <button onclick="doDownload()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Download .js</button>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input JavaScript</span>
+                <textarea id="jf-input" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Paste minified JavaScript here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Formatted</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('jf-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="jf-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function doFormat(){
+    const src=document.getElementById('jf-input').value;
+    let out='',level=0,indent='    ',inStr=false,strCh='';
+    for(let i=0;i<src.length;i++){
+        const c=src[i];
+        if(inStr){out+=c;if(c===strCh&&src[i-1]!=='\\')inStr=false;continue;}
+        if(c==='"'||c==="'"||c==='`'){inStr=true;strCh=c;out+=c;continue;}
+        if(c==='{'){out+=' {\n';level++;out+=indent.repeat(level);}
+        else if(c==='}'){level=Math.max(0,level-1);out=out.trimEnd()+'\n'+indent.repeat(level)+'}\n'+indent.repeat(level);}
+        else if(c===';'){out+=';\n'+indent.repeat(level);}
+        else{out+=c;}
+    }
+    document.getElementById('jf-output').value=out.replace(/\n\s*\n\s*\n/g,'\n\n').trim();
+}
+function doDownload(){const m=document.getElementById('jf-output').value;if(!m)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([m],{type:'text/javascript'}));a.download='script.js';a.click();}
+</script>
+{% endblock %}

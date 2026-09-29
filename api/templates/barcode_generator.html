@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Barcode Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/barcode-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Barcode Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="glass-card rounded-2xl p-6 flex flex-col gap-3">
+            <div class="flex flex-wrap gap-3 items-center">
+                <input id="bc-input" type="text" value="1234567890" oninput="gen()" class="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none code-font" placeholder="Enter value...">
+                <select id="bc-format" onchange="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                    <option value="CODE128">CODE128</option><option value="EAN13">EAN-13</option><option value="UPC">UPC</option><option value="CODE39">CODE39</option><option value="ITF14">ITF-14</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[250px] bg-white">
+            <svg id="bc-svg"></svg>
+        </div>
+        <button onclick="download()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all w-fit">Download PNG</button>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+function gen(){try{JsBarcode('#bc-svg',document.getElementById('bc-input').value,{format:document.getElementById('bc-format').value,lineColor:'#1e1b4b',width:2,height:100,displayValue:true,fontSize:16,font:'Space Mono'});}catch(e){}}
+function download(){const svg=document.getElementById('bc-svg');const c=document.createElement('canvas');c.width=svg.getBoundingClientRect().width*2;c.height=svg.getBoundingClientRect().height*2;const ctx=c.getContext('2d');const img=new Image();img.onload=()=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='barcode.png';a.click();};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.outerHTML);}
+gen();
+</script>
+{% endblock %}

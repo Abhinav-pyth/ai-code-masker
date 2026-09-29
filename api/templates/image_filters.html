@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Image Filters{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-filters{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image Filters</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-64 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3 overflow-auto max-h-[80vh]">
+            <label class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white text-center cursor-pointer">📁 Choose Image<input type="file" accept="image/*" onchange="loadImg(event)" class="hidden"></label>
+            <label class="text-[10px] font-black text-slate-500 uppercase">Brightness: <span id="v-br" class="text-indigo-400">100</span>%</label>
+            <input type="range" id="f-br" min="0" max="200" value="100" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Contrast: <span id="v-co" class="text-indigo-400">100</span>%</label>
+            <input type="range" id="f-co" min="0" max="200" value="100" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Saturate: <span id="v-sa" class="text-indigo-400">100</span>%</label>
+            <input type="range" id="f-sa" min="0" max="300" value="100" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Hue Rotate: <span id="v-hu" class="text-indigo-400">0</span>°</label>
+            <input type="range" id="f-hu" min="0" max="360" value="0" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Blur: <span id="v-bl" class="text-indigo-400">0</span>px</label>
+            <input type="range" id="f-bl" min="0" max="20" value="0" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Grayscale: <span id="v-gr" class="text-indigo-400">0</span>%</label>
+            <input type="range" id="f-gr" min="0" max="100" value="0" oninput="apply()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Sepia: <span id="v-se" class="text-indigo-400">0</span>%</label>
+            <input type="range" id="f-se" min="0" max="100" value="0" oninput="apply()" class="accent-indigo-500">
+            <button onclick="resetFilters()" class="mt-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Reset All</button>
+            <button onclick="download()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all">Download</button>
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-4 min-h-[300px]">
+            <canvas id="if-canvas" class="max-w-full max-h-[60vh]"></canvas>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+let origImg=null;const canvas=document.getElementById('if-canvas'),ctx=canvas.getContext('2d');
+function loadImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{origImg=new Image();origImg.onload=()=>{canvas.width=origImg.width;canvas.height=origImg.height;apply();};origImg.src=ev.target.result;};r.readAsDataURL(f);}
+function apply(){
+    if(!origImg)return;
+    const br=document.getElementById('f-br').value,co=document.getElementById('f-co').value,sa=document.getElementById('f-sa').value;
+    const hu=document.getElementById('f-hu').value,bl=document.getElementById('f-bl').value,gr=document.getElementById('f-gr').value,se=document.getElementById('f-se').value;
+    ['br','co','sa','hu','bl','gr','se'].forEach(k=>document.getElementById('v-'+k).textContent=document.getElementById('f-'+k).value);
+    ctx.filter=`brightness(${br}%) contrast(${co}%) saturate(${sa}%) hue-rotate(${hu}deg) blur(${bl}px) grayscale(${gr}%) sepia(${se}%)`;
+    ctx.drawImage(origImg,0,0);
+}
+function resetFilters(){['f-br','f-co','f-sa'].forEach(id=>document.getElementById(id).value=100);['f-hu','f-bl','f-gr','f-se'].forEach(id=>document.getElementById(id).value=0);apply();}
+function download(){if(!origImg)return;const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='filtered.png';a.click();}
+</script>
+{% endblock %}

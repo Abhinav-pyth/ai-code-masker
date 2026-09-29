@@ -169,33 +169,35 @@
                 <p class="text-[9px] text-indigo-400 font-bold uppercase opacity-80">Workspace v2.1</p>
             </div>
         </div>
+    </section>
 
-        <nav class="flex-grow flex flex-col space-y-2 px-3">
-            <a href="/"
-                class="flex items-center space-x-3 bg-white/5 text-white px-4 py-3 rounded-2xl border border-indigo-500/30 transition-all">
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                    </path>
-                </svg>
-                <span class="hidden lg:block text-sm font-semibold italic">Masker</span>
-            </a>
-            <a href="/json-editor"
-                class="flex items-center space-x-3 text-slate-400 hover:bg-white/5 hover:text-white px-4 py-3 rounded-2xl transition-all">
-                <svg class="w-5 h-5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                </svg>
-                <span class="hidden lg:block text-sm font-medium italic">JSON Editor</span>
-            </a>
-        </nav>
+    <!-- Interactive Masker Editor -->
+    <section id="editor" class="max-w-7xl mx-auto px-6 md:px-12 pb-24 scroll-mt-20">
+        <div class="bg-card rounded-[32px] overflow-hidden flex flex-col items-stretch border border-border shadow-premium transition-all duration-300">
+            
+            <!-- Editor Toolbar -->
+            <div class="h-14 border-b border-border flex items-center justify-between px-8 bg-slate-50/50 dark:bg-white/[0.01]">
+                <div class="flex items-center space-x-6">
+                    <div class="flex bg-slate-200/50 dark:bg-black/40 rounded-xl p-1 border border-border">
+                        <button id="mode-mask" onclick="switchMode('mask')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white bg-primary shadow-md transition-all duration-200">Protect</button>
+                        <button id="mode-restore" onclick="switchMode('restore')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-textDim hover:text-textMain transition-all duration-200">Restore</button>
+                    </div>
+                    <select id="lang-select" onchange="highlight()" class="bg-transparent text-[9px] font-black text-primary uppercase tracking-widest outline-none cursor-pointer">
+                        <option class="bg-card text-textMain" value="python">Python</option>
+                        <option class="bg-card text-textMain" value="javascript">JavaScript</option>
+                        <option class="bg-card text-textMain" value="java">Java</option>
+                    </select>
+                </div>
 
-        <div class="px-6 space-y-4">
-            <div class="hidden lg:block p-4 glass-card rounded-2xl">
-                <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Local Status</p>
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span class="text-xs text-emerald-400 font-medium tracking-tight">Active Engine</span>
+                <div class="flex items-center space-x-4">
+                    <button id="btn-load-sample" onclick="loadSample()" class="text-[9px] font-bold text-primary hover:text-primaryHover uppercase tracking-widest transition-all">Load Sample</button>
+                    <div class="h-4 w-px bg-border"></div>
+                    <button id="btn-execute" onclick="execute()" class="px-6 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white text-[9px] font-black uppercase tracking-widest transition-all shadow-md">
+                        <span id="btn-text">Execute Shift</span>
+                        <div id="btn-spinner" class="loading-spinner hidden"></div>
+                    </button>
+                    <div class="h-4 w-px bg-border"></div>
+                    <button onclick="clearAll()" class="text-[9px] font-bold text-textDim hover:text-rose-500 uppercase tracking-widest transition-all">Clear</button>
                 </div>
             </div>
             <button
@@ -239,63 +241,50 @@
                     <span id="field-label">Original Source</span>
                     <span id="char-count" class="text-slate-600">0 chars</span>
                 </div>
-                <div class="flex-grow glass-card rounded-3xl p-6 flex flex-col relative group">
-                    <textarea id="src-input"
-                        class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-100 placeholder-slate-700 outline-none resize-none px-2"
-                        placeholder="Paste your code..." oninput="updateStats()"></textarea>
 
-                    <div id="map-input-container"
-                        class="hidden absolute inset-x-0 bottom-0 p-6 pt-0 animate-in slide-in-from-bottom duration-300">
-                        <div
-                            class="bg-slate-900/80 backdrop-blur-xl border-t border-white/10 p-5 rounded-t-3xl -mx-6 mb-[-24px]">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-[9px] font-black text-indigo-400 tracking-widest uppercase">Restore
-                                    Map (JSON)</span>
-                            </div>
-                            <textarea id="map-input"
-                                class="h-[120px] w-full bg-black/40 rounded-xl p-4 code-font text-[11px] text-slate-400 border border-white/5 outline-none focus:border-indigo-500/30 transition-all"
-                                placeholder='{"method_1": "actualName", ...}'></textarea>
+                <!-- Output Panel -->
+                <div class="flex flex-col bg-slate-50/30 dark:bg-black/20">
+                    <div class="h-10 flex items-center justify-between px-8 border-b border-border">
+                        <span class="text-[8px] font-black text-primary uppercase tracking-widest">Masked Output</span>
+                        <div class="flex space-x-3">
+                            <button onclick="copyOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy</button>
+                            <button onclick="downloadOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Download</button>
                         </div>
                     </div>
+                    <div class="flex-grow prism-editor min-h-[300px]">
+                        <textarea id="result-input" class="text-textMain placeholder-textDim/50" spellcheck="false" onscroll="syncScroll(this, 'result-pre')" readonly>Waiting for logic protection...</textarea>
+                        <pre id="result-pre" class="language-python"><code>Waiting for logic protection...</code></pre>
+                    </div>
                 </div>
-                <button id="action-btn" onclick="execute()"
-                    class="btn-premium py-5 rounded-2xl text-[11px] font-black uppercase tracking-[4px] shadow-2xl flex justify-center items-center group relative overflow-hidden">
-                    <span id="btn-text">Protect Logic</span>
-                    <svg class="w-4 h-4 ml-3 group-hover:translate-x-1 transition-transform" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                </button>
             </div>
 
-            <!-- Right Pane (Output) -->
-            <div id="output-pane" class="flex flex-col space-y-4">
-                <div
-                    class="flex justify-between items-center text-[10px] font-black text-slate-500 tracking-[3px] uppercase">
-                    <span>Result Preview</span>
-                    <button onclick="copyResults()"
-                        class="text-indigo-400 hover:text-white transition-all underline underline-offset-4">Copy
-                        All</button>
-                </div>
-                <div
-                    class="flex-grow bg-slate-950/60 rounded-3xl p-8 overflow-hidden flex flex-col border border-white/5">
-                    <div id="result-output"
-                        class="flex-grow code-font text-sm text-indigo-300/80 whitespace-pre overflow-auto scroll-smooth">
-                        Waiting for operation...</div>
-                </div>
-
-                <div id="map-output-container"
-                    class="h-1/4 glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col">
-                    <div
-                        class="flex justify-between items-center mb-3 text-[9px] font-black text-slate-500 tracking-widest uppercase">
-                        <span>Restoration Map</span>
-                        <button onclick="copyMap()" class="text-indigo-400 hover:text-white italic lowercase">Copy
-                            Map</button>
+            <!-- Settings / Heuristics Parameters -->
+            <div class="border-t border-border bg-slate-50/30 dark:bg-black/40 p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="col-span-1">
+                    <h4 class="text-[9px] font-black text-primary uppercase tracking-widest mb-4">Privacy Heuristics</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between group cursor-pointer">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Identifiers</span>
+                            <input type="checkbox" id="rule-idents" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+                        </label>
+                        <label class="flex items-center justify-between group cursor-pointer">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Secrets & Tokens</span>
+                            <input type="checkbox" id="rule-secrets" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+                        </label>
+                        <label class="flex items-center justify-between group cursor-pointer">
+                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Sensitive Strings</span>
+                            <input type="checkbox" id="rule-strings" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+                        </label>
                     </div>
-                    <div id="map-output"
-                        class="flex-grow text-[10px] code-font text-slate-500 break-all overflow-y-auto italic">
-                        Restoration keys appear here.
+                </div>
+                
+                <div class="col-span-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-[9px] font-black text-primary uppercase tracking-widest">Restoration Map</h4>
+                        <button onclick="copyMap()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy Map JSON</button>
+                    </div>
+                    <div id="map-output" class="h-28 w-full bg-black/5 dark:bg-black/40 rounded-xl border border-border p-4 text-[10px] code-font text-emerald-600 dark:text-emerald-500/80 overflow-auto">
+                        Map values will populate here. Use these to restore your code later.
                     </div>
                 </div>
             </div>
@@ -389,85 +378,142 @@
             gsap.from("#editor-grid > div", { y: 20, opacity: 0, duration: 1, delay: 0.3, stagger: 0.2, ease: "expo.out" });
         });
 
-        function switchTab(mode) {
-            if (mode === currentMode) return;
-            currentMode = mode;
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Coding utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Developer Tools</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/tools/json-formatter" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JSON Formatter & Editor</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Format, inspect, and validate nested JSON fields locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/jwt-decoder" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JWT Token Inspector</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect headers, payload fields, and key algorithms.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/api-tester" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">REST API Client Tester</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Send HTTP variables and payload packets locally.</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-            // Clear all text areas
-            document.getElementById('src-input').value = '';
-            document.getElementById('map-input').value = '';
-            document.getElementById('result-output').innerText = 'Waiting for operation...';
-            document.getElementById('map-output').innerText = 'Restoration keys appear here.';
-            updateStats();
+            <!-- Security utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Security Tools</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/tools/sql-optimizer" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">SQL Performance Optimizer</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Analyze database tables and indexing benchmarks.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/base64" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">Base64 Converter</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Encode strings or convert file buffers locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tools/qr-generator" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">QR Vector Code Generator</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Generate static barcode files without leaking destinations.</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-            // UI Toggle
-            document.getElementById('tab-mask').classList.toggle('active', mode === 'mask');
-            document.getElementById('tab-mask').classList.toggle('text-slate-500', mode !== 'mask');
-            document.getElementById('tab-unmask').classList.toggle('active', mode === 'unmask');
-            document.getElementById('tab-unmask').classList.toggle('text-slate-500', mode !== 'unmask');
+            <!-- Healthcare utilities -->
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-accentEmerald/25 hover:-translate-y-0.5 transform transition-all duration-300">
+                <h3 class="text-xs font-black text-accentEmerald uppercase tracking-widest border-b border-border pb-3 mb-4">Healthcare Integrations</h3>
+                <ul class="space-y-4">
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HL7 v2 Message Beautifier</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Parse MSH, PID, and PV1 medical segments locally.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">FHIR JSON Resource Parser</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect complex FHIR patient resource payloads securely.</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/clinical-parser" class="block group">
+                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HIPAA Privacy Validator</h4>
+                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Ensure zero client information is transmitted online.</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-            // Content Toggle
-            document.getElementById('field-label').innerText = mode === 'mask' ? 'Original Source' : 'Masked AI Input';
-            document.getElementById('btn-text').innerText = mode === 'mask' ? 'Protect Logic' : 'Restore Original';
-            document.getElementById('map-input-container').classList.toggle('hidden', mode === 'mask');
-            document.getElementById('map-output-container').classList.toggle('hidden', mode === 'unmask');
+    <!-- Structured FAQ Accordion Section -->
+    <section class="max-w-4xl mx-auto px-6 pb-24">
+        <div class="text-center mb-16">
+            <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">FREQUENTLY ASKED QUESTIONS</h2>
+            <p class="text-xs text-textDim mt-2 font-medium">Everything you need to know about AI Code Masker security model.</p>
+        </div>
 
-            // Animation
-            gsap.from("#input-pane, #output-pane", { opacity: 0, y: 10, duration: 0.3, stagger: 0.05 });
-        }
+        <div class="space-y-4">
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">How does the Code Masker work offline?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    All character scanning, regular expression matching, mapping tables, and substitutions occur entirely inside your browser's heap memory using client-side JavaScript. Since no fetch requests or network calls are triggered during execution, your code remains fully isolated.
+                </p>
+            </div>
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">What happens to the Restoration Map?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    The restoration map is compiled locally and printed to the map panel. You can copy it as a local JSON string. To restore your original code later, simply toggle the "Restore" mode, paste the masked code into the input, verify your map JSON is in the restoration panel, and click execute.
+                </p>
+            </div>
+            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">Can I customize the masking options?</h4>
+                <p class="text-[11px] text-textDim leading-relaxed font-medium">
+                    Yes. Under the settings panel, you can choose to mask specific identifiers (functions/variables), secrets & tokens (AWS keys, OpenAI strings), or general literal strings.
+                </p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
 
-        function updateStats() {
-            const count = document.getElementById('src-input').value.length;
-            document.getElementById('char-count').innerText = `${count} chars`;
-        }
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/masker.js') }}"></script>
+<script>
+    let currentMode = 'mask';
+    let currentMapping = {};
 
-        async function execute() {
-            const code = document.getElementById('src-input').value;
-            const lang = document.getElementById('lang-select').value;
-            const output = document.getElementById('result-output');
-            const mapOutput = document.getElementById('map-output');
+    function scrollToEditor() {
+        document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
+    }
 
-            if (!code) return;
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('mode-mask').classList.toggle('bg-indigo-500', mode === 'mask');
+        document.getElementById('mode-mask').classList.toggle('text-white', mode === 'mask');
+        document.getElementById('mode-mask').classList.toggle('text-slate-500', mode !== 'mask');
+        
+        document.getElementById('mode-restore').classList.toggle('bg-indigo-500', mode === 'restore');
+        document.getElementById('mode-restore').classList.toggle('text-white', mode === 'restore');
+        document.getElementById('mode-restore').classList.toggle('text-slate-500', mode !== 'restore');
 
-            output.innerText = "Processing Logic...";
-
-            try {
-                if (currentMode === 'mask') {
-                    const res = await fetch('/api/mask', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, lang })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw data.error;
-                    output.innerText = data.masked_code;
-                    mapOutput.innerText = JSON.stringify(data.mapping);
-                } else {
-                    const mapVal = document.getElementById('map-input').value;
-                    const mapping = JSON.parse(mapVal || '{}');
-                    const res = await fetch('/api/unmask', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, mapping, lang })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw data.error;
-                    output.innerText = data.unmasked_code;
-                }
-                gsap.from(output, { opacity: 0, duration: 0.5 });
-            } catch (err) {
-                output.innerText = "ERROR: " + err;
+        document.getElementById('input-label').textContent = mode === 'mask' ? 'Source Input' : 'Masked Input (to restore)';
+        if (mode === 'restore') {
+            const currentResult = document.getElementById('result-pre').querySelector('code').textContent;
+            if (currentResult && !currentResult.includes('Waiting')) {
+                document.getElementById('src-input').value = currentResult;
+                onInput(document.getElementById('src-input'));
             }
-        }
-
-        function copyResults() {
-            navigator.clipboard.writeText(document.getElementById('result-output').innerText);
-            alert("Results copied!");
-        }
-
-        function copyMap() {
-            navigator.clipboard.writeText(document.getElementById('map-output').innerText);
-            alert("Map copied!");
         }
     </script>
 
@@ -475,4 +521,62 @@
     <div id="socialbar-anchor" class="socialbar-anchor"></div>
 </body>
 
-</html>
+            resultPre.className = `language-${lang}`;
+            resultCode.className = `language-${lang}`;
+            Prism.highlightElement(resultCode);
+            
+            btnText.classList.remove('hidden');
+            btnSpinner.classList.add('hidden');
+            
+            gsap.from(resultPre, { opacity: 0.5, x: 20, duration: 0.4 });
+        });
+    }
+
+    function loadSample() {
+        const samples = {
+            python: `import os\n\nAWS_KEY = "AKIAIOSFODNN7EXAMPLE"\n\ndef connect_db(password="admin123"):\n    print(f"Connecting to live-db-cluster...")\n    return os.getenv("API_URL", "https://api.internal.com")`,
+            javascript: `const EMAIL = "admin@company.com";\nconst API_SECRET = "sk-1234567890abcdef";\n\nfunction login(token) {\n  fetch('http://192.168.1.1/auth', {\n    method: 'POST',\n    body: JSON.stringify({ token })\n  });\n}`,
+            java: `public class SecretService {\n    private static final String TOKEN = "GCP_TOKEN_ABC_123";\n\n    public void execute() {\n        System.out.println("Processing secret storage...");\n    }\n}`
+        };
+        
+        scrollToEditor();
+        const langSelect = document.getElementById('lang-select');
+        const lang = langSelect.value === 'javascript' ? 'javascript' : (langSelect.value === 'java' ? 'java' : 'python');
+        
+        document.getElementById('src-input').value = samples[lang];
+        onInput(document.getElementById('src-input'));
+        showClipboardToast("Sample loaded successfully!");
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('result-pre').querySelector('code').textContent;
+        navigator.clipboard.writeText(text);
+        showClipboardToast("Masked code copied!");
+    }
+
+    function copyMap() {
+        const text = document.getElementById('map-output').textContent;
+        navigator.clipboard.writeText(text);
+        showClipboardToast("Map JSON copied!");
+    }
+
+    function clearAll() {
+        currentMapping = {};
+        document.getElementById('src-input').value = '';
+        document.getElementById('src-pre').querySelector('code').textContent = '';
+        document.getElementById('result-input').value = 'Waiting for logic protection...';
+        document.getElementById('result-pre').querySelector('code').textContent = 'Waiting for logic protection...';
+        document.getElementById('map-output').textContent = 'Map values will populate here. Use these to restore your code later.';
+    }
+
+    function downloadOutput() {
+        const text = document.getElementById('result-pre').querySelector('code').textContent;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'masked_code.txt';
+        a.click();
+    }
+</script>
+{% endblock %}

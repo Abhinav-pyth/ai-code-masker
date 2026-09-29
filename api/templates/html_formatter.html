@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}HTML Formatter — Beautify HTML{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/html-formatter{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">HTML Formatter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-4 flex-grow overflow-hidden">
+        <div class="flex gap-2 items-center">
+            <button onclick="doFormat()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">Format</button>
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider ml-2">Indent:</label>
+            <select id="indent" class="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-[10px] text-slate-300 outline-none">
+                <option value="2">2 spaces</option><option value="4" selected>4 spaces</option><option value="tab">Tab</option>
+            </select>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input HTML</span>
+                <textarea id="hf-input" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Paste minified or messy HTML here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Formatted</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('hf-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="hf-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function doFormat(){
+    const src=document.getElementById('hf-input').value;
+    const indentVal=document.getElementById('indent').value;
+    const indentStr=indentVal==='tab'?'\t':' '.repeat(parseInt(indentVal));
+    let formatted='',level=0;
+    const tokens=src.replace(/>\s*</g,'>\n<').split('\n');
+    const selfClosing=/^<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)/i;
+    const closing=/^<\//;
+    tokens.forEach(line=>{
+        line=line.trim();if(!line)return;
+        if(closing.test(line))level=Math.max(0,level-1);
+        formatted+=indentStr.repeat(level)+line+'\n';
+        if(!closing.test(line)&&!selfClosing.test(line)&&line.startsWith('<')&&!line.startsWith('<!')&&!line.endsWith('/>'))level++;
+    });
+    document.getElementById('hf-output').value=formatted.trim();
+}
+</script>
+{% endblock %}

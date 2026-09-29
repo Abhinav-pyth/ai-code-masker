@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}HTML Preview{% endblock %}
+
+{% block content %}
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">HTML Preview</h2>
+            <div class="flex gap-3">
+                <button onclick="runPreview()"
+                    class="px-5 py-1.5 btn-premium rounded-lg text-[10px] font-bold uppercase tracking-wider">Run</button>
+                <button onclick="clearAll()"
+                    class="px-4 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold text-red-400 hover:bg-red-500/20 transition-all uppercase">Clear</button>
+            </div>
+        </div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+            <div class="flex flex-col border-r border-white/5 overflow-hidden">
+                <div class="px-6 py-3 text-[10px] font-black text-indigo-400 tracking-[3px] uppercase border-b border-white/5">Source Code</div>
+                <textarea id="html-input"
+                    class="flex-grow bg-transparent p-6 code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                    placeholder="<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>"></textarea>
+            </div>
+            <div class="flex flex-col overflow-hidden">
+                <div class="px-6 py-3 text-[10px] font-black text-slate-500 tracking-[3px] uppercase border-b border-white/5">Preview</div>
+                <iframe id="preview-frame" sandbox="allow-scripts allow-modals"
+                    class="flex-grow bg-white w-full"></iframe>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function runPreview() {
+            const code = document.getElementById('html-input').value;
+            document.getElementById('preview-frame').srcdoc = code;
+        }
+        function clearAll() {
+            document.getElementById('html-input').value = '';
+            document.getElementById('preview-frame').srcdoc = '';
+        }
+        document.getElementById('html-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') runPreview();
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const s = this.selectionStart;
+                this.value = this.value.substring(0, s) + '  ' + this.value.substring(this.selectionEnd);
+                this.selectionStart = this.selectionEnd = s + 2;
+            }
+        });
+    </script>
+{% endblock %}

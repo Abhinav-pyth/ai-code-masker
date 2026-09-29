@@ -241,33 +241,13 @@
                     class="px-4 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold text-red-400 hover:bg-red-500/20 transition-all uppercase">Clear</button>
             </div>
         </div>
+    </div>
 
-        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch bg-black/10">
-            <!-- Left Pane (Editor) -->
-            <div class="flex flex-col space-y-4">
-                <div
-                    class="flex justify-between items-center text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">
-                    <span>Source JSON</span>
-                </div>
-                <div class="flex-grow glass-card rounded-3xl p-8 relative flex flex-col">
-                    <textarea id="json-input"
-                        class="flex-grow bg-transparent code-font text-sm leading-relaxed text-slate-100 placeholder-slate-800 outline-none resize-none"
-                        placeholder='{"your": "json data..."}' oninput="refreshTree()"></textarea>
-                </div>
-            </div>
-
-            <!-- Right Pane (Tree View) -->
-            <div class="flex flex-col space-y-4 overflow-hidden">
-                <div
-                    class="flex justify-between items-center text-[10px] font-black text-slate-500 tracking-[3px] uppercase">
-                    <span>Structural Tree</span>
-                    <span id="status-badge" class="text-emerald-500/80 italic lowercase tracking-normal">synced</span>
-                </div>
-                <div id="tree-container"
-                    class="flex-grow glass-card rounded-3xl p-8 overflow-auto code-font text-sm leading-relaxed">
-                    <div class="text-slate-600 italic">No structure to display yet...</div>
-                </div>
-            </div>
+    <!-- Right Pane (Tree View) -->
+    <div class="flex flex-col space-y-4 overflow-hidden min-h-0">
+        <div class="flex justify-between items-center text-[10px] font-black text-slate-500 tracking-[3px] uppercase">
+            <span>Structural Tree</span>
+            <span id="status-badge" class="text-emerald-500/80 italic lowercase tracking-normal">synced</span>
         </div>
 
         <!-- Ad footer: Native Banner + 728x90_1 leaderboard -->
@@ -414,50 +394,52 @@
                 footer.innerHTML = Array.isArray(data) ? '<span class="text-slate-600">]</span>' : '<span class="text-slate-600">}</span>';
                 node.appendChild(footer);
             } else {
-                let valSpan = document.createElement('span');
-                if (typeof data === 'string') {
-                    valSpan.className = 'tree-value-string';
-                    valSpan.innerText = `"${data}"`;
-                } else if (typeof data === 'number') {
-                    valSpan.className = 'tree-value-number';
-                    valSpan.innerText = data;
-                } else if (typeof data === 'boolean') {
-                    valSpan.className = 'tree-value-boolean';
-                    valSpan.innerText = data;
-                } else {
-                    valSpan.className = 'tree-value-null';
-                    valSpan.innerText = 'null';
-                }
-                node.appendChild(valSpan);
+                valSpan.className = 'tree-value-null';
+                valSpan.innerText = 'null';
             }
-
-            container.appendChild(node);
+            node.appendChild(valSpan);
         }
 
-        function prettify() {
-            try {
-                input.value = JSON.stringify(JSON.parse(input.value), null, 4);
-                refreshTree();
-            } catch (e) { }
-        }
+        container.appendChild(node);
+    }
 
-        function minify() {
-            try {
-                input.value = JSON.stringify(JSON.parse(input.value));
-                refreshTree();
-            } catch (e) { }
-        }
-
-        function clearAll() {
-            input.value = '';
+    function prettify() {
+        try {
+            input.value = JSON.stringify(JSON.parse(input.value), null, 4);
             refreshTree();
-        }
+        } catch (e) { }
+    }
 
-        function copyEditor() {
-            navigator.clipboard.writeText(input.value);
-            alert("JSON Copied");
-        }
-    </script>
-</body>
+    function minify() {
+        try {
+            input.value = JSON.stringify(JSON.parse(input.value));
+            refreshTree();
+        } catch (e) { }
+    }
 
-</html>
+    function clearAll() {
+        input.value = '';
+        refreshTree();
+    }
+
+    function loadDemo() {
+        const demo = {
+            project: "AI Code Masker",
+            version: "2.0.4",
+            active: true,
+            stats: {
+                users: 1250,
+                uptime: "99.9%"
+            },
+            tags: ["privacy", "security", "developer-tools"]
+        };
+        input.value = JSON.stringify(demo, null, 4);
+        refreshTree();
+    }
+
+    function copyEditor() {
+        navigator.clipboard.writeText(input.value);
+        alert("JSON Copied");
+    }
+</script>
+{% endblock %}

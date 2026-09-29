@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}My IP{% endblock %}
+{% block content %}
+<style>
+    .glass-card {
+        background: rgba(30, 27, 75, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 12px;
+        padding: 24px;
+    }
+    .code-font {
+        font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+    .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(30, 27, 75, 0.6);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+        margin-bottom: 32px;
+        border-radius: 12px;
+    }
+    .toolbar h1 {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: #a5b4fc;
+        margin: 0;
+    }
+    .center-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .ip-display-card {
+        text-align: center;
+        width: 100%;
+        padding: 40px 24px;
+    }
+    .ip-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 16px;
+    }
+    .ip-address {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        letter-spacing: 0.04em;
+        word-break: break-all;
+    }
+    .ip-loading {
+        color: #475569;
+        font-size: 1.2rem;
+    }
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        letter-spacing: 0.05em;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .btn-secondary {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+        background: rgba(99, 102, 241, 0.25);
+    }
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        width: 100%;
+    }
+    .detail-card {
+        text-align: center;
+        padding: 20px 16px;
+    }
+    .detail-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+    .detail-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        word-break: break-all;
+    }
+    .detail-value.loading {
+        color: #475569;
+        font-size: 0.85rem;
+    }
+    .error-text {
+        color: #f87171;
+        font-size: 0.875rem;
+    }
+</style>
+
+<div class="toolbar">
+    <h1 class="code-font">MY IP ADDRESS</h1>
+</div>
+
+<div class="center-wrapper">
+    <div class="glass-card ip-display-card">
+        <div class="ip-label">Your Public IP Address</div>
+        <div class="ip-address code-font" id="ip-display">
+            <span class="ip-loading">Fetching...</span>
+        </div>
+        <div class="btn-row">
+            <button class="btn-primary" id="copy-btn" onclick="copyIp()" disabled>Copy IP</button>
+            <button class="btn-secondary" onclick="refreshAll()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="details-grid" id="details-grid">
+        <div class="glass-card detail-card">
+            <div class="detail-label">City</div>
+            <div class="detail-value loading" id="detail-city">Loading...</div>
+        </div>
+        <div class="glass-card detail-card">
+            <div class="detail-label">Region</div>
+            <div class="detail-value loading" id="detail-region">Loading...</div>
+        </div>
+        <div class="glass-card detail-card">
+            <div class="detail-label">Country</div>
+            <div class="detail-value loading" id="detail-country">Loading...</div>
+        </div>
+        <div class="glass-card detail-card">
+            <div class="detail-label">Organization</div>
+            <div class="detail-value loading" id="detail-org">Loading...</div>
+        </div>
+        <div class="glass-card detail-card">
+            <div class="detail-label">Timezone</div>
+            <div class="detail-value loading" id="detail-timezone">Loading...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentIp = '';
+
+    function fetchIp() {
+        document.getElementById('ip-display').innerHTML = '<span class="ip-loading">Fetching...</span>';
+        document.getElementById('copy-btn').disabled = true;
+
+        fetch('https://api.ipify.org?format=json')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                currentIp = data.ip;
+                document.getElementById('ip-display').textContent = data.ip;
+                document.getElementById('copy-btn').disabled = false;
+            })
+            .catch(function() {
+                document.getElementById('ip-display').innerHTML = '<span class="error-text">Failed to fetch IP</span>';
+            });
+    }
+
+    function fetchDetails() {
+        var fields = ['city', 'region', 'country', 'org', 'timezone'];
+        fields.forEach(function(f) {
+            var el = document.getElementById('detail-' + f);
+            el.textContent = 'Loading...';
+            el.classList.add('loading');
+        });
+
+        fetch('https://ipapi.co/json/')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                setDetail('city', data.city);
+                setDetail('region', data.region);
+                setDetail('country', data.country_name || data.country);
+                setDetail('org', data.org);
+                setDetail('timezone', data.timezone);
+            })
+            .catch(function() {
+                fields.forEach(function(f) {
+                    var el = document.getElementById('detail-' + f);
+                    el.innerHTML = '<span class="error-text">Unavailable</span>';
+                    el.classList.remove('loading');
+                });
+            });
+    }
+
+    function setDetail(field, value) {
+        var el = document.getElementById('detail-' + field);
+        el.textContent = value || 'N/A';
+        el.classList.remove('loading');
+    }
+
+    function copyIp() {
+        if (!currentIp) return;
+        navigator.clipboard.writeText(currentIp).then(function() {
+            var btn = document.getElementById('copy-btn');
+            var original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = original; }, 1500);
+        });
+    }
+
+    function refreshAll() {
+        fetchIp();
+        fetchDetails();
+    }
+
+    // Auto-fetch on page load
+    refreshAll();
+</script>
+{% endblock %}

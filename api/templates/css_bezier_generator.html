@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}CSS Cubic Bezier Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-bezier-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Cubic Bezier Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-2">
+            <button onclick="setPreset(.25,.1,.25,1)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">ease</button>
+            <button onclick="setPreset(0,0,1,1)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">linear</button>
+            <button onclick="setPreset(.42,0,1,1)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">ease-in</button>
+            <button onclick="setPreset(0,0,.58,1)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">ease-out</button>
+            <button onclick="setPreset(.42,0,.58,1)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">ease-in-out</button>
+            <button onclick="setPreset(.68,-.55,.27,1.55)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">back</button>
+            <button onclick="setPreset(.175,.885,.32,1.275)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">elastic</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] font-black text-slate-500 uppercase">X1</label><input type="number" id="b-x1" value="0.25" step="0.01" min="-1" max="2" onchange="upd()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none mt-1"></div>
+                    <div><label class="text-[10px] font-black text-slate-500 uppercase">Y1</label><input type="number" id="b-y1" value="0.1" step="0.01" min="-1" max="2" onchange="upd()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none mt-1"></div>
+                    <div><label class="text-[10px] font-black text-slate-500 uppercase">X2</label><input type="number" id="b-x2" value="0.25" step="0.01" min="-1" max="2" onchange="upd()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none mt-1"></div>
+                    <div><label class="text-[10px] font-black text-slate-500 uppercase">Y2</label><input type="number" id="b-y2" value="1" step="0.01" min="-1" max="2" onchange="upd()" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none mt-1"></div>
+                </div>
+                <button onclick="playAnim()" class="mt-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">▶ Play Animation</button>
+            </div>
+            <div class="glass-card rounded-2xl p-5 flex items-center justify-center min-h-[200px] relative overflow-hidden">
+                <div id="anim-ball" class="w-12 h-12 rounded-full bg-indigo-500 absolute left-4" style="transition:left 1.5s"></div>
+            </div>
+        </div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('b-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <code id="b-code" class="code-font text-sm text-indigo-300 block"></code>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const x1=document.getElementById('b-x1').value,y1=document.getElementById('b-y1').value,x2=document.getElementById('b-x2').value,y2=document.getElementById('b-y2').value;
+    const css=`cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`;
+    document.getElementById('b-code').textContent=`transition-timing-function: ${css};`;
+    document.getElementById('anim-ball').style.transitionTimingFunction=css;
+}
+function setPreset(x1,y1,x2,y2){document.getElementById('b-x1').value=x1;document.getElementById('b-y1').value=y1;document.getElementById('b-x2').value=x2;document.getElementById('b-y2').value=y2;upd();}
+function playAnim(){const b=document.getElementById('anim-ball');b.style.left=b.style.left==='4px'||!b.style.left||b.style.left==='16px'?'calc(100% - 64px)':'16px';}
+upd();
+</script>
+{% endblock %}

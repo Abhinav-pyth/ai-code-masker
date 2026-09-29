@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AI Code Masker
+Bundle-SymbolicName: com.aimasker.eclipse;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.aimasker.eclipse.Activator
+Bundle-Vendor: AI Code Masker
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.core.resources
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ActivationPolicy: lazy
+Export-Package: com.aimasker.eclipse,
+ com.aimasker.eclipse.handlers,
+ com.aimasker.eclipse.views

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Architecture - AI Code Masker{% endblock %}
+
+{% block content %}
+<div class="flex-grow relative flex flex-col items-center py-24 px-6 md:px-12">
+    <!-- Background Decor -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none"></div>
+    <div class="mesh-circle w-[600px] h-[600px] bg-indigo-600/10 absolute -top-96 -right-48 blur-[120px]"></div>
+
+    <div class="max-w-4xl w-full relative z-10">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-8">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <span>Verified Privacy-First Engine</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-black text-white mb-12 tracking-tighter uppercase leading-none">
+            Privacy as a <span class="text-indigo-500">Physical Barrier.</span>
+        </h1>
+        
+        <div class="glass-card rounded-[3rem] p-8 md:p-16 border border-white/5 shadow-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+                <!-- Left Column -->
+                <div class="space-y-12">
+                    <section>
+                        <h2 class="text-[10px] font-black text-indigo-400 uppercase tracking-[4px] mb-6">The Promise</h2>
+                        <h3 class="text-2xl font-bold text-white mb-4">Zero Server Latency. <br>Zero Server Calls.</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed font-medium">
+                            Our architecture is built on the principle of **Client-Side Sovereignty**. Unlike traditional SaaS tools that process your data on remote servers, AI Code Masker performs all regex substitutions and data mapping directly in your browser's memory.
+                        </p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="text-2xl font-bold text-white mb-4">No Persistence.</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed font-medium">
+                            If you refresh the page or clear your browser cache, your masking session is gone forever. We do not use databases, local storage for code snippets, or server-side logs. Your code is yours alone.
+                        </p>
+                    </section>
+                </div>
+
+                <!-- Right Column (Data Flow) -->
+                <div class="bg-black/40 rounded-[2rem] p-8 border border-white/5">
+                    <h2 class="text-[10px] font-black text-indigo-400 uppercase tracking-[4px] mb-8">Data Flow Ledger</h2>
+                    
+                    <div class="space-y-8">
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                <span class="text-emerald-500 font-black text-[10px]">01</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold text-xs mb-1 uppercase tracking-widest">Input Phase</h4>
+                                <p class="text-slate-500 text-[11px] font-medium leading-relaxed">Code is pasted into the browser's DOM. No network activity is triggered.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                <span class="text-emerald-500 font-black text-[10px]">02</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold text-xs mb-1 uppercase tracking-widest">Substitution Phase</h4>
+                                <p class="text-slate-500 text-[11px] font-medium leading-relaxed">The <code class="text-indigo-400">masker.js</code> engine runs locally in a separate thread. Regex patterns scan for secrets in real-time.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                <span class="text-emerald-500 font-black text-[10px]">03</span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold text-xs mb-1 uppercase tracking-widest">Output Phase</h4>
+                                <p class="text-slate-500 text-[11px] font-medium leading-relaxed">The masked result is rendered back to the UI. Your original mapping is stored in local JS variables (RAM) only.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-white/5 flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Process Verified: Network Isolated</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-20 flex flex-col md:flex-row items-center justify-between gap-8 pt-10 border-t border-white/5">
+                <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                        <span class="block text-2xl font-black text-white">0</span>
+                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Server Logs</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-2xl font-black text-white">100%</span>
+                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Local Exec</span>
+                    </div>
+                </div>
+                <a href="/" class="btn-premium px-12 py-4 rounded-2xl text-[10px] uppercase">Return to Editor</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

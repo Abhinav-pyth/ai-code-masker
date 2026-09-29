@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}CSS Switch/Toggle Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-switch-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Switch Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color:</label>
+            <input type="color" id="sw-color" value="#6366f1" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Width: <span id="v-w" class="text-indigo-400">52</span>px</label>
+            <input type="range" id="sw-w" min="36" max="80" value="52" oninput="upd()" class="w-20 accent-indigo-500">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Height: <span id="v-h" class="text-indigo-400">28</span>px</label>
+            <input type="range" id="sw-h" min="20" max="44" value="28" oninput="upd()" class="w-20 accent-indigo-500">
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-12 min-h-[200px]" id="sw-preview"></div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">HTML + CSS</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('sw-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <pre id="sw-code" class="code-font text-xs text-indigo-300 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const c=document.getElementById('sw-color').value,w=+document.getElementById('sw-w').value,h=+document.getElementById('sw-h').value;
+    document.getElementById('v-w').textContent=w;document.getElementById('v-h').textContent=h;
+    const knob=h-4;const travel=w-knob-4;
+    document.getElementById('sw-preview').innerHTML=`<label style="position:relative;display:inline-block;width:${w}px;height:${h}px;cursor:pointer"><input type="checkbox" checked style="opacity:0;width:0;height:0" onchange="this.parentElement.querySelector('span').style.background=this.checked?'${c}':'#374151';this.parentElement.querySelector('span span').style.transform=this.checked?'translateX(${travel}px)':'translateX(0)'"><span style="position:absolute;inset:0;background:${c};border-radius:${h}px;transition:.3s"><span style="position:absolute;left:2px;bottom:2px;width:${knob}px;height:${knob}px;background:#fff;border-radius:50%;transition:.3s;transform:translateX(${travel}px)"></span></span></label>`;
+    document.getElementById('sw-code').textContent=`<!-- HTML -->\n<label class="switch"><input type="checkbox"><span class="slider"></span></label>\n\n/* CSS */\n.switch { position:relative; display:inline-block; width:${w}px; height:${h}px; }\n.switch input { opacity:0; width:0; height:0; }\n.slider { position:absolute; inset:0; background:#374151; border-radius:${h}px; transition:.3s; cursor:pointer; }\n.slider::before { content:""; position:absolute; left:2px; bottom:2px; width:${knob}px; height:${knob}px; background:#fff; border-radius:50%; transition:.3s; }\ninput:checked + .slider { background:${c}; }\ninput:checked + .slider::before { transform:translateX(${travel}px); }`;
+}
+upd();
+</script>
+{% endblock %}

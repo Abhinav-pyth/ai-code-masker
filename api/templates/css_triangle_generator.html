@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}CSS Triangle Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-triangle-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Triangle Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-64 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3">
+            <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Direction</label>
+            <select id="t-dir" onchange="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                <option value="top">Top ▲</option><option value="right">Right ▶</option><option value="bottom" selected>Bottom ▼</option><option value="left">Left ◀</option>
+                <option value="top-left">Top Left ◤</option><option value="top-right">Top Right ◥</option><option value="bottom-left">Bottom Left ◣</option><option value="bottom-right">Bottom Right ◢</option>
+            </select>
+            <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Width: <span id="v-w" class="text-indigo-400">100</span>px</label>
+            <input type="range" id="t-w" min="10" max="300" value="100" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Height: <span id="v-h" class="text-indigo-400">100</span>px</label>
+            <input type="range" id="t-h" min="10" max="300" value="100" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Color</label>
+            <input type="color" id="t-c" value="#6366f1" oninput="upd()" class="w-full h-8 rounded cursor-pointer border-0 bg-transparent">
+        </div>
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[300px]">
+                <div id="tri-box"></div>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('tri-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <code id="tri-code" class="code-font text-xs text-indigo-300 block whitespace-pre"></code>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const dir=document.getElementById('t-dir').value,w=+document.getElementById('t-w').value,h=+document.getElementById('t-h').value,c=document.getElementById('t-c').value;
+    document.getElementById('v-w').textContent=w;document.getElementById('v-h').textContent=h;
+    let css={width:'0',height:'0'};const hw=w/2+'px';
+    const borders={top:{borderLeft:`${hw} solid transparent`,borderRight:`${hw} solid transparent`,borderBottom:`${h}px solid ${c}`},
+        bottom:{borderLeft:`${hw} solid transparent`,borderRight:`${hw} solid transparent`,borderTop:`${h}px solid ${c}`},
+        left:{borderTop:`${h/2}px solid transparent`,borderBottom:`${h/2}px solid transparent`,borderRight:`${w}px solid ${c}`},
+        right:{borderTop:`${h/2}px solid transparent`,borderBottom:`${h/2}px solid transparent`,borderLeft:`${w}px solid ${c}`},
+        'top-left':{borderTop:`${h}px solid ${c}`,borderRight:`${w}px solid transparent`},
+        'top-right':{borderTop:`${h}px solid ${c}`,borderLeft:`${w}px solid transparent`},
+        'bottom-left':{borderBottom:`${h}px solid ${c}`,borderRight:`${w}px solid transparent`},
+        'bottom-right':{borderBottom:`${h}px solid ${c}`,borderLeft:`${w}px solid transparent`}};
+    const b=borders[dir];const box=document.getElementById('tri-box');
+    box.style.cssText='width:0;height:0;';Object.entries(b).forEach(([k,v])=>box.style[k]=v);
+    let code='width: 0;\nheight: 0;\n';Object.entries(b).forEach(([k,v])=>{code+=k.replace(/([A-Z])/g,'-$1').toLowerCase()+': '+v+';\n';});
+    document.getElementById('tri-code').textContent=code.trim();
+}
+upd();
+</script>
+{% endblock %}

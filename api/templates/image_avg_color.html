@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Image Average Color Finder{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-avg-color{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image Average Color Finder</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer inline-block w-fit">📁 Choose Image<input type="file" accept="image/*" onchange="findAvg(event)" class="hidden"></label>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card rounded-2xl p-4"><canvas id="ac-canvas" class="max-w-full rounded-xl"></canvas></div>
+            <div class="flex flex-col gap-4">
+                <div id="ac-preview" class="h-40 rounded-2xl border border-white/10"></div>
+                <div class="glass-card rounded-2xl p-4 flex flex-col gap-2">
+                    <div class="flex justify-between"><span class="text-[10px] text-slate-500 font-bold uppercase">HEX</span><span id="ac-hex" class="code-font text-sm text-indigo-300 cursor-pointer" onclick="navigator.clipboard.writeText(this.textContent)">—</span></div>
+                    <div class="flex justify-between"><span class="text-[10px] text-slate-500 font-bold uppercase">RGB</span><span id="ac-rgb" class="code-font text-sm text-indigo-300 cursor-pointer" onclick="navigator.clipboard.writeText(this.textContent)">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function findAvg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.getElementById('ac-canvas'),ctx=c.getContext('2d');c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);const d=ctx.getImageData(0,0,c.width,c.height).data;let rr=0,gg=0,bb=0,count=0;for(let i=0;i<d.length;i+=4){rr+=d[i];gg+=d[i+1];bb+=d[i+2];count++;}rr=Math.round(rr/count);gg=Math.round(gg/count);bb=Math.round(bb/count);const hex='#'+[rr,gg,bb].map(v=>v.toString(16).padStart(2,'0')).join('');document.getElementById('ac-preview').style.background=hex;document.getElementById('ac-hex').textContent=hex;document.getElementById('ac-rgb').textContent=`rgb(${rr}, ${gg}, ${bb})`;};img.src=ev.target.result;};r.readAsDataURL(f);}
+</script>
+{% endblock %}

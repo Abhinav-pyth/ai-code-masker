@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Whitespace Remover — Clean Up Text{% endblock %}
+{% block meta_description %}Remove multiple whitespaces, tabs and line breaks from text. Clean up unwanted characters instantly. Free, 100% browser-based.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/whitespace-remover{% endblock %}
+
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Multiple Whitespace Remover</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-4 flex-grow overflow-hidden">
+        <div class="flex flex-wrap gap-2">
+            <button onclick="doClean('spaces')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition-all">Remove Extra Spaces</button>
+            <button onclick="doClean('lines')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/40 transition-all">Remove Empty Lines</button>
+            <button onclick="doClean('tabs')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-amber-600/20 border border-amber-500/30 text-amber-300 hover:bg-amber-600/40 transition-all">Remove Tabs</button>
+            <button onclick="doClean('trim')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-rose-600/20 border border-rose-500/30 text-rose-300 hover:bg-rose-600/40 transition-all">Trim Lines</button>
+            <button onclick="doClean('all')" class="px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/40 transition-all">Clean All</button>
+        </div>
+        <div id="ws-stats" class="text-[10px] text-slate-500 font-bold uppercase tracking-wider"></div>
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input</span>
+                <textarea id="ws-input"
+                    class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                    placeholder="Paste text with extra whitespace here..."></textarea>
+            </div>
+            <div class="flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Output</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('ws-output').value);showToast('Copied!')" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="ws-output" readonly
+                    class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function doClean(type) {
+        let text = document.getElementById('ws-input').value;
+        const origLen = text.length;
+        switch(type) {
+            case 'spaces': text = text.replace(/ {2,}/g, ' '); break;
+            case 'lines': text = text.replace(/(\n\s*){3,}/g, '\n\n'); break;
+            case 'tabs': text = text.replace(/\t/g, ' '); break;
+            case 'trim': text = text.split('\n').map(l => l.trim()).join('\n'); break;
+            case 'all':
+                text = text.replace(/\t/g, ' ');
+                text = text.replace(/ {2,}/g, ' ');
+                text = text.split('\n').map(l => l.trim()).join('\n');
+                text = text.replace(/(\n\s*){3,}/g, '\n\n');
+                break;
+        }
+        document.getElementById('ws-output').value = text;
+        const removed = origLen - text.length;
+        document.getElementById('ws-stats').textContent = `Removed ${removed} character${removed !== 1 ? 's' : ''} · ${origLen} → ${text.length}`;
+    }
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+</script>
+{% endblock %}

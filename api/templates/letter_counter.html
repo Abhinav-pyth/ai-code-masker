@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Letter Counter — Count Characters, Words & Sentences{% endblock %}
+{% block meta_description %}Free online letter counter. Count characters, words, sentences and paragraphs in your text. See limits for Twitter, Instagram, YouTube and more.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/letter-counter{% endblock %}
+
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Letter Counter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-indigo-400" id="s-chars">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Characters</div></div>
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-emerald-400" id="s-words">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Words</div></div>
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-amber-400" id="s-sentences">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Sentences</div></div>
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-rose-400" id="s-paragraphs">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Paragraphs</div></div>
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-cyan-400" id="s-spaces">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Spaces</div></div>
+            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-violet-400" id="s-lines">0</div><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1">Lines</div></div>
+        </div>
+        <div class="flex-grow flex flex-col gap-2 overflow-hidden">
+            <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Your Text</span>
+            <textarea id="lc-input" oninput="analyze()"
+                class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                placeholder="Start typing or paste your text here..."></textarea>
+        </div>
+        <div>
+            <div class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase mb-3">Platform Limits</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2" id="limits-grid"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const limits = [
+        { name: 'Twitter/X', max: 280, color: 'sky' },
+        { name: 'Instagram Caption', max: 2200, color: 'pink' },
+        { name: 'YouTube Title', max: 100, color: 'red' },
+        { name: 'Meta Title', max: 60, color: 'amber' },
+        { name: 'Meta Description', max: 160, color: 'emerald' },
+        { name: 'LinkedIn Post', max: 3000, color: 'blue' },
+    ];
+    const grid = document.getElementById('limits-grid');
+    limits.forEach(l => {
+        grid.innerHTML += `<div class="glass-card rounded-lg p-3"><div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">${l.name}</div><div class="w-full h-1.5 rounded-full bg-white/5 overflow-hidden"><div id="bar-${l.name.replace(/[^a-z]/gi,'')}" class="h-full rounded-full bg-${l.color}-500 transition-all duration-300" style="width:0%"></div></div><div class="text-[10px] text-slate-400 mt-1"><span id="val-${l.name.replace(/[^a-z]/gi,'')}">0</span>/${l.max}</div></div>`;
+    });
+    function analyze() {
+        const t = document.getElementById('lc-input').value;
+        const chars = t.length;
+        const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+        const sentences = t.trim() ? (t.match(/[.!?]+(\s|$)/g) || []).length || (t.trim().length > 0 ? 1 : 0) : 0;
+        const paragraphs = t.trim() ? t.split(/\n\s*\n/).filter(p => p.trim()).length : 0;
+        const spaces = (t.match(/ /g) || []).length;
+        const lines = t ? t.split('\n').length : 0;
+        document.getElementById('s-chars').textContent = chars;
+        document.getElementById('s-words').textContent = words;
+        document.getElementById('s-sentences').textContent = sentences;
+        document.getElementById('s-paragraphs').textContent = paragraphs;
+        document.getElementById('s-spaces').textContent = spaces;
+        document.getElementById('s-lines').textContent = lines;
+        limits.forEach(l => {
+            const id = l.name.replace(/[^a-z]/gi, '');
+            const pct = Math.min((chars / l.max) * 100, 100);
+            const bar = document.getElementById('bar-' + id);
+            const val = document.getElementById('val-' + id);
+            if (bar) { bar.style.width = pct + '%'; bar.className = `h-full rounded-full transition-all duration-300 ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'}`; }
+            if (val) val.textContent = chars;
+        });
+    }
+</script>
+{% endblock %}

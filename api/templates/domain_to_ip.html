@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% block title %}Domain to IP{% endblock %}
+{% block content %}
+<style>
+    .glass-card {
+        background: rgba(30, 27, 75, 0.4);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 12px;
+        padding: 24px;
+    }
+    .code-font {
+        font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+    .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(30, 27, 75, 0.6);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+        margin-bottom: 32px;
+        border-radius: 12px;
+    }
+    .toolbar h1 {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: #a5b4fc;
+        margin: 0;
+    }
+    .center-wrapper {
+        max-width: 700px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .input-row {
+        display: flex;
+        gap: 12px;
+    }
+    .input-row input {
+        flex: 1;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        color: #e2e8f0;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .input-row input::placeholder {
+        color: #475569;
+    }
+    .input-row input:focus {
+        border-color: rgba(99, 102, 241, 0.5);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .btn-secondary {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+        background: rgba(99, 102, 241, 0.25);
+    }
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+    }
+    .result-card {
+        display: none;
+        text-align: center;
+        padding: 32px 24px;
+    }
+    .result-card.visible {
+        display: block;
+    }
+    .result-domain {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+    .result-ip {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 16px;
+        word-break: break-all;
+    }
+    .result-error {
+        color: #f87171;
+        font-size: 0.9rem;
+    }
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0;
+    }
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+    }
+    .history-list {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+    }
+    .history-domain {
+        font-size: 0.85rem;
+        color: #a5b4fc;
+        font-weight: 600;
+    }
+    .history-ip {
+        font-size: 0.85rem;
+        color: #cbd5e1;
+    }
+    .history-copy-btn {
+        background: none;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: #94a3b8;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .history-copy-btn:hover {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+    }
+    .empty-history {
+        text-align: center;
+        padding: 24px;
+        color: #475569;
+        font-size: 0.85rem;
+    }
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="toolbar">
+    <h1 class="code-font">DOMAIN TO IP</h1>
+</div>
+
+<div class="center-wrapper">
+    <div class="glass-card">
+        <div class="input-row">
+            <input type="text" id="domain-input" class="code-font" placeholder="Enter domain (e.g., example.com)" onkeydown="if(event.key==='Enter') resolveDomain();">
+            <button class="btn-primary" id="resolve-btn" onclick="resolveDomain()">Resolve</button>
+        </div>
+    </div>
+
+    <div class="glass-card result-card" id="result-card">
+        <div class="result-domain" id="result-domain"></div>
+        <div class="result-ip code-font" id="result-ip"></div>
+        <button class="btn-secondary" id="copy-result-btn" onclick="copyResultIp()">Copy IP</button>
+    </div>
+
+    <div class="glass-card">
+        <div class="section-header">
+            <div class="section-title">Lookup History</div>
+            <button class="btn-danger" onclick="clearHistory()">Clear History</button>
+        </div>
+        <div class="history-list" id="history-list">
+            <div class="empty-history" id="empty-history">No lookups yet</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var lookupHistory = [];
+    var currentResultIp = '';
+
+    function resolveDomain() {
+        var input = document.getElementById('domain-input');
+        var domain = input.value.trim();
+        if (!domain) return;
+
+        // Strip protocol if user pasted a URL
+        domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+
+        var resultCard = document.getElementById('result-card');
+        var resultDomain = document.getElementById('result-domain');
+        var resultIp = document.getElementById('result-ip');
+        var copyBtn = document.getElementById('copy-result-btn');
+        var resolveBtn = document.getElementById('resolve-btn');
+
+        resultCard.classList.add('visible');
+        resultDomain.textContent = domain;
+        resultIp.innerHTML = '<div class="loading-spinner"></div>';
+        copyBtn.style.display = 'none';
+        resolveBtn.disabled = true;
+        resolveBtn.textContent = 'Resolving...';
+
+        fetch('/api/resolve-domain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ domain: domain })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) {
+                resultIp.innerHTML = '<span class="result-error">' + escapeHtml(data.error) + '</span>';
+                copyBtn.style.display = 'none';
+                currentResultIp = '';
+            } else {
+                var ip = data.ip || data.address || '';
+                currentResultIp = ip;
+                resultIp.textContent = ip;
+                copyBtn.style.display = 'inline-block';
+
+                // Add to history
+                lookupHistory.unshift({ domain: domain, ip: ip });
+                renderHistory();
+            }
+        })
+        .catch(function(err) {
+            resultIp.innerHTML = '<span class="result-error">Request failed. Check your connection.</span>';
+            copyBtn.style.display = 'none';
+            currentResultIp = '';
+        })
+        .finally(function() {
+            resolveBtn.disabled = false;
+            resolveBtn.textContent = 'Resolve';
+        });
+    }
+
+    function copyResultIp() {
+        if (!currentResultIp) return;
+        navigator.clipboard.writeText(currentResultIp).then(function() {
+            var btn = document.getElementById('copy-result-btn');
+            var original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = original; }, 1500);
+        });
+    }
+
+    function copyHistoryIp(ip, btnEl) {
+        navigator.clipboard.writeText(ip).then(function() {
+            var original = btnEl.textContent;
+            btnEl.textContent = 'Copied!';
+            setTimeout(function() { btnEl.textContent = original; }, 1500);
+        });
+    }
+
+    function renderHistory() {
+        var list = document.getElementById('history-list');
+        var empty = document.getElementById('empty-history');
+
+        if (lookupHistory.length === 0) {
+            list.innerHTML = '<div class="empty-history" id="empty-history">No lookups yet</div>';
+            return;
+        }
+
+        var html = '';
+        lookupHistory.forEach(function(entry, idx) {
+            html += '<div class="history-item">';
+            html += '<div><span class="history-domain">' + escapeHtml(entry.domain) + '</span></div>';
+            html += '<div style="display:flex;align-items:center;gap:10px;">';
+            html += '<span class="history-ip code-font">' + escapeHtml(entry.ip) + '</span>';
+            html += '<button class="history-copy-btn" onclick="copyHistoryIp(\'' + escapeHtml(entry.ip) + '\', this)">Copy</button>';
+            html += '</div>';
+            html += '</div>';
+        });
+
+        list.innerHTML = html;
+    }
+
+    function clearHistory() {
+        lookupHistory = [];
+        renderHistory();
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}

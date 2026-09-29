@@ -1,0 +1,175 @@
+{
+  "name": "ai-code-masker",
+  "displayName": "AI Code Masker",
+  "description": "Privacy-first code masking — hide sensitive identifiers, secrets, and API keys before sharing code with AI tools like ChatGPT, Copilot, and Claude.",
+  "version": "1.0.0",
+  "publisher": "ai-code-masker",
+  "license": "MIT",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Formatters"
+  ],
+  "keywords": [
+    "mask",
+    "privacy",
+    "ai",
+    "secrets",
+    "security",
+    "code-masker",
+    "obfuscate"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiCodeMasker.maskSelection",
+        "title": "Mask Selection",
+        "category": "AI Code Masker",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "aiCodeMasker.maskFile",
+        "title": "Mask Entire File",
+        "category": "AI Code Masker",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "aiCodeMasker.unmaskSelection",
+        "title": "Unmask Selection",
+        "category": "AI Code Masker",
+        "icon": "$(unlock)"
+      },
+      {
+        "command": "aiCodeMasker.unmaskFile",
+        "title": "Unmask Entire File",
+        "category": "AI Code Masker",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "aiCodeMasker.showMapping",
+        "title": "Show Mapping Panel",
+        "category": "AI Code Masker",
+        "icon": "$(json)"
+      },
+      {
+        "command": "aiCodeMasker.clearMapping",
+        "title": "Clear Mapping",
+        "category": "AI Code Masker",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "aiCodeMasker.copyMaskedToClipboard",
+        "title": "Mask & Copy to Clipboard",
+        "category": "AI Code Masker",
+        "icon": "$(clippy)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "aiCodeMasker.submenu",
+          "group": "1_modification@99"
+        }
+      ],
+      "aiCodeMasker.submenu": [
+        {
+          "command": "aiCodeMasker.maskSelection",
+          "when": "editorHasSelection",
+          "group": "mask@1"
+        },
+        {
+          "command": "aiCodeMasker.maskFile",
+          "group": "mask@2"
+        },
+        {
+          "command": "aiCodeMasker.unmaskSelection",
+          "when": "editorHasSelection",
+          "group": "unmask@1"
+        },
+        {
+          "command": "aiCodeMasker.unmaskFile",
+          "group": "unmask@2"
+        },
+        {
+          "command": "aiCodeMasker.copyMaskedToClipboard",
+          "group": "clipboard@1"
+        },
+        {
+          "command": "aiCodeMasker.showMapping",
+          "group": "view@1"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "aiCodeMasker.submenu",
+        "label": "🔒 AI Code Masker"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "aiCodeMasker.maskSelection",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "aiCodeMasker.maskFile",
+        "key": "ctrl+shift+alt+m",
+        "mac": "cmd+shift+alt+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "aiCodeMasker.unmaskSelection",
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "aiCodeMasker.unmaskFile",
+        "key": "ctrl+shift+alt+u",
+        "mac": "cmd+shift+alt+u",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "AI Code Masker",
+      "properties": {
+        "aiCodeMasker.detectSensitivePatterns": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and mask emails, AWS keys, tokens, and IP addresses."
+        },
+        "aiCodeMasker.customRules": {
+          "type": "array",
+          "default": [],
+          "items": { "type": "string" },
+          "description": "Custom identifiers to always mask (e.g., company-specific variable names)."
+        },
+        "aiCodeMasker.autoShowMapping": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically show the mapping panel after masking."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}

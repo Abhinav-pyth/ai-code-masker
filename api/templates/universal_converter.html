@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Universal Base64 Converter{% endblock %}
+
+{% block extra_styles %}
+    .drop-zone {
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+    }
+    .loader-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(12, 12, 20, 0.8);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        border-radius: 1rem;
+    }
+    .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(99, 102, 241, 0.2);
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+{% endblock %}
+
+{% block content %}
+<div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+    <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Universal Base64 Converter</h2>
+</div>
+
+<div class="flex-grow p-6 flex flex-col gap-8 overflow-y-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- File to Base64 -->
+        <div class="glass-card rounded-2xl p-8 flex flex-col gap-6 relative">
+            <div id="loader-file" class="loader-overlay"><div class="spinner"></div></div>
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest">File to Base64</h3>
+            </div>
+            <div id="drop-zone" class="drop-zone flex-grow min-h-[200px] rounded-2xl flex flex-col items-center justify-center p-8 text-center cursor-pointer">
+                <svg class="w-12 h-12 text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="text-sm font-medium text-slate-300">Drop file here or <span class="text-indigo-400">browse</span></p>
+                <p class="text-[10px] text-slate-500 mt-2 uppercase tracking-widest font-bold">PDF, PNG, JPG, CSV, XLSX</p>
+                <input type="file" id="file-input" class="hidden">
+            </div>
+            
+            <div id="base64-output-container" class="hidden flex flex-col gap-3">
+                <textarea id="base64-result" readonly
+                    class="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 code-font text-[10px] text-slate-400 h-32 outline-none resize-none"></textarea>
+                <button onclick="copyBase64()" class="btn-premium py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Copy Base64</button>
+            </div>
+        </div>
+
+        <!-- Base64 to File -->
+        <div class="glass-card rounded-2xl p-8 flex flex-col gap-6 relative">
+            <div id="loader-b64" class="loader-overlay"><div class="spinner"></div></div>
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest">Base64 to File</h3>
+                <button onclick="loadDemo()" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest hover:text-white transition-all">Demo</button>
+            </div>
+            <textarea id="base64-input" 
+                class="flex-grow min-h-[200px] bg-slate-800/40 border border-slate-700/30 rounded-2xl p-6 code-font text-[10px] text-slate-200 placeholder-slate-600 outline-none resize-none focus:border-indigo-500/30"
+                placeholder="Paste Base64 string here..."></textarea>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="handleDownload('application/pdf', 'document.pdf')" class="bg-indigo-600/20 border border-indigo-500/30 text-[10px] font-black text-white py-3 rounded-xl hover:bg-indigo-500/30 transition-all uppercase tracking-widest">As PDF</button>
+                <button onclick="handleDownload('image/png', 'image.png')" class="bg-indigo-600/20 border border-indigo-500/30 text-[10px] font-black text-white py-3 rounded-xl hover:bg-indigo-500/30 transition-all uppercase tracking-widest">As Image</button>
+                <button onclick="handleDownload('text/csv', 'data.csv')" class="bg-indigo-600/20 border border-indigo-500/30 text-[10px] font-black text-white py-3 rounded-xl hover:bg-indigo-500/30 transition-all uppercase tracking-widest">As CSV</button>
+                <button onclick="handleDownload('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'data.xlsx')" class="bg-indigo-600/20 border border-indigo-500/30 text-[10px] font-black text-white py-3 rounded-xl hover:bg-indigo-500/30 transition-all uppercase tracking-widest">As XLSX</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+    dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); };
+
+    function handleFile(file) {
+        if (!file) return;
+        document.getElementById('loader-file').style.display = 'flex';
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setTimeout(() => { // Small delay for visual feedback
+                document.getElementById('base64-result').value = e.target.result.split(',')[1];
+                document.getElementById('base64-output-container').classList.remove('hidden');
+                document.getElementById('loader-file').style.display = 'none';
+            }, 500);
+        };
+        reader.onerror = () => {
+            document.getElementById('loader-file').style.display = 'none';
+            alert('Error reading file');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleDownload(mime, filename) {
+        document.getElementById('loader-b64').style.display = 'flex';
+        setTimeout(() => {
+            try {
+                downloadAs(mime, filename);
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+            document.getElementById('loader-b64').style.display = 'none';
+        }, 600);
+    }
+
+    function downloadAs(mime, filename) {
+        let base64 = document.getElementById('base64-input').value.trim();
+        if (!base64) throw new Error('Base64 input is empty');
+        
+        if (base64.includes(',')) base64 = base64.split(',')[1];
+
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], {type: mime});
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    }
+
+    function loadDemo() {
+        // Red dot image base64
+        const demoB64 = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+        document.getElementById('base64-input').value = demoB64;
+        
+        const t = document.createElement('div');
+        t.textContent = 'Demo Base64 loaded!';
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+
+    function copyBase64() {
+        const text = document.getElementById('base64-result').value;
+        navigator.clipboard.writeText(text);
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy Base64', 2000);
+    }
+</script>
+{% endblock %}

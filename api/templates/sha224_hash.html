@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}SHA224 Hash Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/sha224-hash{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">SHA224 Encrypt / Decrypt</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-hidden">
+        <div class="flex-grow flex flex-col lg:flex-row gap-6 overflow-hidden">
+            <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+                <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Plain Text</span>
+                <textarea id="sha-input" oninput="doHash()" class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none" placeholder="Enter text to generate SHA-224 hash..."></textarea>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">SHA-224 Hash</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('sha-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <textarea id="sha-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-sm text-indigo-300/80 outline-none resize-none"></textarea>
+            </div>
+        </div>
+        <div class="glass-card rounded-xl p-3 text-[10px] text-slate-500">SHA-224 is a truncated version of SHA-256 with different initial hash values. It produces a 28-byte (56 hex chars) digest.</div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script>
+function doHash(){const t=document.getElementById('sha-input').value;document.getElementById('sha-output').value=t?CryptoJS.SHA224(t).toString():'';}
+</script>
+{% endblock %}

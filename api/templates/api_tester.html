@@ -1,0 +1,853 @@
+{% extends "base.html" %}
+{% block title %}API Tester — Free REST API Client with cURL Import & Collections{% endblock %}
+
+{% block meta_description %}Test REST APIs directly in your browser. Import cURL commands, save request collections, convert JSON/CSV, and send GET, POST, PUT, PATCH, DELETE requests — no install needed, 100% free.{% endblock %}
+{% block meta_keywords %}free API tester online, REST API client, cURL import tool, test REST API online, HTTP request tool, API request builder, Postman alternative, online HTTP client{% endblock %}
+
+{% block canonical %}https://ai-code-masker.vercel.app/api-tester{% endblock %}
+{% block og_url %}https://ai-code-masker.vercel.app/api-tester{% endblock %}
+{% block og_title %}API Tester | Free Online REST Client with cURL Import{% endblock %}
+{% block og_description %}A free Postman-like REST API client in your browser. Import cURL, save collections in localStorage, and convert between JSON and CSV — zero install required.{% endblock %}
+{% block tw_url %}https://ai-code-masker.vercel.app/api-tester{% endblock %}
+{% block tw_title %}Free Online API Tester | REST Client with cURL Import{% endblock %}
+{% block tw_description %}Test REST APIs instantly online. Import cURL commands, save request collections, convert CSV/JSON. No install, no account needed.{% endblock %}
+
+{% block extra_ld_json %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "API Tester",
+  "url": "https://ai-code-masker.vercel.app/api-tester",
+  "description": "A free, browser-based REST API client supporting GET, POST, PUT, PATCH and DELETE. Features cURL command import, localStorage-based request collections, CSV/JSON conversion, and Bearer/Basic/API Key authentication.",
+  "applicationCategory": "DeveloperApplication",
+  "featureList": [
+    "cURL command import",
+    "Request collections saved in localStorage",
+    "Bearer Token, Basic Auth, and API Key authentication",
+    "JSON to CSV and CSV to JSON conversion",
+    "Response header inspection",
+    "Export response as CSV"
+  ],
+  "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block extra_styles %}
+        .method-btn {
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .method-btn.active-get { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #4ade80; }
+        .method-btn.active-post { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #fbbf24; }
+        .method-btn.active-put { background: rgba(96,165,250,0.15); border-color: rgba(96,165,250,0.4); color: #60a5fa; }
+        .method-btn.active-patch { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.4); color: #a855f7; }
+        .method-btn.active-delete { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #ef4444; }
+        .tab-section.active { display: flex; }
+        .tab-section { display: none; }
+        .param-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+        .status-2xx { color: #4ade80; }
+        .status-3xx { color: #fbbf24; }
+        .status-4xx { color: #f97316; }
+        .status-5xx { color: #ef4444; }
+{% endblock %}
+
+{% block content %}
+        <!-- Top Toolbar -->
+        <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+            <h2 class="text-xs font-black text-white tracking-[4px] uppercase">API Tester</h2>
+            <div class="flex items-center space-x-3">
+                <span id="response-time" class="text-[10px] code-font text-slate-600"></span>
+            </div>
+        </div>
+
+        <!-- Localhost Warning Banner -->
+        <div id="local-banner" class="hidden mx-8 mt-4 rounded-xl border border-amber-500/30 bg-amber-500/8 px-5 py-3 flex items-start gap-3 shrink-0">
+            <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            <div>
+                <p class="text-amber-400 text-[11px] font-black uppercase tracking-widest mb-0.5">Localhost / Private Network Detected</p>
+                <p class="text-amber-300/70 text-xs leading-relaxed">The server proxy cannot reach <code class="font-mono">localhost</code> or private IPs. This request will be sent <strong>directly from your browser</strong> instead. Make sure your local server has CORS enabled (<code class="font-mono">Access-Control-Allow-Origin: *</code>), otherwise the request will be blocked by the browser.</p>
+            </div>
+        </div>
+
+        <!-- Request Bar -->
+        <div class="px-8 pt-6 pb-4 shrink-0">
+            <div class="glass-card rounded-2xl p-4 flex items-center gap-3">
+                <!-- Method Selector -->
+                <div class="flex gap-1">
+                    <button onclick="setMethod('GET')" class="method-btn active-get" id="btn-GET">GET</button>
+                    <button onclick="setMethod('POST')" class="method-btn text-slate-500 hover:text-slate-300" id="btn-POST">POST</button>
+                    <button onclick="setMethod('PUT')" class="method-btn text-slate-500 hover:text-slate-300" id="btn-PUT">PUT</button>
+                    <button onclick="setMethod('PATCH')" class="method-btn text-slate-500 hover:text-slate-300" id="btn-PATCH">PATCH</button>
+                    <button onclick="setMethod('DELETE')" class="method-btn text-slate-500 hover:text-slate-300" id="btn-DELETE">DELETE</button>
+                </div>
+                <!-- URL Input -->
+                <input id="url-input" type="text" placeholder="https://api.example.com/endpoint"
+                    class="flex-grow bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm code-font text-slate-100 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                <!-- Send Button -->
+                <div class="flex gap-2">
+                    <button onclick="openCollectionsModal()" title="View Saved Collections"
+                        class="h-10 w-10 flex items-center justify-center bg-slate-800/60 border border-slate-700/50 rounded-xl hover:text-indigo-400 hover:border-indigo-500/30 transition-colors shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </button>
+                    <button onclick="openCurlModal()" title="Import from cURL"
+                        class="h-10 w-10 flex items-center justify-center bg-slate-800/60 border border-slate-700/50 rounded-xl hover:text-indigo-400 hover:border-indigo-500/30 transition-colors shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    </button>
+                    <button onclick="loadDemo()" class="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all">
+                        Demo
+                    </button>
+                    <button onclick="sendRequest()" id="send-btn"
+                        class="btn-premium px-6 lg:px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[3px] shrink-0">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collections Modal -->
+        <div id="collections-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-card rounded-2xl w-full max-w-md h-3/4 flex flex-col overflow-hidden shadow-2xl border border-white/10 p-4">
+                <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                    <span class="text-sm font-black text-white tracking-widest uppercase">Saved Requests</span>
+                    <button onclick="closeCollectionsModal()" class="text-slate-500 hover:text-white">&times;</button>
+                </div>
+                <div class="mb-3 space-y-2">
+                    <button onclick="saveCurrentRequest()" class="w-full text-xs text-indigo-400 hover:text-indigo-300 font-bold bg-indigo-500/10 px-4 py-2 rounded-xl text-center">+ Save Current</button>
+                    <input type="text" id="collection-search" placeholder="Filter requests..." class="w-full bg-slate-900/50 border border-slate-700/30 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none focus:border-indigo-500/50">
+                </div>
+                <div id="collections-list" class="flex-grow overflow-y-auto p-2 space-y-1">
+                    <!-- Collections populated via JS -->
+                </div>
+                <div class="pt-4 mt-2 border-t border-white/10 flex gap-2 shrink-0">
+                    <button onclick="exportCollections()" class="flex-1 text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/50 py-2 rounded-lg uppercase tracking-wider">Export JSON</button>
+                    <label class="flex-1 text-[10px] font-bold text-slate-400 hover:text-white bg-slate-800/50 py-2 rounded-lg uppercase tracking-wider text-center cursor-pointer">
+                        Import
+                        <input type="file" id="import-file" class="hidden" accept=".json" onchange="importCollectionsFile(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- cURL Modal -->
+        <div id="curl-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+            <div class="glass-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-white/10 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-black text-white tracking-widest uppercase">Import cURL</h3>
+                    <button onclick="closeCurlModal()" class="text-slate-500 hover:text-white">&times;</button>
+                </div>
+                <textarea id="curl-input" class="w-full bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 code-font text-xs text-slate-300 placeholder-slate-600 outline-none h-48 focus:border-indigo-500/50" placeholder="Paste your curl command here..."></textarea>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button onclick="closeCurlModal()" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white">Cancel</button>
+                    <button onclick="importCurl()" class="btn-premium px-6 py-2 rounded-lg text-xs font-bold text-white shadow-lg shadow-indigo-500/20">Import</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Request Config + Response -->
+        <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 px-8 pb-6">
+            <!-- Left: Request Configuration -->
+            <div class="flex flex-col overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex gap-1 mb-4 p-1 bg-white/5 rounded-xl w-fit">
+                    <button onclick="switchReqTab('params')" id="req-tab-params"
+                        class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white bg-indigo-600/20 border border-indigo-500/30">Params</button>
+                    <button onclick="switchReqTab('headers')" id="req-tab-headers"
+                        class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent">Headers</button>
+                    <button onclick="switchReqTab('body')" id="req-tab-body"
+                        class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent">Body</button>
+                    <button onclick="switchReqTab('auth')" id="req-tab-auth"
+                        class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent">Auth</button>
+                </div>
+
+                <!-- Params Tab -->
+                <div id="section-params" class="tab-section active flex-col flex-grow overflow-y-auto glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Query Parameters</span>
+                        <button onclick="addParam()" class="text-[10px] text-indigo-400 hover:text-indigo-300">+ Add</button>
+                    </div>
+                    <div id="params-container">
+                        <div class="param-row">
+                            <input type="text" placeholder="Key" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 param-key">
+                            <input type="text" placeholder="Value" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 param-value">
+                            <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Headers Tab -->
+                <div id="section-headers" class="tab-section flex-col flex-grow overflow-y-auto glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Request Headers</span>
+                        <button onclick="addHeader()" class="text-[10px] text-indigo-400 hover:text-indigo-300">+ Add</button>
+                    </div>
+                    <div id="headers-container">
+                        <div class="param-row">
+                            <input type="text" placeholder="Key" value="Content-Type" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 header-key">
+                            <input type="text" placeholder="Value" value="application/json" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 header-value">
+                            <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body Tab -->
+                <div id="section-body" class="tab-section flex-col flex-grow overflow-hidden glass-card rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase shrink-0">Request Body</span>
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <select id="body-type" class="bg-slate-800/60 border border-slate-700/50 rounded-lg px-2 py-1 text-[10px] code-font text-slate-300 outline-none cursor-pointer">
+                                <option value="json">JSON</option>
+                                <option value="text">Text</option>
+                                <option value="form">Form Data</option>
+                            </select>
+                            <span class="text-slate-600">|</span>
+                            <button onclick="prettifyBody()" class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300">Prettify</button>
+                            <button onclick="convertBodyToJson()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300">CSV to JSON</button>
+                            <button onclick="convertBodyToCsv()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300">JSON to CSV</button>
+                        </div>
+                    </div>
+                    <textarea id="body-input"
+                        class="flex-grow bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 code-font text-xs text-slate-200 placeholder-slate-600 outline-none resize-none focus:border-indigo-500/30"
+                        placeholder='{"key": "value"}'></textarea>
+                </div>
+
+                <!-- Auth Tab -->
+                <div id="section-auth" class="tab-section flex-col flex-grow overflow-y-auto glass-card rounded-2xl p-5">
+                    <div class="mb-3">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Authorization</span>
+                    </div>
+                    <div class="space-y-4">
+                        <select id="auth-type" onchange="toggleAuthFields()"
+                            class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-300 outline-none cursor-pointer">
+                            <option value="none">No Auth</option>
+                            <option value="bearer">Bearer Token</option>
+                            <option value="basic">Basic Auth</option>
+                            <option value="apikey">API Key</option>
+                        </select>
+                        <div id="auth-bearer" class="hidden space-y-2">
+                            <input id="bearer-token" type="text" placeholder="Enter token..."
+                                class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                        </div>
+                        <div id="auth-basic" class="hidden space-y-2">
+                            <input id="basic-user" type="text" placeholder="Username"
+                                class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                            <input id="basic-pass" type="password" placeholder="Password"
+                                class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                        </div>
+                        <div id="auth-apikey" class="hidden space-y-2">
+                            <input id="apikey-key" type="text" placeholder="Header name (e.g. X-API-Key)"
+                                class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                            <input id="apikey-value" type="text" placeholder="API Key value"
+                                class="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Response Viewer -->
+            <div class="flex flex-col overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase">Response</span>
+                        <span id="resp-status" class="code-font text-xs font-bold"></span>
+                        <span id="resp-size" class="text-[10px] code-font text-slate-600"></span>
+                    </div>
+                    <div class="flex gap-2 flex-wrap items-center">
+                        <button onclick="exportRespCsv()" id="btn-export-csv" class="hidden px-3 py-1 rounded-lg text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 transition-colors">Export CSV</button>
+                        <button onclick="switchRespTab('body')" id="resp-tab-body"
+                            class="px-3 py-1 rounded-lg text-[10px] font-bold text-white bg-indigo-600/20 border border-indigo-500/30">Body</button>
+                        <button onclick="switchRespTab('headers')" id="resp-tab-headers"
+                            class="px-3 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-300 border border-transparent">Headers</button>
+                        <button onclick="copyResponse()" class="text-[10px] text-indigo-400 hover:text-indigo-300 ml-2">Copy</button>
+                    </div>
+                </div>
+                <!-- Response Body -->
+                <div id="resp-section-body" class="tab-section active flex-grow glass-card rounded-2xl overflow-hidden flex flex-col">
+                    <pre id="response-body" class="flex-grow p-5 code-font text-xs text-slate-300 overflow-auto whitespace-pre-wrap break-words"><span class="text-slate-600 italic">Send a request to see the response...</span></pre>
+                </div>
+                <!-- Response Headers -->
+                <div id="resp-section-headers" class="tab-section flex-grow glass-card rounded-2xl overflow-hidden flex flex-col">
+                    <pre id="response-headers" class="flex-grow p-5 code-font text-xs text-slate-300 overflow-auto whitespace-pre-wrap"><span class="text-slate-600 italic">No response headers yet...</span></pre>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- PapaParse for robust CSV Conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+    </style>
+    <script>
+        let currentMethod = 'GET';
+        let currentReqTab = 'params';
+        let currentRespTab = 'body';
+
+        // Method selection
+        function setMethod(method) {
+            document.getElementById('btn-' + currentMethod).className = 'method-btn text-slate-500 hover:text-slate-300';
+            currentMethod = method;
+            const cls = { GET:'active-get', POST:'active-post', PUT:'active-put', PATCH:'active-patch', DELETE:'active-delete' };
+            document.getElementById('btn-' + method).className = 'method-btn ' + cls[method];
+        }
+
+        // Request tabs
+        function switchReqTab(tab) {
+            document.getElementById('section-' + currentReqTab).classList.remove('active');
+            document.getElementById('req-tab-' + currentReqTab).className = 'px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 border border-transparent';
+            currentReqTab = tab;
+            document.getElementById('section-' + tab).classList.add('active');
+            document.getElementById('req-tab-' + tab).className = 'px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white bg-indigo-600/20 border border-indigo-500/30';
+        }
+
+        // Response tabs
+        function switchRespTab(tab) {
+            document.getElementById('resp-section-' + currentRespTab).classList.remove('active');
+            document.getElementById('resp-tab-' + currentRespTab).className = 'px-3 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-300 border border-transparent';
+            currentRespTab = tab;
+            document.getElementById('resp-section-' + tab).classList.add('active');
+            document.getElementById('resp-tab-' + tab).className = 'px-3 py-1 rounded-lg text-[10px] font-bold text-white bg-indigo-600/20 border border-indigo-500/30';
+        }
+
+        // Add/remove param rows
+        function addParam() {
+            const row = document.createElement('div');
+            row.className = 'param-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Key" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 param-key">
+                <input type="text" placeholder="Value" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 param-value">
+                <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+            document.getElementById('params-container').appendChild(row);
+        }
+
+        function addHeader() {
+            const row = document.createElement('div');
+            row.className = 'param-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Key" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 header-key">
+                <input type="text" placeholder="Value" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 placeholder-slate-600 outline-none focus:border-indigo-500/50 header-value">
+                <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+            document.getElementById('headers-container').appendChild(row);
+        }
+
+        function removeRow(btn) {
+            const container = btn.parentElement.parentElement;
+            if (container.children.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        // Auth field toggling
+        function toggleAuthFields() {
+            const type = document.getElementById('auth-type').value;
+            document.getElementById('auth-bearer').classList.toggle('hidden', type !== 'bearer');
+            document.getElementById('auth-basic').classList.toggle('hidden', type !== 'basic');
+            document.getElementById('auth-apikey').classList.toggle('hidden', type !== 'apikey');
+        }
+
+        // Prettify body JSON
+        function prettifyBody() {
+            const el = document.getElementById('body-input');
+            try {
+                el.value = JSON.stringify(JSON.parse(el.value), null, 2);
+            } catch(e) {}
+        }
+
+        // Collect params
+        function getParams() {
+            const params = {};
+            const keys = document.querySelectorAll('.param-key');
+            const vals = document.querySelectorAll('.param-value');
+            keys.forEach((k, i) => {
+                if (k.value.trim()) params[k.value.trim()] = vals[i].value;
+            });
+            return params;
+        }
+
+        // Collect headers
+        function getHeaders() {
+            const headers = {};
+            const keys = document.querySelectorAll('.header-key');
+            const vals = document.querySelectorAll('.header-value');
+            keys.forEach((k, i) => {
+                if (k.value.trim()) headers[k.value.trim()] = vals[i].value;
+            });
+            return headers;
+        }
+
+        // Apply auth
+        function applyAuth(headers) {
+            const type = document.getElementById('auth-type').value;
+            if (type === 'bearer') {
+                const token = document.getElementById('bearer-token').value.trim();
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+            } else if (type === 'basic') {
+                const user = document.getElementById('basic-user').value;
+                const pass = document.getElementById('basic-pass').value;
+                if (user) headers['Authorization'] = 'Basic ' + btoa(user + ':' + pass);
+            } else if (type === 'apikey') {
+                const key = document.getElementById('apikey-key').value.trim();
+                const val = document.getElementById('apikey-value').value.trim();
+                if (key && val) headers[key] = val;
+            }
+            return headers;
+        }
+
+        // Detect if URL targets localhost / private networks
+        function isLocalURL(url) {
+            try {
+                const u = new URL(url.startsWith('http') ? url : 'http://' + url);
+                const h = u.hostname.toLowerCase();
+                return h === 'localhost' || h === '127.0.0.1' || h === '::1' ||
+                       h.startsWith('192.168.') || h.startsWith('10.') ||
+                       h.startsWith('172.16.') || h.endsWith('.local');
+            } catch(e) { return false; }
+        }
+
+        // Show / hide localhost warning banner
+        function setLocalBanner(show) {
+            const banner = document.getElementById('local-banner');
+            if (show) banner.classList.remove('hidden');
+            else banner.classList.add('hidden');
+        }
+
+        document.getElementById('url-input').addEventListener('input', function() {
+            setLocalBanner(isLocalURL(this.value.trim()));
+        });
+
+        // Send request
+        async function sendRequest() {
+            let url = document.getElementById('url-input').value.trim();
+            if (!url) return;
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            // Append query params
+            const params = getParams();
+            const paramStr = Object.entries(params).map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+            if (paramStr) {
+                url += (url.includes('?') ? '&' : '?') + paramStr;
+            }
+
+            const headers = applyAuth(getHeaders());
+            const responseBody = document.getElementById('response-body');
+            const responseHeaders = document.getElementById('response-headers');
+            const respStatus = document.getElementById('resp-status');
+            const respSize = document.getElementById('resp-size');
+            const respTime = document.getElementById('response-time');
+
+            // Loading state
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+            responseBody.innerHTML = '<span class="text-indigo-400 animate-pulse">Sending request...</span>';
+
+            const fetchOpts = { method: currentMethod, headers };
+
+            if (['POST','PUT','PATCH'].includes(currentMethod)) {
+                const bodyType = document.getElementById('body-type').value;
+                const bodyVal = document.getElementById('body-input').value;
+                if (bodyVal.trim()) {
+                    fetchOpts.body = bodyVal;
+                    if (bodyType === 'form') {
+                        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                    }
+                }
+            }
+
+            const startTime = performance.now();
+            const isLocal = isLocalURL(url);
+
+            if (isLocal) {
+                // ── Local / private network: direct browser fetch (no server proxy) ──
+                try {
+                    const resp = await fetch(url, fetchOpts);
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+
+                    const statusClass = resp.status < 300 ? 'status-2xx' : resp.status < 400 ? 'status-3xx' : resp.status < 500 ? 'status-4xx' : 'status-5xx';
+                    respStatus.className = 'code-font text-xs font-bold ' + statusClass;
+                    respStatus.textContent = resp.status + ' ' + (resp.statusText || '');
+
+                    const hdrs = [];
+                    resp.headers.forEach((v, k) => hdrs.push(k + ': ' + v));
+                    responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
+
+                    const text = await resp.text();
+                    respSize.textContent = formatSize(new Blob([text]).size);
+
+                    document.getElementById('btn-export-csv').classList.add('hidden');
+                    try {
+                        const json = JSON.parse(text);
+                        responseBody.textContent = JSON.stringify(json, null, 2);
+                        if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
+                            document.getElementById('btn-export-csv').classList.remove('hidden');
+                        }
+                    } catch(e) {
+                        responseBody.textContent = text;
+                    }
+                    switchRespTab('body');
+                } catch(err) {
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+                    respStatus.className = 'code-font text-xs font-bold status-5xx';
+                    respStatus.textContent = 'Error';
+                    respSize.textContent = '';
+                    // Helpful CORS hint for local failures
+                    const corsHint = err.message.includes('fetch') || err.message.includes('Failed')
+                        ? '\n\n💡 If your local server refuses: ensure CORS is enabled (Access-Control-Allow-Origin: *) or use a CORS-allowing proxy like cors-anywhere locally.'
+                        : '';
+                    responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message + corsHint) + '</span>';
+                    responseHeaders.textContent = 'Request failed';
+                } finally {
+                    sendBtn.textContent = 'Send';
+                    sendBtn.disabled = false;
+                }
+            } else {
+                // ── Remote URL: route through backend proxy ──
+                try {
+                    const proxyBody = {
+                        url: url,
+                        method: currentMethod,
+                        headers: headers,
+                        body: ['POST','PUT','PATCH'].includes(currentMethod) ? document.getElementById('body-input').value : null
+                    };
+
+                    const resp = await fetch('/api/proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(proxyBody)
+                    });
+
+                    const data = await resp.json();
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+
+                    if (data.error) throw new Error(data.error);
+
+                    const statusClass = data.status < 300 ? 'status-2xx' : data.status < 400 ? 'status-3xx' : data.status < 500 ? 'status-4xx' : 'status-5xx';
+                    respStatus.className = 'code-font text-xs font-bold ' + statusClass;
+                    respStatus.textContent = data.status + ' ' + (data.statusText || '');
+
+                    const hdrs = [];
+                    Object.entries(data.headers).forEach(([k, v]) => hdrs.push(k + ': ' + v));
+                    responseHeaders.textContent = hdrs.join('\n') || 'No headers returned';
+
+                    const text = data.text;
+                    respSize.textContent = formatSize(new Blob([text]).size);
+
+                    document.getElementById('btn-export-csv').classList.add('hidden');
+                    try {
+                        const json = JSON.parse(text);
+                        responseBody.textContent = JSON.stringify(json, null, 2);
+                        if (Array.isArray(json) || (json.resourceType === 'Bundle' && json.entry)) {
+                            document.getElementById('btn-export-csv').classList.remove('hidden');
+                        }
+                    } catch(e) {
+                        responseBody.textContent = text;
+                    }
+                    switchRespTab('body');
+                } catch(err) {
+                    const elapsed = Math.round(performance.now() - startTime);
+                    respTime.textContent = elapsed + 'ms';
+                    respStatus.className = 'code-font text-xs font-bold status-5xx';
+                    respStatus.textContent = 'Error';
+                    respSize.textContent = '';
+                    responseBody.innerHTML = '<span class="text-red-400">' + escapeHtml(err.message) + '</span>';
+                    responseHeaders.textContent = 'Request failed';
+                } finally {
+                    sendBtn.textContent = 'Send';
+                    sendBtn.disabled = false;
+                }
+            }
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function copyResponse() {
+            const text = currentRespTab === 'body'
+                ? document.getElementById('response-body').textContent
+                : document.getElementById('response-headers').textContent;
+            navigator.clipboard.writeText(text);
+            const t = document.createElement('div');
+            t.textContent = 'Copied!';
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+
+        // Enter key sends request
+        document.getElementById('url-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendRequest();
+        });
+
+        function loadDemo() {
+            setMethod('GET');
+            document.getElementById('url-input').value = 'https://reqres.in/api/users?page=2';
+            document.getElementById('section-params').querySelector('.param-key').value = 'page';
+            document.getElementById('section-params').querySelector('.param-value').value = '2';
+            
+            // Notification
+            const t = document.createElement('div');
+            t.textContent = 'Demo data loaded!';
+            t.className = 'fixed bottom-6 right-6 code-font text-sm bg-emerald-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-emerald-500/30 z-50';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+        }
+        // --- Collections / LocalStorage Logic ---
+        let collections = JSON.parse(localStorage.getItem('api_tester_collections') || '[]');
+
+        function saveCollections() {
+            localStorage.setItem('api_tester_collections', JSON.stringify(collections));
+            renderCollections();
+        }
+
+        function saveCurrentRequest() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) return alert('Please enter a URL to save.');
+
+            const name = prompt('Enter a name for this request:', currentMethod + ' ' + url.split('?')[0]);
+            if (!name) return;
+
+            collections.push({
+                id: Date.now().toString(),
+                name, method: currentMethod, url,
+                params: getParams(), headers: getHeaders(),
+                bodyType: document.getElementById('body-type').value,
+                body: document.getElementById('body-input').value,
+                authType: document.getElementById('auth-type').value,
+                authToken: document.getElementById('bearer-token').value,
+                authUser: document.getElementById('basic-user').value,
+                authPass: document.getElementById('basic-pass').value,
+                apiKeyName: document.getElementById('apikey-key').value,
+                apiKeyValue: document.getElementById('apikey-value').value
+            });
+            saveCollections();
+        }
+
+        function loadRequest(id) {
+            const req = collections.find(r => r.id === id);
+            if (!req) return;
+
+            setMethod(req.method || 'GET');
+            let rawUrl = req.url.split('?')[0];
+            document.getElementById('url-input').value = rawUrl;
+
+            // Load Params
+            document.getElementById('params-container').innerHTML = '';
+            let combinedParams = { ...(req.params || {}) };
+            try { new URL(req.url.startsWith('http') ? req.url : 'http://' + req.url).searchParams.forEach((v, k) => combinedParams[k] = v); } catch(e){}
+            let pAdded=false;
+            for (const [k, v] of Object.entries(combinedParams)) {
+                const row = document.createElement('div'); row.className = 'param-row';
+                row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-key">
+                                 <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-value">
+                                 <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                document.getElementById('params-container').appendChild(row); pAdded=true;
+            }
+            if(!pAdded) addParam();
+
+            // Load Headers
+            document.getElementById('headers-container').innerHTML = '';
+            let hAdded=false;
+            for (const [k, v] of Object.entries(req.headers || {})) {
+                const row = document.createElement('div'); row.className = 'param-row';
+                row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-key">
+                                 <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-value">
+                                 <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                document.getElementById('headers-container').appendChild(row); hAdded=true;
+            }
+            if(!hAdded) addHeader();
+
+            document.getElementById('body-type').value = req.bodyType || 'json';
+            document.getElementById('body-input').value = req.body || '';
+            document.getElementById('auth-type').value = req.authType || 'none';
+            document.getElementById('bearer-token').value = req.authToken || '';
+            document.getElementById('basic-user').value = req.authUser || '';
+            document.getElementById('basic-pass').value = req.authPass || '';
+            document.getElementById('apikey-key').value = req.apiKeyName || '';
+            document.getElementById('apikey-value').value = req.apiKeyValue || '';
+            
+            toggleAuthFields();
+            switchReqTab('params');
+            closeCollectionsModal();
+        }
+
+        function renderCollections(filter = '') {
+            const list = document.getElementById('collections-list');
+            list.innerHTML = '';
+            const f = filter.toLowerCase();
+            const clsColors = { GET: 'text-green-400', POST: 'text-amber-400', PUT: 'text-blue-400', PATCH: 'text-purple-400', DELETE: 'text-red-400' };
+
+            collections.forEach(r => {
+                if (f && !r.name.toLowerCase().includes(f) && !r.url.toLowerCase().includes(f)) return;
+                const col = document.createElement('div');
+                col.className = 'group flex items-center justify-between p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors';
+                col.onclick = () => loadRequest(r.id);
+                col.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-[9px] font-black ${clsColors[r.method||'GET']||'text-slate-400'} w-8 shrink-0">${r.method||'GET'}</span>
+                        <span class="text-[11px] text-slate-300 truncate">${escapeHtml(r.name)}</span>
+                    </div>
+                    <button onclick="deleteRequest('${r.id}', event)" class="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">×</button>`;
+                list.appendChild(col);
+            });
+            if (!collections.length) list.innerHTML = '<div class="text-[10px] text-slate-500 text-center italic mt-4">No saved requests</div>';
+        }
+
+        function deleteRequest(id, event) {
+            event.stopPropagation();
+            if(confirm('Delete this request?')) { collections = collections.filter(r => r.id !== id); saveCollections(); }
+        }
+
+        function openCollectionsModal() { document.getElementById('collections-modal').classList.replace('hidden', 'flex'); renderCollections(); }
+        function closeCollectionsModal() { document.getElementById('collections-modal').classList.replace('flex', 'hidden'); }
+        document.getElementById('collection-search').addEventListener('input', e => renderCollections(e.target.value));
+
+        function exportCollections() {
+            const blob = new Blob([JSON.stringify(collections, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'api_tester_collections.json'; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importCollectionsFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) { collections = collections.concat(imported); saveCollections(); } else alert('Invalid format');
+                } catch(err) { alert('Error: ' + err.message); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // --- cURL Import Logic ---
+        function openCurlModal() { document.getElementById('curl-modal').classList.replace('hidden', 'flex'); }
+        function closeCurlModal() { document.getElementById('curl-modal').classList.replace('flex', 'hidden'); document.getElementById('curl-input').value = ''; }
+
+        function importCurl() {
+            const cmd = document.getElementById('curl-input').value.trim().replace(/\\\n/g, ' ').replace(/\\\r\n/g, ' ');
+            if (!cmd) return;
+            
+            let method = cmd.includes('-d ') || cmd.match(/--data(-raw|-binary)?\b/) ? 'POST' : 'GET';
+            const mMatch = cmd.match(/(?:-X|--request)\s+['"]?([A-Z]+)['"]?/i);
+            if (mMatch) method = mMatch[1].toUpperCase();
+            setMethod(method);
+
+            document.getElementById('headers-container').innerHTML = '';
+            const hRegex = /(?:-H|--header)\s+(['"])(.+?)\1/g;
+            let hMatch, hAdded=false;
+            while ((hMatch = hRegex.exec(cmd))) {
+                const parts = hMatch[2].split(/:\s*/);
+                if (parts.length >= 2) {
+                    const row = document.createElement('div'); row.className = 'param-row';
+                    row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(parts[0])}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-key">
+                                     <input type="text" placeholder="Value" value="${escapeHtml(parts.slice(1).join(':'))}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none header-value">
+                                     <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                    document.getElementById('headers-container').appendChild(row); hAdded=true;
+                }
+            }
+            if(!hAdded) addHeader();
+
+            const dMatch = cmd.match(/(?:-d|--data(?:-raw|-binary)?)\s+(['"])([\s\S]*?)\1/);
+            if (dMatch) document.getElementById('body-input').value = dMatch[2];
+
+            const aMatch = cmd.match(/(?:-u|--user)\s+(['"]?)(.+?)\1(?=\s|$)/);
+            if (aMatch) {
+                document.getElementById('auth-type').value = 'basic'; toggleAuthFields();
+                const parts = aMatch[2].split(':');
+                document.getElementById('basic-user').value = parts[0] || '';
+                document.getElementById('basic-pass').value = parts[1] || '';
+            }
+
+            const uMatch = cmd.match(/['"]?(https?:\/\/[^\s'"]+)['"]?/);
+            if (uMatch) {
+                try {
+                    const obj = new URL(uMatch[1]);
+                    document.getElementById('url-input').value = obj.origin + obj.pathname;
+                    document.getElementById('params-container').innerHTML = '';
+                    let pAdded=false;
+                    obj.searchParams.forEach((v, k) => {
+                        const row = document.createElement('div'); row.className = 'param-row';
+                        row.innerHTML = `<input type="text" placeholder="Key" value="${escapeHtml(k)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-key">
+                                         <input type="text" placeholder="Value" value="${escapeHtml(v)}" class="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2 text-xs code-font text-slate-200 outline-none param-value">
+                                         <button onclick="removeRow(this)" class="text-slate-600 hover:text-red-400 text-lg leading-none">&times;</button>`;
+                        document.getElementById('params-container').appendChild(row); pAdded=true;
+                    });
+                    if(!pAdded) addParam();
+                } catch(e){}
+            }
+            closeCurlModal();
+        }
+
+        // --- JSON ↔ CSV Converters (FHIR Data supported) ---
+        function convertBodyToJson() {
+            const csv = document.getElementById('body-input').value.trim();
+            if (!csv) return alert("Please parse CSV data first");
+            Papa.parse(csv, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.errors.length) return alert("CSV Parsing error: " + results.errors[0].message);
+                    document.getElementById('body-input').value = JSON.stringify(results.data, null, 2);
+                    document.getElementById('body-type').value = 'json';
+                }
+            });
+        }
+
+        function convertBodyToCsv() {
+            const jsonText = document.getElementById('body-input').value.trim();
+            if (!jsonText) return;
+            try {
+                let data = JSON.parse(jsonText);
+                if (data.resourceType === 'Bundle' && data.entry) {
+                    data = data.entry.map(e => e.resource);
+                }
+                if (!Array.isArray(data)) data = [data]; // PapaParse works best with arrays of objects
+                const csv = Papa.unparse(data);
+                document.getElementById('body-input').value = csv;
+                document.getElementById('body-type').value = 'text'; // Optional: visual change
+            } catch(e) { alert("Invalid JSON: " + e.message); }
+        }
+
+        function exportRespCsv() {
+            const jsonText = document.getElementById('response-body').textContent;
+            try {
+                let data = JSON.parse(jsonText);
+                if (data.resourceType === 'Bundle' && data.entry) {
+                    data = data.entry.map(e => e.resource);
+                }
+                if (!Array.isArray(data)) data = [data];
+                const csv = Papa.unparse(data);
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'api_export.csv'; a.click();
+                URL.revokeObjectURL(url);
+            } catch(e) { alert("Cannot export current response into CSV (Must be JSON array or FHIR Bundle)."); }
+        }
+    </script>
+{% endblock %}

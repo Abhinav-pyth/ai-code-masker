@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}React Native Shadow Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/rn-shadow-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">React Native Shadow Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-64 shrink-0 glass-card rounded-2xl p-5 flex flex-col gap-3">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Shadow Color</label>
+            <input type="color" id="rn-color" value="#000000" oninput="upd()" class="w-full h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Offset X: <span id="v-ox" class="text-indigo-400">0</span></label>
+            <input type="range" id="rn-ox" min="-20" max="20" value="0" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Offset Y: <span id="v-oy" class="text-indigo-400">4</span></label>
+            <input type="range" id="rn-oy" min="-20" max="20" value="4" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Shadow Opacity: <span id="v-so" class="text-indigo-400">0.30</span></label>
+            <input type="range" id="rn-so" min="0" max="100" value="30" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Shadow Radius: <span id="v-sr" class="text-indigo-400">4.65</span></label>
+            <input type="range" id="rn-sr" min="0" max="50" value="10" oninput="upd()" class="accent-indigo-500">
+            <label class="text-[10px] font-black text-slate-500 uppercase">Elevation (Android): <span id="v-el" class="text-indigo-400">8</span></label>
+            <input type="range" id="rn-el" min="0" max="24" value="8" oninput="upd()" class="accent-indigo-500">
+        </div>
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[250px]">
+                <div id="rn-box" class="w-48 h-48 rounded-2xl bg-white flex items-center justify-center transition-all"><span class="text-slate-400 text-sm font-bold">Preview</span></div>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">React Native Code</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('rn-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <pre id="rn-code" class="code-font text-xs text-indigo-300 whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const color=document.getElementById('rn-color').value,ox=+document.getElementById('rn-ox').value,oy=+document.getElementById('rn-oy').value;
+    const so=(+document.getElementById('rn-so').value/100).toFixed(2),sr=(+document.getElementById('rn-sr').value*0.465).toFixed(2),el=+document.getElementById('rn-el').value;
+    document.getElementById('v-ox').textContent=ox;document.getElementById('v-oy').textContent=oy;
+    document.getElementById('v-so').textContent=so;document.getElementById('v-sr').textContent=sr;document.getElementById('v-el').textContent=el;
+    const box=document.getElementById('rn-box');
+    box.style.boxShadow=`${ox}px ${oy}px ${sr*2}px rgba(0,0,0,${so})`;
+    document.getElementById('rn-code').textContent=`// iOS\nshadowColor: '${color}',\nshadowOffset: { width: ${ox}, height: ${oy} },\nshadowOpacity: ${so},\nshadowRadius: ${sr},\n\n// Android\nelevation: ${el},`;
+}
+upd();
+</script>
+{% endblock %}

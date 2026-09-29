@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}HEX to RGBA Converter{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/hex-to-rgba{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">HEX to RGBA Converter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card rounded-2xl p-6">
+                <label class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase block mb-3">HEX Color</label>
+                <div class="flex gap-3 items-center">
+                    <input type="color" id="htr-picker" value="#6366f1" oninput="document.getElementById('htr-input').value=this.value;convert()" class="w-12 h-10 rounded cursor-pointer border-0 bg-transparent">
+                    <input id="htr-input" type="text" value="#6366f1" oninput="convert()" class="flex-grow bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-lg text-white outline-none code-font" placeholder="#6366f1">
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">RGBA Output</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('htr-output').value)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <input id="htr-output" readonly type="text" class="w-full bg-slate-950/40 rounded-lg px-4 py-3 text-lg text-indigo-300 outline-none code-font">
+            </div>
+        </div>
+        <div id="htr-preview" class="h-32 rounded-2xl border border-white/10 transition-all"></div>
+        <div id="htr-details" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function convert(){
+    let hex=document.getElementById('htr-input').value.trim().replace('#','');
+    if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+    if(hex.length===6)hex+='ff';
+    if(hex.length!==6&&hex.length!==8)return;
+    const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+    const a=hex.length===8?(parseInt(hex.slice(6,8),16)/255).toFixed(2):1;
+    const rgba=`rgba(${r}, ${g}, ${b}, ${a})`;
+    document.getElementById('htr-output').value=rgba;
+    document.getElementById('htr-preview').style.background=rgba;
+    document.getElementById('htr-picker').value='#'+hex.slice(0,6);
+    document.getElementById('htr-details').innerHTML=
+        `<div class="glass-card rounded-xl p-3 text-center"><div class="text-2xl font-black text-red-400">${r}</div><div class="text-[9px] text-slate-500 uppercase font-bold">Red</div></div>`+
+        `<div class="glass-card rounded-xl p-3 text-center"><div class="text-2xl font-black text-green-400">${g}</div><div class="text-[9px] text-slate-500 uppercase font-bold">Green</div></div>`+
+        `<div class="glass-card rounded-xl p-3 text-center"><div class="text-2xl font-black text-blue-400">${b}</div><div class="text-[9px] text-slate-500 uppercase font-bold">Blue</div></div>`+
+        `<div class="glass-card rounded-xl p-3 text-center"><div class="text-2xl font-black text-white">${a}</div><div class="text-[9px] text-slate-500 uppercase font-bold">Alpha</div></div>`;
+}
+convert();
+</script>
+{% endblock %}

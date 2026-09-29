@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Image to Base64 Converter{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/image-to-base64{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Image to Base64 Converter</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-hidden">
+        <label class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all cursor-pointer inline-block w-fit">📁 Choose Image<input type="file" accept="image/*" onchange="convert(event)" class="hidden"></label>
+        <div id="ib-info" class="text-[10px] text-slate-500 font-bold"></div>
+        <div class="flex-grow flex flex-col gap-2 overflow-hidden">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Base64 Output</span>
+                <div class="flex gap-2">
+                    <button onclick="copyAs('raw')" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy Raw</button>
+                    <button onclick="copyAs('img')" class="text-[10px] text-emerald-400 hover:text-white transition-all">Copy as &lt;img&gt;</button>
+                    <button onclick="copyAs('css')" class="text-[10px] text-amber-400 hover:text-white transition-all">Copy as CSS</button>
+                </div>
+            </div>
+            <textarea id="ib-output" readonly class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 code-font text-xs text-indigo-300/80 outline-none resize-none"></textarea>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+let b64='';
+function convert(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{b64=ev.target.result;document.getElementById('ib-output').value=b64;document.getElementById('ib-info').textContent=`File: ${f.name} · Size: ${(f.size/1024).toFixed(1)} KB · Base64: ${(b64.length/1024).toFixed(1)} KB`;};r.readAsDataURL(f);}
+function copyAs(type){if(!b64)return;let text=b64;if(type==='img')text=`<img src="${b64}" alt="image">`;else if(type==='css')text=`background-image: url(${b64});`;navigator.clipboard.writeText(text);}
+</script>
+{% endblock %}

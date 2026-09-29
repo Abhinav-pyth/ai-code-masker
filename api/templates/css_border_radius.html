@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}CSS Border Radius Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-border-radius{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Border Radius Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-auto">
+        <div class="w-full lg:w-64 flex flex-col gap-3 shrink-0">
+            <div class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+                <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Top Left: <span id="v-tl" class="text-indigo-400">20</span>px</label>
+                <input type="range" id="r-tl" min="0" max="200" value="20" oninput="upd()" class="accent-indigo-500">
+                <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Top Right: <span id="v-tr" class="text-indigo-400">20</span>px</label>
+                <input type="range" id="r-tr" min="0" max="200" value="20" oninput="upd()" class="accent-indigo-500">
+                <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Bottom Right: <span id="v-br" class="text-indigo-400">20</span>px</label>
+                <input type="range" id="r-br" min="0" max="200" value="20" oninput="upd()" class="accent-indigo-500">
+                <label class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Bottom Left: <span id="v-bl" class="text-indigo-400">20</span>px</label>
+                <input type="range" id="r-bl" min="0" max="200" value="20" oninput="upd()" class="accent-indigo-500">
+                <label class="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-2">
+                    <input type="checkbox" id="r-link" checked onchange="upd()" class="accent-indigo-500"> Link All
+                </label>
+            </div>
+        </div>
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-8 min-h-[300px]">
+                <div id="radius-box" class="w-48 h-48 bg-gradient-to-br from-indigo-500 to-purple-600 transition-all duration-200 border-2 border-white/20"></div>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">CSS Code</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('radius-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <code id="radius-code" class="code-font text-sm text-indigo-300 block"></code>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const linked=document.getElementById('r-link').checked;
+    if(linked){const v=document.getElementById('r-tl').value;['r-tr','r-br','r-bl'].forEach(id=>{document.getElementById(id).value=v;});}
+    const tl=document.getElementById('r-tl').value,tr=document.getElementById('r-tr').value,br=document.getElementById('r-br').value,bl=document.getElementById('r-bl').value;
+    document.getElementById('v-tl').textContent=tl;document.getElementById('v-tr').textContent=tr;
+    document.getElementById('v-br').textContent=br;document.getElementById('v-bl').textContent=bl;
+    const css=`${tl}px ${tr}px ${br}px ${bl}px`;
+    document.getElementById('radius-box').style.borderRadius=css;
+    document.getElementById('radius-code').textContent=`border-radius: ${css};`;
+}
+upd();
+</script>
+{% endblock %}

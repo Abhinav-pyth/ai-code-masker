@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} | Blog Insights{% endblock %}
+
+{% block extra_styles %}
+    /* Premium prose styling overrides */
+    .prose {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-dim);
+        line-height: 1.8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+        color: var(--text-main);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .prose h1 { font-size: 2.25rem; }
+    .prose h2 { font-size: 1.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.4rem; }
+    
+    .prose p {
+        margin-bottom: 1.5rem;
+    }
+    .prose a {
+        color: var(--primary);
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    .prose a:hover {
+        opacity: 0.8;
+    }
+    .prose strong {
+        color: var(--text-main);
+        font-weight: 700;
+    }
+    .prose ul, .prose ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1.5rem;
+        list-style-type: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .prose ul { list-style-type: disc; }
+    .prose ol { list-style-type: decimal; }
+    .prose li {
+        margin-bottom: 0.5rem;
+    }
+    .prose code {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--primary);
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-family: monospace;
+    }
+    .dark-theme .prose code {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    .prose pre {
+        background: #0f1115 !important;
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        border-radius: 12px;
+        overflow-x: auto;
+        margin: 2rem 0;
+    }
+    .prose pre code {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+        padding: 0;
+        border-radius: 0;
+        font-size: 0.9em;
+    }
+    .prose blockquote {
+        border-left: 4px solid var(--primary);
+        padding-left: 1.5rem;
+        font-style: italic;
+        color: var(--text-main);
+        margin: 1.5rem 0;
+    }
+{% endblock %}
+
+{% block content %}
+<div class="relative pt-12 pb-24 overflow-hidden">
+    <!-- Top Glowing Accent -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-textDim mb-8" style="font-family:'Outfit', sans-serif">
+            <a href="/" class="hover:text-primary transition-colors">Home</a>
+            <span>/</span>
+            <a href="/blog" class="hover:text-primary transition-colors">Blog</a>
+            <span>/</span>
+            <span class="text-primary select-none">{{ post.category }}</span>
+        </nav>
+
+        <!-- Main Layout Split -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">
+            
+            <!-- Left TOC & Metadata Sidebar -->
+            <aside class="lg:col-span-1 space-y-8 sticky top-24">
+                <div class="rounded-2xl p-6 border border-border bg-[var(--card-bg)] shadow-sm">
+                    <span class="text-[9px] font-black text-primary uppercase tracking-widest">{{ post.category }}</span>
+                    <h1 class="text-lg font-black text-textMain mt-2 leading-snug" style="font-family:'Outfit', sans-serif">{{ post.title }}</h1>
+                    
+                    <div class="h-px bg-border my-4"></div>
+                    
+                    <div class="space-y-3 text-[10px] font-bold uppercase tracking-wider text-textDim" style="font-family:'Outfit', sans-serif">
+                        <div class="flex justify-between">
+                            <span>Published:</span>
+                            <span class="text-textMain font-black">{{ post.date }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Read time:</span>
+                            <span class="text-textMain font-black">{{ post.reading_time }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Tools Panel -->
+                <div class="rounded-2xl p-6 border border-border bg-[var(--card-bg)] shadow-sm">
+                    <h3 class="text-[9px] font-black text-textDim uppercase tracking-widest mb-4" style="font-family:'Outfit', sans-serif">Recommended Tool</h3>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black text-textMain" style="font-family:'Outfit', sans-serif">AI Code Masker</span>
+                        <p class="text-[10px] text-textDim mt-1 leading-normal mb-4">Sanitize credentials locally before sharing code templates.</p>
+                        <a href="/" class="py-2.5 rounded-xl bg-primary hover:opacity-90 text-white text-center text-[9px] font-black uppercase tracking-widest transition-all">
+                            Open Tool
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Content Column -->
+            <article class="lg:col-span-3 rounded-3xl p-8 md:p-12 border border-border bg-[var(--card-bg)] shadow-sm">
+                <div class="prose max-w-none">
+                    {{ post.rendered_body | safe }}
+                </div>
+            </article>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

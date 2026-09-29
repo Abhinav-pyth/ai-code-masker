@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Open Graph Meta Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/og-meta-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Open Graph Meta Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-4">
+                <div class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Title</label>
+                    <input id="og-title" type="text" value="My Website" oninput="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Description</label>
+                    <textarea id="og-desc" rows="2" oninput="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none resize-none">A great website with amazing content</textarea>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">URL</label>
+                    <input id="og-url" type="text" value="https://example.com" oninput="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Image URL</label>
+                    <input id="og-img" type="text" value="https://example.com/og-image.jpg" oninput="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Type</label>
+                    <select id="og-type" onchange="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                        <option value="website">Website</option><option value="article">Article</option><option value="product">Product</option>
+                    </select>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Twitter Card</label>
+                    <select id="og-tw" onchange="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                        <option value="summary_large_image">Summary Large Image</option><option value="summary">Summary</option>
+                    </select>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Site Name</label>
+                    <input id="og-site" type="text" value="My Site" oninput="gen()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                </div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Generated Meta Tags</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('og-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+                </div>
+                <pre id="og-code" class="glass-card rounded-2xl p-5 bg-slate-950/40 code-font text-xs text-indigo-300 whitespace-pre-wrap flex-grow overflow-auto"></pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function gen(){
+    const t=document.getElementById('og-title').value,d=document.getElementById('og-desc').value,u=document.getElementById('og-url').value;
+    const img=document.getElementById('og-img').value,type=document.getElementById('og-type').value,tw=document.getElementById('og-tw').value,site=document.getElementById('og-site').value;
+    document.getElementById('og-code').textContent=`<!-- Primary Meta Tags -->\n<title>${t}</title>\n<meta name="title" content="${t}">\n<meta name="description" content="${d}">\n\n<!-- Open Graph / Facebook -->\n<meta property="og:type" content="${type}">\n<meta property="og:url" content="${u}">\n<meta property="og:title" content="${t}">\n<meta property="og:description" content="${d}">\n<meta property="og:image" content="${img}">\n<meta property="og:site_name" content="${site}">\n\n<!-- Twitter -->\n<meta property="twitter:card" content="${tw}">\n<meta property="twitter:url" content="${u}">\n<meta property="twitter:title" content="${t}">\n<meta property="twitter:description" content="${d}">\n<meta property="twitter:image" content="${img}">`;
+}
+gen();
+</script>
+{% endblock %}

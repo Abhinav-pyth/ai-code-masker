@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Bionic Reading Converter — Read Faster{% endblock %}
+{% block meta_description %}Convert text to Bionic Reading mode. Bold the first half of each word to help your brain read faster. Free, 100% browser-based.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/bionic-reading{% endblock %}
+
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center justify-between px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Bionic Reading Converter</h2>
+        <div class="flex items-center gap-3">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Fixation:</label>
+            <input type="range" id="fixation" min="1" max="5" value="3" oninput="convert()" class="w-24 accent-indigo-500">
+            <span id="fix-val" class="text-[10px] text-indigo-400 font-bold">3</span>
+        </div>
+    </div>
+    <div class="p-8 flex flex-col lg:flex-row gap-6 flex-grow overflow-hidden">
+        <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+            <span class="text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">Input Text</span>
+            <textarea id="bio-input" oninput="convert()"
+                class="flex-grow glass-card rounded-2xl p-6 bg-transparent code-font text-sm text-slate-100 placeholder-slate-700 outline-none resize-none"
+                placeholder="Paste your text here to convert to Bionic Reading mode..."></textarea>
+        </div>
+        <div class="flex-1 flex flex-col gap-2 overflow-hidden">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">Bionic Output</span>
+                <button onclick="copyHTML()" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy HTML</button>
+            </div>
+            <div id="bio-output"
+                class="flex-grow glass-card rounded-2xl p-6 bg-slate-950/40 text-sm text-slate-300 leading-relaxed overflow-auto"
+                style="font-family:'Outfit',sans-serif; font-size:15px; line-height:1.9;"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function convert() {
+        const text = document.getElementById('bio-input').value;
+        const fixation = parseInt(document.getElementById('fixation').value);
+        document.getElementById('fix-val').textContent = fixation;
+        if (!text.trim()) { document.getElementById('bio-output').innerHTML = '<span class="text-slate-600">Bionic output will appear here...</span>'; return; }
+        const fixRatio = [0.3, 0.4, 0.5, 0.6, 0.75][fixation - 1];
+        const html = text.split(/(\s+)/).map(token => {
+            if (/^\s+$/.test(token)) return token;
+            const boldLen = Math.max(1, Math.ceil(token.length * fixRatio));
+            return `<b style="font-weight:800;color:#e2e8f0">${token.slice(0, boldLen)}</b>${token.slice(boldLen)}`;
+        }).join('');
+        document.getElementById('bio-output').innerHTML = html.replace(/\n/g, '<br>');
+    }
+    function copyHTML() {
+        const el = document.getElementById('bio-output');
+        navigator.clipboard.writeText(el.innerHTML);
+        showToast('HTML copied!');
+    }
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+    convert();
+</script>
+{% endblock %}

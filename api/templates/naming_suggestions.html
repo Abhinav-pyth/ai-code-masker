@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Naming Suggestions{% endblock %}
+{% block content %}
+<style>
+  .ns-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .ns-toolbar {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .ns-toolbar h1 {
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #c7d2fe;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .glass-card {
+    background: rgba(30, 27, 75, 0.45);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .glass-card label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .ns-textarea {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    padding: 0.85rem 1rem;
+    resize: vertical;
+    transition: border-color 0.25s;
+    box-sizing: border-box;
+  }
+
+  .ns-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  .ns-type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .ns-type-btn {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 8px;
+    color: #94a3b8;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  }
+
+  .ns-type-btn:hover {
+    border-color: #6366f1;
+    color: #c7d2fe;
+  }
+
+  .ns-type-btn.active {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .ns-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.7rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.25s;
+    margin-top: 1rem;
+  }
+
+  .ns-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .ns-btn:active {
+    transform: translateY(0);
+  }
+
+  .ns-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .ns-convention-card {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .ns-convention-card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+  }
+
+  .ns-convention-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 0.55rem;
+  }
+
+  .ns-convention-value {
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    color: #c7d2fe;
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    background: rgba(99, 102, 241, 0.06);
+    border-radius: 6px;
+    transition: background 0.2s;
+    word-break: break-all;
+    position: relative;
+  }
+
+  .ns-convention-value:hover {
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .ns-convention-value::after {
+    content: 'Click to copy';
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.65rem;
+    color: #475569;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .ns-convention-value:hover::after {
+    opacity: 1;
+  }
+
+  .ns-convention-value.copied::after {
+    content: 'Copied!';
+    color: #6366f1;
+    opacity: 1;
+  }
+
+  .ns-recommended {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.12);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .ns-empty-state {
+    text-align: center;
+    color: #475569;
+    padding: 2.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .ns-copy-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(99, 102, 241, 0.9);
+    color: #fff;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 100;
+  }
+
+  .ns-copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<div class="ns-container">
+  <div class="ns-toolbar">
+    <h1>Naming Suggestions</h1>
+  </div>
+
+  <!-- Input Card -->
+  <div class="glass-card">
+    <label for="ns-input">Describe what the variable / function / class does</label>
+    <textarea id="ns-input" class="ns-textarea code-font" placeholder="e.g. get the total price of items in shopping cart&#10;e.g. user authentication token&#10;e.g. maximum number of retries allowed"></textarea>
+
+    <label style="margin-top:1rem;">Type</label>
+    <div class="ns-type-selector" id="ns-type-selector">
+      <button class="ns-type-btn active" data-type="variable" onclick="selectType(this)">Variable</button>
+      <button class="ns-type-btn" data-type="function" onclick="selectType(this)">Function</button>
+      <button class="ns-type-btn" data-type="class" onclick="selectType(this)">Class</button>
+      <button class="ns-type-btn" data-type="constant" onclick="selectType(this)">Constant</button>
+    </div>
+
+    <button class="ns-btn" onclick="generateNames()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Generate Names
+    </button>
+  </div>
+
+  <!-- Output Card -->
+  <div class="glass-card">
+    <label>Suggestions</label>
+    <div id="ns-output">
+      <div class="ns-empty-state">Enter a description and click "Generate Names" to see suggestions.</div>
+    </div>
+  </div>
+</div>
+
+<div class="ns-copy-toast" id="ns-toast">Copied to clipboard!</div>
+
+<script>
+  const STOP_WORDS = new Set([
+    'the', 'a', 'an', 'is', 'are', 'of', 'for', 'to', 'in', 'with',
+    'and', 'or', 'it', 'its', 'that', 'this', 'be', 'has', 'have',
+    'was', 'were', 'been', 'being', 'do', 'does', 'did', 'but', 'at',
+    'by', 'from', 'on', 'not', 'no', 'so', 'if', 'then'
+  ]);
+
+  let selectedType = 'variable';
+
+  function selectType(btn) {
+    document.querySelectorAll('.ns-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedType = btn.dataset.type;
+  }
+
+  function tokenize(description) {
+    return description
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 0 && !STOP_WORDS.has(w));
+  }
+
+  function toCamelCase(tokens) {
+    if (tokens.length === 0) return '';
+    return tokens[0] + tokens.slice(1).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join('');
+  }
+
+  function toPascalCase(tokens) {
+    return tokens.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join('');
+  }
+
+  function toSnakeCase(tokens) {
+    return tokens.join('_');
+  }
+
+  function toScreamingSnakeCase(tokens) {
+    return tokens.map(t => t.toUpperCase()).join('_');
+  }
+
+  function toKebabCase(tokens) {
+    return tokens.join('-');
+  }
+
+  function getRecommended(type) {
+    switch (type) {
+      case 'variable':  return ['camelCase', 'snake_case'];
+      case 'function':  return ['camelCase', 'snake_case'];
+      case 'class':     return ['PascalCase'];
+      case 'constant':  return ['SCREAMING_SNAKE_CASE'];
+      default:          return [];
+    }
+  }
+
+  function generateNames() {
+    const desc = document.getElementById('ns-input').value.trim();
+    if (!desc) {
+      document.getElementById('ns-output').innerHTML =
+        '<div class="ns-empty-state">Please enter a description first.</div>';
+      return;
+    }
+
+    const tokens = tokenize(desc);
+    if (tokens.length === 0) {
+      document.getElementById('ns-output').innerHTML =
+        '<div class="ns-empty-state">Could not extract meaningful tokens. Try a more descriptive input.</div>';
+      return;
+    }
+
+    const conventions = [
+      { label: 'camelCase',            value: toCamelCase(tokens) },
+      { label: 'PascalCase',           value: toPascalCase(tokens) },
+      { label: 'snake_case',           value: toSnakeCase(tokens) },
+      { label: 'SCREAMING_SNAKE_CASE', value: toScreamingSnakeCase(tokens) },
+      { label: 'kebab-case',           value: toKebabCase(tokens) },
+    ];
+
+    const recommended = getRecommended(selectedType);
+
+    let html = '<div class="ns-grid">';
+    conventions.forEach(c => {
+      const isRec = recommended.includes(c.label);
+      html += `
+        <div class="ns-convention-card">
+          <div class="ns-convention-label">
+            ${c.label}${isRec ? '<span class="ns-recommended">Recommended</span>' : ''}
+          </div>
+          <div class="ns-convention-value code-font" onclick="copyName(this, '${c.value}')">${c.value}</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+
+    document.getElementById('ns-output').innerHTML = html;
+  }
+
+  function copyName(el, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showCopied(el);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showCopied(el);
+    });
+  }
+
+  function showCopied(el) {
+    el.classList.add('copied');
+    showToast();
+    setTimeout(() => el.classList.remove('copied'), 1500);
+  }
+
+  function showToast() {
+    const toast = document.getElementById('ns-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  // Allow Ctrl+Enter to trigger generation
+  document.getElementById('ns-input').addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+      generateNames();
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_description %}{{ seo.description }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="glass-card p-6 md:p-8 rounded-3xl border border-border mb-6">
+        <h1 class="text-2xl font-black text-textMain uppercase tracking-tight" style="font-family:'Outfit',sans-serif">UUID v4 Generator</h1>
+        <p class="text-sm text-textDim mt-2 max-w-2xl leading-relaxed">{{ tool_intro }}</p>
+
+        <label class="block mt-5"><span class="text-[10px] font-black uppercase tracking-widest text-textDim">How many?</span><input id="uu-count" type="number" placeholder="5" value="5" class="w-full mt-1 px-4 py-3 bg-black/5 dark:bg-black/40 border border-border rounded-xl text-textMain focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono text-sm"></label><button id="uu-btn" class="btn-glow px-6 py-3 rounded-xl text-white font-black text-xs uppercase tracking-widest w-full sm:w-auto mt-5">Generate UUIDs</button><pre id="uu-out" class="mt-5 p-4 rounded-xl overflow-x-auto text-xs font-mono whitespace-pre-wrap break-all" style="background:#0b1020;color:#a5f3fc;border:1px solid #1e293b;min-height:44px">—</pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function uuidv4(){return crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16;return (c==='x'?r:(r&0x3|0x8)).toString(16);});}
+document.getElementById('uu-btn').addEventListener('click',()=>{const n=Math.min(Math.max(parseInt(document.getElementById('uu-count').value)||1,1),1000);const u=Array.from({length:n},uuidv4);document.getElementById('uu-out').textContent=u.join('\n');navigator.clipboard.writeText(u.join('\n')).then(()=>showClipboardToast(n+' UUIDs copied!'));});
+</script>
+{% endblock %}

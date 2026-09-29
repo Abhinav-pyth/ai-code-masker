@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}CSS Checkbox Generator{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/css-checkbox-generator{% endblock %}
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">CSS Checkbox Generator</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Style:</label>
+            <select id="cb-style" onchange="upd()" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-slate-300 outline-none">
+                <option value="fill">Fill</option><option value="outline">Outline</option><option value="round">Round</option><option value="slide">Slide</option>
+            </select>
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Color:</label>
+            <input type="color" id="cb-color" value="#6366f1" oninput="upd()" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+            <label class="text-[10px] text-slate-500 font-bold uppercase">Size: <span id="v-cbsz" class="text-indigo-400">24</span>px</label>
+            <input type="range" id="cb-size" min="16" max="48" value="24" oninput="upd()" class="w-24 accent-indigo-500">
+        </div>
+        <div class="flex-1 flex items-center justify-center glass-card rounded-2xl p-12 min-h-[200px] gap-6">
+            <div id="cb-preview"></div>
+        </div>
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-black text-slate-500 tracking-[3px] uppercase">HTML + CSS</span>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('cb-code').textContent)" class="text-[10px] text-indigo-400 hover:text-white transition-all">Copy</button>
+            </div>
+            <pre id="cb-code" class="code-font text-xs text-indigo-300 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function upd(){
+    const style=document.getElementById('cb-style').value,color=document.getElementById('cb-color').value,size=+document.getElementById('cb-size').value;
+    document.getElementById('v-cbsz').textContent=size;
+    const prev=document.getElementById('cb-preview');
+    const rad=style==='round'?'50%':style==='slide'?'4px':'4px';
+    const html=`<label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none">
+<input type="checkbox" checked style="appearance:none;width:${size}px;height:${size}px;border:2px solid ${color};border-radius:${rad};background:${style==='fill'||style==='round'?color:'transparent'};cursor:pointer;position:relative;">
+<span style="color:#fff;font-size:14px">Check me</span></label>`;
+    prev.innerHTML=html+'&nbsp;&nbsp;&nbsp;'+html.replace('checked ','');
+    const css=`.custom-checkbox {\n  appearance: none;\n  width: ${size}px;\n  height: ${size}px;\n  border: 2px solid ${color};\n  border-radius: ${rad};\n  cursor: pointer;\n  transition: all 0.2s;\n}\n.custom-checkbox:checked {\n  background: ${color};\n  border-color: ${color};\n}`;
+    document.getElementById('cb-code').textContent=`<!-- HTML -->\n<input type="checkbox" class="custom-checkbox">\n\n/* CSS */\n${css}`;
+}
+upd();
+</script>
+{% endblock %}

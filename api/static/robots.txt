@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/proxy
+Disallow: /api/resolve-domain
+
+# Crawl-delay for polite bots
+Crawl-delay: 2
+
+# Host
+Host: https://ai-code-masker.vercel.app
+
+# Sitemaps
+Sitemap: https://ai-code-masker.vercel.app/sitemap.xml

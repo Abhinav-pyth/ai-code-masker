@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Google Fonts Pair Finder — Find Perfect Font Combinations{% endblock %}
+{% block meta_description %}Find beautiful Google Fonts pairings for your designs. Preview heading and body font combinations live. Free, 100% browser-based.{% endblock %}
+{% block canonical %}https://ai-code-masker.vercel.app/font-pair-finder{% endblock %}
+
+{% block content %}
+    <div class="h-14 border-b border-white/5 flex items-center px-8 glass shrink-0">
+        <h2 class="text-xs font-black text-white tracking-[4px] uppercase">Google Fonts Pair Finder</h2>
+    </div>
+    <div class="p-8 flex flex-col gap-6 flex-grow overflow-auto">
+        <div class="flex flex-wrap gap-3 items-center">
+            <button onclick="randomPair()" class="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white hover:bg-indigo-500 transition-all">🎲 Random Pair</button>
+            <button onclick="copyCSS()" class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">Copy CSS Import</button>
+        </div>
+        <div id="pairs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const pairs = [
+        { heading: 'Playfair Display', body: 'Source Sans Pro', cat: 'Elegant' },
+        { heading: 'Montserrat', body: 'Merriweather', cat: 'Classic' },
+        { heading: 'Raleway', body: 'Lato', cat: 'Modern' },
+        { heading: 'Oswald', body: 'Quattrocento', cat: 'Bold' },
+        { heading: 'Poppins', body: 'Inter', cat: 'Clean' },
+        { heading: 'Libre Baskerville', body: 'Montserrat', cat: 'Editorial' },
+        { heading: 'Roboto Slab', body: 'Roboto', cat: 'Material' },
+        { heading: 'DM Serif Display', body: 'DM Sans', cat: 'Refined' },
+        { heading: 'Space Grotesk', body: 'Space Mono', cat: 'Tech' },
+        { heading: 'Outfit', body: 'Inter', cat: 'Startup' },
+        { heading: 'Fraunces', body: 'Commissioner', cat: 'Creative' },
+        { heading: 'Bitter', body: 'Raleway', cat: 'Blog' },
+        { heading: 'Archivo Black', body: 'Tenor Sans', cat: 'Impact' },
+        { heading: 'Cormorant Garamond', body: 'Proza Libre', cat: 'Luxury' },
+        { heading: 'Josefin Sans', body: 'Lora', cat: 'Stylish' },
+        { heading: 'Bebas Neue', body: 'Source Sans Pro', cat: 'Display' },
+    ];
+    const catColors = { Elegant:'pink', Classic:'amber', Modern:'sky', Bold:'red', Clean:'emerald', Editorial:'violet', Material:'blue', Refined:'indigo', Tech:'cyan', Startup:'lime', Creative:'rose', Blog:'orange', Impact:'red', Luxury:'amber', Stylish:'fuchsia', Display:'slate' };
+    let currentPair = null;
+    function loadFonts(names) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?${names.map(n => 'family=' + n.replace(/ /g, '+')+':wght@400;700').join('&')}&display=swap`;
+        document.head.appendChild(link);
+    }
+    function renderPairs(list) {
+        const allFonts = [...new Set(list.flatMap(p => [p.heading, p.body]))];
+        loadFonts(allFonts);
+        const grid = document.getElementById('pairs-grid');
+        grid.innerHTML = list.map((p, i) => {
+            const c = catColors[p.cat] || 'indigo';
+            return `<div class="glass-card rounded-2xl p-6 cursor-pointer hover:border-indigo-500/40 transition-all" onclick="selectPair(${i})">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[8px] font-black uppercase tracking-widest text-${c}-400 bg-${c}-500/10 px-2 py-1 rounded">${p.cat}</span>
+                    <span class="text-[9px] text-slate-600">#${i+1}</span>
+                </div>
+                <h3 style="font-family:'${p.heading}',serif;font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:8px;line-height:1.2">The quick brown fox</h3>
+                <p style="font-family:'${p.body}',sans-serif;font-size:14px;color:#94a3b8;line-height:1.7">jumps over the lazy dog. Pack my box with five dozen liquor jugs.</p>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between text-[10px] text-slate-500">
+                    <span><b class="text-slate-300">H:</b> ${p.heading}</span>
+                    <span><b class="text-slate-300">B:</b> ${p.body}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    function selectPair(i) { currentPair = pairs[i]; }
+    function randomPair() {
+        const i = Math.floor(Math.random() * pairs.length);
+        selectPair(i);
+        const cards = document.querySelectorAll('#pairs-grid .glass-card');
+        cards.forEach((c, idx) => { c.style.borderColor = idx === i ? 'rgba(99,102,241,0.5)' : ''; });
+        cards[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function copyCSS() {
+        const p = currentPair || pairs[0];
+        const css = `@import url('https://fonts.googleapis.com/css2?family=${p.heading.replace(/ /g,'+')}&family=${p.body.replace(/ /g,'+')}&display=swap');\n\nh1, h2, h3 { font-family: '${p.heading}', serif; }\nbody, p { font-family: '${p.body}', sans-serif; }`;
+        navigator.clipboard.writeText(css);
+        showToast('CSS copied!');
+    }
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.className = 'fixed bottom-6 right-6 code-font text-sm bg-indigo-600/80 backdrop-blur-md text-white px-5 py-3 rounded-xl shadow-lg border border-indigo-500/30 z-50';
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 1500);
+    }
+    renderPairs(pairs);
+</script>
+{% endblock %}
