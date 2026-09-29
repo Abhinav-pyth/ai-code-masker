@@ -366,11 +366,20 @@
             }
         }
 
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+
         function render(data, container, key) {
             const node = document.createElement('div');
             node.className = 'tree-node';
 
             const isCollapsible = typeof data === 'object' && data !== null;
+            const header = document.createElement('span');
+            header.innerHTML = `<span class="tree-key">${escapeHtml(key)}</span>: `;
+            node.appendChild(header);
 
             if (isCollapsible) {
                 const toggle = document.createElement('span');
@@ -383,14 +392,8 @@
                     toggle.classList.toggle('collapsed', isHidden);
                     e.stopPropagation();
                 };
-                node.appendChild(toggle);
-            }
+                node.insertBefore(toggle, header);
 
-            const header = document.createElement('span');
-            header.innerHTML = `<span class="tree-key">${key}</span>: `;
-            node.appendChild(header);
-
-            if (isCollapsible) {
                 header.innerHTML += Array.isArray(data) ? '<span class="text-slate-600">[</span>' : '<span class="text-slate-600">{</span>';
 
                 const children = document.createElement('div');
@@ -405,14 +408,22 @@
                 footer.innerHTML = Array.isArray(data) ? '<span class="text-slate-600">]</span>' : '<span class="text-slate-600">}</span>';
                 node.appendChild(footer);
             } else {
-                valSpan.className = 'tree-value-null';
-                valSpan.innerText = 'null';
+                const valSpan = document.createElement('span');
+                if (typeof data === 'string') {
+                    valSpan.className = 'tree-value-string';
+                    valSpan.innerText = `"${data}"`;
+                } else if (typeof data === 'number' || typeof data === 'boolean') {
+                    valSpan.className = 'tree-value-number';
+                    valSpan.innerText = String(data);
+                } else {
+                    valSpan.className = 'tree-value-null';
+                    valSpan.innerText = 'null';
+                }
+                node.appendChild(valSpan);
             }
-            node.appendChild(valSpan);
-        }
 
-        container.appendChild(node);
-    }
+            container.appendChild(node);
+        }
 
     function prettify() {
         try {

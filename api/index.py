@@ -158,7 +158,9 @@ def check_legacy_redirects():
     # Auto-built: every bare legacy path (/md5-hash, /css-formatter ...) 301s to its canonical /tools/<slug> home.
     legacy_redirects = {}
     for _slug, _tool in DYNAMIC_TOOLS.items():
-        for _alias in _tool.get("aliases", []):
+        # Bare canonical slug (/base64 -> /tools/base64) so nav links never 404.
+        legacy_redirects[f"/{_slug}"] = f"/tools/{_slug}"
+        for _alias in _tool.get("aliases") or []:
             legacy_redirects[_alias] = f"/tools/{_slug}"
     legacy_redirects["/json-editor"] = "/tools/json-formatter"
     legacy_redirects["/jwt-tool"] = "/tools/jwt-decoder"
@@ -168,7 +170,7 @@ def check_legacy_redirects():
 # Dynamic XML Sitemap Builder
 @app.route('/sitemap.xml')
 def dynamic_sitemap():
-    base_pages = ["", "tools", "clinical-parser", "blog", "pricing", "privacy"]
+    base_pages = ["", "tools", "clinical-parser", "blog", "privacy"]
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     
@@ -223,15 +225,10 @@ def tools():
     )
     return render_template('tools.html', active_page='tools', seo=meta)
 
-# SaaS Pricing plans
+# Pricing removed: all tools are 100% free. Keep legacy URL alive with a redirect.
 @app.route('/pricing')
 def pricing():
-    meta = generate_page_metadata(
-        "Pricing Tiers & Professional Subscriptions",
-        "Upgrade to Professional and Enterprise tiers for fast hosted clinical parses, unlimited saved tool settings, and premium security support.",
-        path="/pricing"
-    )
-    return render_template('pricing.html', active_page='pricing', tiers=TIERS, seo=meta)
+    return redirect('/', code=301)
 
 # Blog catalog
 @app.route('/blog')
@@ -284,6 +281,22 @@ def _tool_context(slug):
         'active_page': tool.get('active', 'tools'),
     }
 
+# Input-field labels for tools rendered through the shared generic_tool.html shell.
+_GENERIC_INPUT_LABELS = {
+    'csv-to-json': ('CSV text', 'name,age,city\nAlice,30,Berlin'),
+    'json-to-csv': ('JSON array of objects', '[{"name":"Alice","age":30}]'),
+    'base32-encoder': ('Text to encode', 'Hello, world!'),
+    'gzip-string': ('Text to gzip (result is base64)', 'Compress me…'),
+    'html-entity': ('HTML/text to encode or decode', '<div class="x">&</div>'),
+    'color-contrast-checker': ('Two hex colors, space separated', '#222222 #f5f5f5'),
+    'password-strength-tester': ('Password to score (never leaves your browser)', 'Type a password…'),
+    'binary-text': ('Text or binary (auto-detects direction)', 'Hello 01001000'),
+    'morse-code': ('Text or morse code (auto-detects direction)', 'SOS → ... --- ...'),
+    'text-reversal': ('Text to reverse', 'Any input, reversed instantly'),
+    'cron-expression': ('Cron expression (5 fields)', '*/15 9-17 * * 1-5'),
+    'http-status-codes': ('Code number or phrase', '404 or "not found"'),
+}
+
 # Dynamic Tools Slug Router
 @app.route('/tools/<slug>')
 def dynamic_tool_route(slug):
@@ -293,7 +306,16 @@ def dynamic_tool_route(slug):
         return redirect('/tools')
     ctx = _tool_context(slug)
     related = ctx.pop('related_tools')
-    return render_template(tool['template'], related_tools=related, **ctx)
+    template_name = tool['template']
+    import os as _os
+    if not _os.path.exists(_os.path.join(app.template_folder, template_name)):
+        # Tool registered in TOOLS but has no dedicated template — render the
+        # shared client-side generic shell instead of crashing with a 500.
+        label, placeholder = _GENERIC_INPUT_LABELS.get(slug, ('Input', ''))
+        ctx.update(tool_name=tool.get('name', slug), tool_mode=slug,
+                   input_label=label, input_placeholder=placeholder)
+        template_name = 'generic_tool.html'
+    return render_template(template_name, related_tools=related, **ctx)
 
 # Fallback Legacy Route mapping for all other 40+ offline pages to keep backwards compatibility fully active
 @app.route('/base64-to-image')

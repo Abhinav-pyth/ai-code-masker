@@ -265,6 +265,55 @@
             color: #475569;
         }
 
+        /* ── Animation System ── */
+        @keyframes fadeInUp   { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn     { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn    { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes shimmer    { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+        @keyframes floatY     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes pulseGlow  { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,.35); } 50% { box-shadow: 0 0 24px 4px rgba(99,102,241,.25); } }
+
+        .anim-fade-up    { animation: fadeInUp .6s cubic-bezier(.22,1,.36,1) both; }
+        .anim-fade-down  { animation: fadeInDown .5s ease-out both; }
+        .anim-fade       { animation: fadeIn .5s ease-out both; }
+        .anim-scale      { animation: scaleIn .45s cubic-bezier(.22,1,.36,1) both; }
+        .anim-slide-right{ animation: slideInRight .5s cubic-bezier(.22,1,.36,1) both; }
+        .anim-float      { animation: floatY 5s ease-in-out infinite; }
+
+        /* Scroll-triggered reveal (JS adds .revealed) */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); will-change: opacity, transform; }
+        .reveal.revealed { opacity: 1; transform: none; }
+
+        /* Card hover micro-interactions */
+        .glass-card:hover, .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-premium);
+            border-color: rgba(99, 102, 241, .35);
+        }
+        .btn, button[class*="rounded"] { transition: all .25s cubic-bezier(.22,1,.36,1); }
+        .btn:active, button:active { transform: scale(.97); }
+
+        /* Nav underline animation */
+        .desktop-nav > a, .desktop-nav .nav-group > a { position: relative; }
+        .desktop-nav > a::after, .desktop-nav .nav-group > a::after {
+            content: ""; position: absolute; left: 0; bottom: -6px; height: 2px; width: 0;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            border-radius: 2px; transition: width .3s cubic-bezier(.22,1,.36,1);
+        }
+        .desktop-nav > a:hover::after, .desktop-nav .nav-group > a:hover::after,
+        .desktop-nav > a[class*="text-indigo-600"]::after { width: 100%; }
+
+        /* Command palette / modal open animation */
+        #command-palette.open { display: flex !important; animation: fadeIn .2s ease-out both; }
+        #command-palette.open > div { animation: scaleIn .28s cubic-bezier(.22,1,.36,1) both; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+            .reveal { opacity: 1; transform: none; }
+        }
+
         {% block extra_styles %}{% endblock %}
     </style>
 </head>
@@ -348,19 +397,13 @@
 
             <a href="/clinical-parser" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'clinical_parser' %}text-emerald-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Clinical</a>
             <a href="/blog" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'blog' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Blog</a>
-            <a href="/pricing" class="text-[10px] font-bold uppercase tracking-[2px] {% if active_page == 'pricing' %}text-indigo-600{% else %}text-slate-500 hover:text-slate-200{% endif %} transition-all">Pricing</a>
-            
             <button onclick="toggleGlobalTheme()" class="w-9 h-9 rounded-lg flex items-center justify-center bg-black/5 dark:bg-white/5 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 transition-all">
                 <svg id="global-theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                 </svg>
             </button>
 
-            <!-- Clerk / Auth.js Placement Wrapper -->
-            <div class="h-8 w-px bg-white/10 mx-2"></div>
-            <button onclick="toggleMockAuth()" id="auth-btn" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-black hover:bg-indigo-700 text-[10px] uppercase tracking-widest shadow-md transition-all">
-                Sign In
-            </button>
+            <!-- Auth (Sign In) removed: all tools are free & client-side -->
         </nav>
 
         <button class="hamburger-btn" onclick="toggleMobileNav()">
@@ -374,7 +417,6 @@
                 <a href="/tools" class="mob-link">All Tools</a>
                 <a href="/clinical-parser" class="mob-link">Clinical Parser</a>
                 <a href="/blog" class="mob-link">Blog Posts</a>
-                <a href="/pricing" class="mob-link">Pricing Plans</a>
             </div>
             <div class="mob-section">
                 <div class="mob-section-title">Common Tools</div>
@@ -402,7 +444,6 @@
                 <div class="flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest">
                     <a href="/tools" class="text-slate-500 hover:text-indigo-600 transition-colors">Dev Tools</a>
                     <a href="/blog" class="text-slate-500 hover:text-indigo-600 transition-colors">Blog</a>
-                    <a href="/pricing" class="text-slate-500 hover:text-indigo-600 transition-colors">Pricing</a>
                     <a href="/privacy" class="text-slate-500 hover:text-indigo-600 transition-colors">Privacy</a>
                 </div>
             </div>
@@ -459,13 +500,13 @@
             paletteOpen = !paletteOpen;
             if (paletteOpen) {
                 cp.classList.remove('hidden');
-                cp.classList.add('flex');
+                cp.classList.add('flex', 'open');
                 document.getElementById('palette-search').value = "";
                 document.getElementById('palette-search').focus();
                 selectedIndex = 0;
                 filterPaletteItems();
             } else {
-                cp.classList.remove('flex');
+                cp.classList.remove('flex', 'open');
                 cp.classList.add('hidden');
             }
         }
@@ -572,22 +613,6 @@
             }
         }
 
-        // Mock Authentication Simulation (Clerk / Auth.js Placeholder Setup)
-        let loggedIn = false;
-        function toggleMockAuth() {
-            loggedIn = !loggedIn;
-            const btn = document.getElementById('auth-btn');
-            if (loggedIn) {
-                btn.innerHTML = "Profile";
-                btn.className = "px-5 py-2 rounded-xl bg-emerald-600 text-white font-black hover:bg-emerald-700 text-[10px] uppercase tracking-widest shadow-md transition-all";
-                showClipboardToast("Signed in as demo-developer!");
-            } else {
-                btn.innerHTML = "Sign In";
-                btn.className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-black hover:bg-indigo-700 text-[10px] uppercase tracking-widest shadow-md transition-all";
-                showClipboardToast("Signed out!");
-            }
-        }
-
         // Clipboard Copy Helper Notification Toast
         function showClipboardToast(message = "Copied successfully!") {
             const toast = document.getElementById('clipboard-toast');
@@ -628,6 +653,42 @@
                 window.addEventListener('DOMContentLoaded', () => updateThemeIcon(false));
             }
         })();
+
+        // Scroll-triggered reveal animations + staggered entrance
+        document.addEventListener('DOMContentLoaded', function () {
+            // Auto-tag sections & card grids so every page animates without per-template markup
+            document.querySelectorAll('main > section, main > div > section').forEach(function (el) {
+                if (!el.classList.contains('reveal')) el.classList.add('reveal');
+            });
+            document.querySelectorAll('.tool-card, .glass-card, .mega-link, .mob-link').forEach(function (el, i) {
+                if (!el.classList.contains('reveal')) {
+                    el.classList.add('reveal');
+                    el.style.transitionDelay = ((i % 10) * 45) + 'ms';
+                }
+            });
+            document.querySelectorAll('.reveal').forEach(function (el, i) {
+                if (!el.style.transitionDelay) {
+                    el.style.transitionDelay = ((i % 8) * 70) + 'ms';
+                }
+            });
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+            document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+            // Safety net: never leave content invisible (e.g. JS observer edge cases)
+            setTimeout(function () {
+                document.querySelectorAll('.reveal:not(.revealed)').forEach(function (el) {
+                    const r = el.getBoundingClientRect();
+                    if (r.top < window.innerHeight) el.classList.add('revealed');
+                });
+            }, 1200);
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>
