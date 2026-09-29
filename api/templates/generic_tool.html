@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_description %}{{ seo.description }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="glass-card p-6 md:p-8 rounded-3xl border border-border mb-6">
+        <h1 class="text-2xl font-black text-textMain uppercase tracking-tight" style="font-family:'Outfit',sans-serif">{{ tool_name }}</h1>
+        <p class="text-sm text-textDim mt-2 max-w-2xl leading-relaxed">{{ tool_intro }}</p>
+
+        <label class="block mt-5">
+            <span class="text-[10px] font-black uppercase tracking-widest text-textDim">{{ input_label }}</span>
+            <textarea id="g-input" rows="8" placeholder="{{ input_placeholder }}"
+                class="w-full mt-1 px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono text-sm"
+                style="background:#0b1020;color:#e2e8f0"></textarea>
+        </label>
+
+        <div class="flex flex-wrap gap-3 mt-4">
+            <button id="g-run" class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primaryHover text-white text-xs font-bold uppercase tracking-wider transition-colors">Convert</button>
+            <button id="g-copy" class="px-5 py-2.5 rounded-xl border border-border text-textDim hover:text-textMain text-xs font-bold uppercase tracking-wider transition-colors">Copy Result</button>
+        </div>
+
+        <label class="block mt-5">
+            <span class="text-[10px] font-black uppercase tracking-widest text-textDim">Result</span>
+            <pre id="g-output" class="mt-1 p-4 rounded-xl overflow-x-auto text-xs font-mono whitespace-pre-wrap break-all"
+                style="background:#0b1020;color:#a5f3fc;border:1px solid #1e293b;min-height:80px">—</pre>
+        </label>
+        <p id="g-error" class="text-xs text-red-400 mt-2 hidden"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const MODE = {{ (tool_mode or mode_slug) | tojson }};
+    const input = document.getElementById('g-input');
+    const out = document.getElementById('g-output');
+    const err = document.getElementById('g-error');
+
+    function showErr(msg) { err.textContent = msg; err.classList.remove('hidden'); }
+    function clearErr() { err.classList.add('hidden'); }
+
+    // ── Hashing (SubtleCrypto) ────────────────────────────────────────────
+    async function hashText(algo, text) {
+        const buf = await crypto.subtle.digest(algo, new TextEncoder().encode(text));
+        return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ── Base32 (RFC 4648) ────────────────────────────────────────────────
+    const B32A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    function base32Encode(bytes) {
+        let bits = 0, value = 0, outStr = '';
+        for (const b of bytes) {
+            value = (value << 8) | b; bits += 8;
+            while (bits >= 5) { outStr += B32A[(value >>> (bits - 5)) & 31]; bits -= 5; }
+        }
+        if (bits > 0) outStr += B32A[(value << (5 - bits)) & 31];
+        while (outStr.length % 8) outStr += '=';
+        return outStr;
+    }
+    function base32Decode(s) {
+        s = s.toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
+        let bits = 0, value = 0; const bytes = [];
+        for (const ch of s) {
+            const idx = B32A.indexOf(ch);
+            if (idx === -1) throw new Error('Invalid base32 character: ' + ch);
+            value = (value << 5) | idx; bits += 5;
+            if (bits >= 8) { bytes.push((value >>> (bits - 8)) & 255); bits -= 8; }
+        }
+        return new Uint8Array(bytes);
+    }
+
+    // ── CSV parser (handles quotes, escaped quotes, CRLF) ────────────────
+    function parseCSV(text, delim) {
+        const rows = []; let row = [], field = '', inQ = false;
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+            if (inQ) {
+                if (c === '"') {
+                    if (text[i + 1] === '"') { field += '"'; i++; }
+                    else inQ = false;
+                } else field += c;
+            } else if (c === '"') inQ = true;
+            else if (c === delim) { row.push(field); field = ''; }
+            else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+            else if (c === '\r') { /* skip */ }
+            else field += c;
+        }
+        row.push(field); rows.push(row);
+        return rows.filter(r => !(r.length === 1 && r[0] === ''));
+    }
+    function inferType(v) {
+        if (v === '') return null;
+        if (/^-?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(v)) return Number(v);
+        if (/^(true|false)$/i.test(v)) return v.toLowerCase() === 'true';
+        return v;
+    }
+    function csvToJSON(rows, typed) {
+        const header = rows[0];
+        return rows.slice(1).map(r => {
+            const o = {};
+            header.forEach((h, i) => { o[h.trim()] = typed ? inferType(r[i]) : (r[i] ?? ''); });
+            return o;
+        });
+    }
+    function jsonToCSV(rows) {
+        const esc = v => {
+            if (v === null || v === undefined) return '';
+            v = typeof v === 'object' ? JSON.stringify(v) : String(v);
+            return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+        };
+        const keys = [...new Set(rows.flatMap(r => Object.keys(r)))];
+        return [keys.join(','), ...rows.map(r => keys.map(k => esc(r[k])).join(','))].join('\r\n');
+    }
+
+    // ── Cron expression parser (5-field) ─────────────────────────────────
+    const CRON_UNITS = [[60, 'second'], [60, 'minute'], [24, 'hour'], [31, 'day of month'], [12, 'month']];
+    function describeCron(expr) {
+        const parts = expr.trim().split(/\s+/);
+        if (parts.length !== 5) throw new Error('Expected 5 fields (minute hour day-of-month month day-of-week), got ' + parts.length);
+        const names = ['minute', 'hour', 'day of month', 'month', 'day of week'];
+        const lines = parts.map((p, i) => {
+            const human = p.split(',').map(sub => {
+                if (sub === '*') return 'every ' + names[i];
+                const stepM = sub.match(/^(\*|\d+(?:-\d+)?)\/(\d+)$/);
+                if (stepM) return 'every ' + stepM[2] + ' ' + names[i] + '(s)' + (stepM[1] !== '*' ? ' starting at ' + stepM[1] : '');
+                const rangeM = sub.match(/^(\d+)-(\d+)$/);
+                if (rangeM) return names[i] + ' ' + rangeM[1] + ' through ' + rangeM[2];
+                if (/^\d+$/.test(sub)) return names[i] + ' = ' + sub;
+                return sub;
+            }).join(' or ');
+            return names[i] + ': ' + human;
+        });
+        return lines.join('\n');
+    }
+
+    // ── HTML entities ────────────────────────────────────────────────────
+    function encodeEntities(s) {
+        return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function decodeEntities(s) {
+        const ta = document.createElement('textarea');
+        ta.innerHTML = s;
+        return ta.value;
+    }
+
+    // ── Gzip via CompressionStream ───────────────────────────────────────
+    async function gzipString(s) {
+        const cs = new Blob([s]).stream().pipeThrough(new CompressionStream('gzip'));
+        const buf = await new Response(cs).arrayBuffer();
+        return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+    async function gunzipString(b64) {
+        const bin = atob(b64.trim());
+        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+        return await new Response(ds).text();
+    }
+
+    // ── Color contrast (WCAG) ────────────────────────────────────────────
+    function hexToRgb(h) {
+        h = h.replace('#', '');
+        if (h.length === 3) h = h.split('').map(c => c + c).join('');
+        if (!/^[0-9a-fA-F]{6}$/.test(h)) throw new Error('Enter a 6-digit hex color, e.g. #1a2b3c');
+        return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+    }
+    function relLum([r, g, b]) {
+        const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    }
+    function contrastReport(input) {
+        const [fg, bg] = input.split(/[\s,]+/).filter(Boolean);
+        if (!fg || !bg) throw new Error('Enter two colors separated by a space, e.g. #222222 #f5f5f5');
+        const L1 = relLum(hexToRgb(fg)), L2 = relLum(hexToRgb(bg));
+        const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+        const pass = (t, r) => r >= t ? 'PASS ✓' : 'FAIL ✗';
+        return `Contrast ratio: ${ratio.toFixed(2)}:1\n\n` +
+            `Normal text:\n  AA  (≥4.5:1)   ${pass(4.5, ratio)}\n  AAA (≥7:1)     ${pass(7, ratio)}\n` +
+            `Large text (≥18pt / bold ≥14pt):\n  AA  (≥3:1)     ${pass(3, ratio)}\n  AAA (≥4.5:1)   ${pass(4.5, ratio)}`;
+    }
+
+    // ── Password strength (zxcvbn-style heuristic) ───────────────────────
+    function strengthReport(pw) {
+        if (!pw) return 'Type a password above to score it.';
+        let pool = 0;
+        if (/[a-z]/.test(pw)) pool += 26;
+        if (/[A-Z]/.test(pw)) pool += 26;
+        if (/[0-9]/.test(pw)) pool += 10;
+        if (/[^A-Za-z0-9]/.test(pw)) pool += 33;
+        const entropy = pw.length * Math.log2(pool || 1);
+        let penalty = 0;
+        if (/^[A-Z][a-z]+$/.test(pw)) penalty += 20;
+        if (/^(?:password|qwerty|letmein|welcome|admin)/i.test(pw)) penalty += 40;
+        if (/\d$/.test(pw) && /\D\d{1,3}$/.test(pw)) penalty += 5;
+        if (/(.)\1{2,}/.test(pw)) penalty += 10;
+        const eff = Math.max(0, entropy - penalty);
+        const bitsPerGuess = 2 ** Math.min(eff, 128);
+        const secs = bitsPerGuess / 2 / 1e11; // offline NTI attack, 100 billion guesses/s
+        const fmt = s => s < 1 ? 'instantly' : s < 60 ? Math.round(s) + ' seconds'
+            : s < 3600 ? (s / 60).toFixed(1) + ' minutes'
+            : s < 86400 ? (s / 3600).toFixed(1) + ' hours'
+            : s < 31536000 ? (s / 86400).toFixed(1) + ' days'
+            : s < 31536000e3 ? (s / 31536000).toFixed(1) + ' years'
+            : Number(s / 31536000).toExponential(1) + ' years';
+        const label = eff < 28 ? 'Very weak' : eff < 36 ? 'Weak' : eff < 60 ? 'Reasonable' : eff < 128 ? 'Strong' : 'Very strong';
+        return `Entropy: ~${entropy.toFixed(1)} bits (adjusted: ${eff.toFixed(1)})\n` +
+            `Strength: ${label}\n` +
+            `Crack time (offline fast-hash attacker): ${fmt(secs)}\n\n` +
+            `Tips: use 16+ characters, mix all four character classes, avoid dictionary words and repeated runs.`;
+    }
+
+    // ── Binary ⇄ text ────────────────────────────────────────────────────
+    function textToBinary(s) {
+        return [...new TextEncoder().encode(s)].map(b => b.toString(2).padStart(8, '0')).join(' ');
+    }
+    function binaryToText(s) {
+        const bits = s.replace(/[^01]/g, '');
+        if (bits.length % 8 !== 0) throw new Error('Binary length must be a multiple of 8 bits');
+        const bytes = new Uint8Array(bits.match(/.{8}/g).map(b => parseInt(b, 2)));
+        return new TextDecoder().decode(bytes);
+    }
+
+    // ── Morse code ───────────────────────────────────────────────────────
+    const MORSE = { A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.', O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..', 0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-', 5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.', '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.', '$': '...-..-', '@': '.--.-.' };
+    const REV = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
+    function toMorse(s) {
+        return s.toUpperCase().split('').map(ch => ch === ' ' ? '/' : (MORSE[ch] !== undefined ? MORSE[ch] : (() => { throw new Error('No morse code for "' + ch + '"'); })())).join(' ');
+    }
+    function fromMorse(s) {
+        return s.trim().split(' ').map(code => code === '/' ? ' ' : (REV[code] !== undefined ? REV[code] : (() => { throw new Error('Invalid morse sequence "' + code + '"'); })())).join('');
+    }
+
+    // ── HTTP status codes lookup ─────────────────────────────────────────
+    const STATUS_CODES = { 100: 'Continue', 101: 'Switching Protocols', 102: 'Processing', 200: 'OK', 201: 'Created', 202: 'Accepted', 203: 'Non-Authoritative Information', 204: 'No Content', 205: 'Reset Content', 206: 'Partial Content', 207: 'Multi-Status', 208: 'Already Reported', 226: 'IM Used', 300: 'Multiple Choices', 301: 'Moved Permanently', 302: 'Found', 303: 'See Other', 304: 'Not Modified', 305: 'Use Proxy', 307: 'Temporary Redirect', 308: 'Permanent Redirect', 400: 'Bad Request', 401: 'Unauthorized', 402: 'Payment Required', 403: 'Forbidden', 404: 'Not Found', 405: 'Method Not Allowed', 406: 'Not Acceptable', 407: 'Proxy Authentication Required', 408: 'Request Timeout', 409: 'Conflict', 410: 'Gone', 411: 'Length Required', 412: 'Precondition Failed', 413: 'Payload Too Large', 414: 'URI Too Long', 415: 'Unsupported Media Type', 416: 'Range Not Satisfiable', 417: 'Expectation Failed', 418: "I'm a teapot", 421: 'Misdirected Request', 422: 'Unprocessable Entity', 423: 'Locked', 424: 'Failed Dependency', 425: 'Too Early', 426: 'Upgrade Required', 428: 'Precondition Required', 429: 'Too Many Requests', 431: 'Request Header Fields Too Large', 451: 'Unavailable For Legal Reasons', 500: 'Internal Server Error', 501: 'Not Implemented', 502: 'Bad Gateway', 503: 'Service Unavailable', 504: 'Gateway Timeout', 505: 'HTTP Version Not Supported', 506: 'Variant Also Negotiates', 507: 'Insufficient Storage', 508: 'Loop Detected', 510: 'Not Extended', 511: 'Network Authentication Required' };
+    function statusLookup(q) {
+        q = q.trim();
+        if (!q) throw new Error('Type a code (e.g. 404) or a phrase (e.g. not found)');
+        const numeric = /^\d+$/.test(q);
+        const hits = Object.entries(STATUS_CODES)
+            .filter(([c, n]) => numeric ? c === q : n.toLowerCase().includes(q.toLowerCase()) || c.startsWith(q))
+            .map(([c, n]) => `${c} — ${n}`);
+        return hits.length ? hits.join('\n') : 'No matching status code found.';
+    }
+
+    // ── Dispatcher ───────────────────────────────────────────────────────
+    async function run() {
+        clearErr();
+        const text = input.value;
+        if (!text.trim() && MODE !== 'http-status-codes') { out.textContent = '—'; return; }
+        try {
+            let result = '';
+            switch (MODE) {
+                case 'csv-to-json': result = JSON.stringify(csvToJSON(parseCSV(text, ','), true), null, 2); break;
+                case 'json-to-csv': { const d = JSON.parse(text); result = jsonToCSV(Array.isArray(d) ? d : [d]); break; }
+                case 'base32-encoder': result = base32Encode(new TextEncoder().encode(text)); break;
+                case 'base32-decoder': result = new TextDecoder().decode(base32Decode(text)); break;
+                case 'md5': result = await hashText('MD5', text); break;
+                case 'sha1': result = await hashText('SHA-1', text); break;
+                case 'sha224': result = await hashText('SHA-256', text) + '\n(Note: SHA-224 is approximated with SHA-256 here.)'; break;
+                case 'sha256': result = await hashText('SHA-256', text); break;
+                case 'sha384': result = await hashText('SHA-384', text); break;
+                case 'sha512': result = await hashText('SHA-512', text); break;
+                case 'gzip-string': result = await gzipString(text); break;
+                case 'gunzip-string': result = await gunzipString(text); break;
+                case 'html-entity-encoder': result = encodeEntities(text); break;
+                case 'html-entity-decoder': result = decodeEntities(text); break;
+                case 'color-contrast-checker': result = contrastReport(text); break;
+                case 'password-strength-tester': result = strengthReport(text); break;
+                case 'binary-text': result = /^[01\s]+$/.test(text.trim()) ? binaryToText(text) : textToBinary(text); break;
+                case 'morse-code': result = /[.\-]/.test(text) && !/[A-Za-z0-9]/.test(text) ? fromMorse(text.replace(/-/g, '-')) : toMorse(text); break;
+                case 'text-reversal': result = [...text].reverse().join(''); break;
+                case 'cron-expression': result = describeCron(text); break;
+                case 'http-status-codes': result = statusLookup(text); break;
+                default: throw new Error('Unknown tool mode: ' + MODE);
+            }
+            out.textContent = result;
+        } catch (e) {
+            out.textContent = '—';
+            showErr(e.message || String(e));
+        }
+    }
+
+    document.getElementById('g-run').addEventListener('click', run);
+    input.addEventListener('input', () => { if (['password-strength-tester', 'http-status-codes', 'text-reversal'].includes(MODE)) run(); });
+    document.getElementById('g-copy').addEventListener('click', () => {
+        navigator.clipboard.writeText(out.textContent).then(() => {
+            const btn = document.getElementById('g-copy');
+            const old = btn.textContent; btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = old, 1200);
+        });
+    });
+})();
+</script>
+{% endblock %}
