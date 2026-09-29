@@ -106,6 +106,10 @@ function maskContent(content, lang = 'python', customRules = [], options = {}) {
     });
 
     if (!settings.maskIdentifiers && !settings.maskStrings) {
+        // Restore string literals that were only used as secret placeholders.
+        Object.entries(mapping).forEach(([original, masked]) => {
+            processedContent = processedContent.replace(new RegExp(`(["'])${escapeRegExp(masked)}\\1`, 'g'), `$1${original}$1`);
+        });
         return { maskedCode: processedContent, mapping };
     }
 

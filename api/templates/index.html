@@ -1,571 +1,383 @@
 {% extends "base.html" %}
 
 {% block extra_styles %}
-        .code-masker-page body {
-            font-family: 'Inter', sans-serif;
-        }
+.code-font { font-family: 'Fira Code', monospace; }
+.glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+.btn-premium { background: linear-gradient(135deg,#6366f1 0%,#4f46e5 100%); transition: all .3s cubic-bezier(.4,0,.2,1); }
+.btn-premium:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -10px #6366f1; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
 
-        .code-font {
-            font-family: 'Fira Code', monospace;
-        }
+.prism-editor { position: relative; min-height: 300px; }
+.prism-editor textarea, .prism-editor pre {
+  position: absolute; inset: 0; margin: 0; padding: 1.25rem 1.5rem;
+  font-family: 'Fira Code', monospace; font-size: 12px; line-height: 1.6;
+  white-space: pre; overflow: auto; border-radius: .75rem; box-sizing: border-box;
+}
+.prism-editor textarea {
+  background: transparent; color: var(--text-main,#f3f4f6); caret-color: var(--text-main,#f3f4f6);
+  border: none; outline: none; resize: none; z-index: 2;
+}
+.prism-editor pre { z-index: 1; pointer-events: none; background: transparent; color: var(--text-main,#f3f4f6); }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+.loading-spinner {
+  display: inline-block; width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
+  animation: masker-spin .7s linear infinite; vertical-align: middle;
+}
+@keyframes masker-spin { to { transform: rotate(360deg); } }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+.ad-tag-invisible { position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+.ad-mount { width: 100%; display: flex; justify-content: center; }
+.ad-mount-leaderboard { max-width: 728px; min-height: 90px; overflow: hidden; }
+.ad-slot { width: 728px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.ad-slot-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: rgba(148,163,184,.4); font-weight: 800; white-space: nowrap; }
+.ad-slot-inner { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .5rem; }
+.ad-slot-native { width: 100%; max-width: 100%; }
+.ad-mount-leaderboard .ad-slot-inner iframe { min-height: 90px; }
+.socialbar-anchor { position: fixed; bottom: 0; left: 0; right: 0; z-index: 60; display: flex; justify-content: center; pointer-events: none; }
+.socialbar-anchor .ad-slot { width: auto; pointer-events: auto; }
+.ad-strip-scroll { overflow-x: auto; }
+{% endblock %}
 
-        .gradient-bg {
-            background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #000000);
-        }
+{% block content %}
+<section class="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-12">
+  <div class="text-center mb-12">
+    <span class="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[3px] mb-6">Privacy First Engine</span>
+    <h1 class="text-3xl md:text-5xl font-black text-textMain uppercase tracking-tight logo-font leading-tight">AI Code Masker</h1>
+    <p class="text-sm text-textDim mt-4 max-w-2xl mx-auto leading-relaxed font-medium">Anonymize identifiers, secrets and tokens in your source code before sending it to any AI assistant — then restore it perfectly afterwards. Everything runs 100% locally in your browser.</p>
+    <div class="mt-8 flex items-center justify-center gap-4">
+      <button onclick="scrollToEditor()" class="btn-premium px-8 py-3 rounded-xl text-white text-[10px] font-black uppercase tracking-[2px]">Start Masking</button>
+      <a href="/tools" class="px-8 py-3 rounded-xl border border-border text-textDim hover:text-textMain text-[10px] font-black uppercase tracking-[2px] transition-all">All Tools</a>
+    </div>
+  </div>
+</section>
 
-        .btn-premium {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-premium:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 20px -10px #6366f1;
-        }
-
-        .tab-btn.active {
-            color: white;
-            background: rgba(99, 102, 241, 0.15);
-            border-color: rgba(99, 102, 241, 0.4);
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* ---------- Ad slot layout (see templates/partials/ads.html) ---------- */
-        .ad-tag-invisible {
-            position: absolute;
-            width: 0;
-            height: 0;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .ad-mount {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .ad-mount-leaderboard {
-            max-width: 728px;
-            min-height: 90px;
-            overflow: hidden;
-        }
-
-        .ad-slot {
-            width: 728px;
-            max-width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .ad-slot-label {
-            font-size: 8px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: rgba(148, 163, 184, 0.4);
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .ad-slot-inner {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .ad-slot-native {
-            width: 100%;
-            max-width: 100%;
-        }
-
-        /* Leaderboards keep their 90px height so the UI does not jump */
-        .ad-mount-leaderboard .ad-slot-inner iframe {
-            min-height: 90px;
-        }
-
-        /* SocialBar_1 host: pinned to the bottom edge, click-through wrapper */
-        .socialbar-anchor {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 60;
-            display: flex;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .socialbar-anchor .ad-slot {
-            width: auto;
-            pointer-events: auto;
-        }
-
-        .ad-strip-scroll {
-            overflow-x: auto;
-        }
-    </style>
-</head>
-
-<body class="gradient-bg text-slate-200 h-screen w-screen flex flex-row overflow-hidden">
-    <!-- Sidebar Navigation -->
-    <aside
-        class="w-20 lg:w-64 glass border-r border-white/5 flex flex-col items-center lg:items-stretch py-8 space-y-10 z-50">
-        <div class="flex items-center px-6 space-x-3 group cursor-pointer" onclick="window.location.reload()">
-            <div
-                class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                    </path>
-                </svg>
-            </div>
-            <div class="hidden lg:block">
-                <h1 class="text-sm font-bold text-white tracking-widest uppercase">Code Masker</h1>
-                <p class="text-[9px] text-indigo-400 font-bold uppercase opacity-80">Workspace v2.1</p>
-            </div>
+<section id="editor" class="max-w-7xl mx-auto px-6 md:px-12 pb-24 scroll-mt-20">
+  <div class="bg-card rounded-[32px] overflow-hidden flex flex-col items-stretch border border-border shadow-premium transition-all duration-300">
+    <div class="min-h-14 border-b border-border flex flex-wrap items-center justify-between gap-4 px-8 py-3 bg-slate-50/50 dark:bg-white/[0.01]">
+      <div class="flex items-center space-x-6">
+        <div class="flex bg-slate-200/50 dark:bg-black/40 rounded-xl p-1 border border-border">
+          <button id="mode-mask" onclick="switchMode('mask')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white bg-primary shadow-md transition-all duration-200">Protect</button>
+          <button id="mode-restore" onclick="switchMode('restore')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-textDim hover:text-textMain transition-all duration-200">Restore</button>
         </div>
-    </section>
+        <select id="lang-select" onchange="onInput()" class="bg-transparent text-[9px] font-black text-primary uppercase tracking-widest outline-none cursor-pointer">
+          <option class="bg-card text-textMain" value="python">Python</option>
+          <option class="bg-card text-textMain" value="javascript">JavaScript</option>
+          <option class="bg-card text-textMain" value="java">Java</option>
+        </select>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="btn-load-sample" onclick="loadSample()" class="text-[9px] font-bold text-primary hover:text-primaryHover uppercase tracking-widest transition-all">Load Sample</button>
+        <div class="h-4 w-px bg-border"></div>
+        <button id="btn-execute" onclick="execute()" class="px-6 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white text-[9px] font-black uppercase tracking-widest transition-all shadow-md">
+          <span id="btn-text">Execute Shift</span>
+          <div id="btn-spinner" class="loading-spinner hidden"></div>
+        </button>
+        <div class="h-4 w-px bg-border"></div>
+        <button onclick="clearAll()" class="text-[9px] font-bold text-textDim hover:text-rose-500 uppercase tracking-widest transition-all">Clear</button>
+      </div>
+    </div>
 
-    <!-- Interactive Masker Editor -->
-    <section id="editor" class="max-w-7xl mx-auto px-6 md:px-12 pb-24 scroll-mt-20">
-        <div class="bg-card rounded-[32px] overflow-hidden flex flex-col items-stretch border border-border shadow-premium transition-all duration-300">
-            
-            <!-- Editor Toolbar -->
-            <div class="h-14 border-b border-border flex items-center justify-between px-8 bg-slate-50/50 dark:bg-white/[0.01]">
-                <div class="flex items-center space-x-6">
-                    <div class="flex bg-slate-200/50 dark:bg-black/40 rounded-xl p-1 border border-border">
-                        <button id="mode-mask" onclick="switchMode('mask')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white bg-primary shadow-md transition-all duration-200">Protect</button>
-                        <button id="mode-restore" onclick="switchMode('restore')" class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-textDim hover:text-textMain transition-all duration-200">Restore</button>
-                    </div>
-                    <select id="lang-select" onchange="highlight()" class="bg-transparent text-[9px] font-black text-primary uppercase tracking-widest outline-none cursor-pointer">
-                        <option class="bg-card text-textMain" value="python">Python</option>
-                        <option class="bg-card text-textMain" value="javascript">JavaScript</option>
-                        <option class="bg-card text-textMain" value="java">Java</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <button id="btn-load-sample" onclick="loadSample()" class="text-[9px] font-bold text-primary hover:text-primaryHover uppercase tracking-widest transition-all">Load Sample</button>
-                    <div class="h-4 w-px bg-border"></div>
-                    <button id="btn-execute" onclick="execute()" class="px-6 py-2 rounded-lg bg-primary hover:bg-primaryHover text-white text-[9px] font-black uppercase tracking-widest transition-all shadow-md">
-                        <span id="btn-text">Execute Shift</span>
-                        <div id="btn-spinner" class="loading-spinner hidden"></div>
-                    </button>
-                    <div class="h-4 w-px bg-border"></div>
-                    <button onclick="clearAll()" class="text-[9px] font-bold text-textDim hover:text-rose-500 uppercase tracking-widest transition-all">Clear</button>
-                </div>
-            </div>
-            <button
-                class="w-full btn-premium py-3 rounded-xl text-[10px] font-black uppercase tracking-[2px]">Upgrade</button>
+    <div id="editor-grid" class="grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 items-stretch">
+      <div id="input-pane" class="flex flex-col space-y-4">
+        <div class="flex justify-between items-center text-[10px] font-black text-primary tracking-[3px] uppercase">
+          <span id="input-label">Source Input</span>
+          <span id="char-count" class="text-textDim normal-case tracking-normal">0 chars</span>
         </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col h-full bg-black/20 overflow-hidden">
-        <!-- Ad strip: 728x90 leaderboard, centred above the toolbar -->
-        <div id="ad-strip-top"
-            class="shrink-0 flex items-center justify-center px-4 py-2 border-b border-white/5 glass ad-strip-scroll">
-            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90"></div>
+        <div class="bg-black/5 dark:bg-black/30 rounded-xl border border-border prism-editor min-h-[300px]">
+          <textarea id="src-input" spellcheck="false" placeholder="Paste your source code here..." oninput="onInput()" onscroll="syncScroll(this,'src-pre')"></textarea>
+          <pre id="src-pre"><code></code></pre>
         </div>
-
-        <!-- Top Toolbar -->
-        <div class="h-16 border-b border-white/5 flex items-center justify-between px-10 glass">
-            <div class="flex space-x-1 p-1 bg-white/5 rounded-xl">
-                <button id="tab-mask" onclick="switchTab('mask')"
-                    class="tab-btn active px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent">MASK</button>
-                <button id="tab-unmask" onclick="switchTab('unmask')"
-                    class="tab-btn px-6 py-1.5 rounded-lg text-xs font-bold transition-all border border-transparent text-slate-500 hover:text-slate-300">RESTORE</button>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Language:</span>
-                <select id="lang-select"
-                    class="bg-indigo-600/10 text-indigo-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-indigo-500/20 uppercase tracking-widest outline-none cursor-pointer">
-                    <option value="java" selected>Java</option>
-                    <option value="python">Python</option>
-                    <option value="javascript">JavaScript</option>
-                </select>
-            </div>
+      </div>
+      <div id="output-pane" class="flex flex-col space-y-4">
+        <div class="flex justify-between items-center text-[10px] font-black text-primary tracking-[3px] uppercase">
+          <span>Masked Output</span>
+          <div class="flex space-x-3 normal-case tracking-normal">
+            <button onclick="copyOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy</button>
+            <button onclick="downloadOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Download</button>
+          </div>
         </div>
-
-        <!-- Editor Area -->
-        <div id="editor-grid" class="flex-grow grid grid-cols-1 lg:grid-cols-2 p-8 gap-8 overflow-hidden items-stretch">
-            <!-- Left Pane (Input) -->
-            <div id="input-pane" class="flex flex-col space-y-4">
-                <div
-                    class="flex justify-between items-center text-[10px] font-black text-indigo-400 tracking-[3px] uppercase">
-                    <span id="field-label">Original Source</span>
-                    <span id="char-count" class="text-slate-600">0 chars</span>
-                </div>
-
-                <!-- Output Panel -->
-                <div class="flex flex-col bg-slate-50/30 dark:bg-black/20">
-                    <div class="h-10 flex items-center justify-between px-8 border-b border-border">
-                        <span class="text-[8px] font-black text-primary uppercase tracking-widest">Masked Output</span>
-                        <div class="flex space-x-3">
-                            <button onclick="copyOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy</button>
-                            <button onclick="downloadOutput()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Download</button>
-                        </div>
-                    </div>
-                    <div class="flex-grow prism-editor min-h-[300px]">
-                        <textarea id="result-input" class="text-textMain placeholder-textDim/50" spellcheck="false" onscroll="syncScroll(this, 'result-pre')" readonly>Waiting for logic protection...</textarea>
-                        <pre id="result-pre" class="language-python"><code>Waiting for logic protection...</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings / Heuristics Parameters -->
-            <div class="border-t border-border bg-slate-50/30 dark:bg-black/40 p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="col-span-1">
-                    <h4 class="text-[9px] font-black text-primary uppercase tracking-widest mb-4">Privacy Heuristics</h4>
-                    <div class="space-y-3">
-                        <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Identifiers</span>
-                            <input type="checkbox" id="rule-idents" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
-                        </label>
-                        <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Secrets & Tokens</span>
-                            <input type="checkbox" id="rule-secrets" checked class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
-                        </label>
-                        <label class="flex items-center justify-between group cursor-pointer">
-                            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Sensitive Strings</span>
-                            <input type="checkbox" id="rule-strings" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="col-span-2">
-                    <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-[9px] font-black text-primary uppercase tracking-widest">Restoration Map</h4>
-                        <button onclick="copyMap()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy Map JSON</button>
-                    </div>
-                    <div id="map-output" class="h-28 w-full bg-black/5 dark:bg-black/40 rounded-xl border border-border p-4 text-[10px] code-font text-emerald-600 dark:text-emerald-500/80 overflow-auto">
-                        Map values will populate here. Use these to restore your code later.
-                    </div>
-                </div>
-            </div>
+        <div class="bg-black/5 dark:bg-black/30 rounded-xl border border-border prism-editor min-h-[300px]">
+          <textarea id="result-input" spellcheck="false" onscroll="syncScroll(this,'result-pre')" readonly>Waiting for logic protection...</textarea>
+          <pre id="result-pre"><code>Waiting for logic protection...</code></pre>
         </div>
+      </div>
+    </div>
 
-        <!-- Ad footer: Native Banner + 728x90_1 leaderboard -->
-        <footer id="ad-footer"
-            class="shrink-0 border-t border-white/5 glass px-4 py-2 flex flex-col items-center gap-2 overflow-y-auto max-h-[46vh]">
-            <div class="ad-mount ad-mount-native w-full" data-ad-mount="NativeBanner_1"></div>
-            <div class="ad-mount ad-mount-leaderboard leaderboard-scaler" data-ad-mount="728x90_1"></div>
-        </footer>
-    </main>
-
-    {# ---- AD TAGS: Popunder_1, Smartlink_1, 728x90, SocialBar_1, NativeBanner_1, 728x90_1 ---- #}
-    {% include 'partials/ads.html' %}
-
-    <script>
-        /* ------------------------------------------------------------
-           Ad slot mounting.
-           The raw tag markup lives in templates/partials/ads.html and is
-           loaded at the very end of <body>. Here we relocate each tagged
-           block into its styled placeholder (data-ad-mount) so the ads sit
-           inside the workspace layout instead of breaking out of it.
-           Popunder_1 / Smartlink_1 stay where they are (they render no
-           in-page creative), and SocialBar_1 is pinned to the bottom edge.
-           Scripts are re-created on move because cloned <script> nodes do
-           not execute.
-           ------------------------------------------------------------ */
-        function mountAdSlots() {
-            const INVISIBLE = ['Popunder_1', 'Smartlink_1'];
-            const blocks = Array.from(document.querySelectorAll('[data-ad-name]'));
-
-            blocks.forEach((block) => {
-                const name = block.getAttribute('data-ad-name');
-                if (INVISIBLE.includes(name)) return; // keep executing in place
-
-                let target;
-                if (name === 'SocialBar_1') {
-                    target = document.getElementById('socialbar-anchor');
-                } else {
-                    target = document.querySelector('[data-ad-mount="' + name + '"]');
-                }
-                if (!target) return;
-
-                // Move the node itself (preserves live scripts) then re-run them.
-                target.appendChild(block);
-                block.querySelectorAll('script').forEach((oldScript) => {
-                    const fresh = document.createElement('script');
-                    if (oldScript.src) {
-                        fresh.src = oldScript.src;
-                        fresh.async = oldScript.async;
-                        if (oldScript.getAttribute('data-cfasync')) {
-                            fresh.setAttribute('data-cfasync', oldScript.getAttribute('data-cfasync'));
-                        }
-                    } else {
-                        fresh.text = oldScript.textContent;
-                    }
-                    oldScript.replaceWith(fresh);
-                });
-            });
-        }
-
-        /* Scale the fixed 728px leaderboards down on narrow screens. */
-        function scaleAdSlots() {
-            document.querySelectorAll('.leaderboard-scaler').forEach((host) => {
-                const available = host.parentElement.clientWidth - 16;
-                const ratio = Math.min(1, available / 728);
-                const inner = host.querySelector('.ad-slot');
-                if (!inner) return;
-                inner.style.transform = 'scale(' + ratio + ')';
-                inner.style.transformOrigin = 'top center';
-                host.style.height = Math.round((90 + 18) * ratio) + 'px';
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            mountAdSlots();
-            scaleAdSlots();
-            window.addEventListener('resize', scaleAdSlots);
-            // Leaderboards inject their iframe asynchronously.
-            setTimeout(scaleAdSlots, 1500);
-        });
-    </script>
-
-    <script>
-        let currentMode = 'mask';
-
-        window.addEventListener('load', () => {
-            gsap.from("aside", { x: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
-            gsap.from(".glass", { y: -100, opacity: 0, duration: 0.8, ease: "power4.out" });
-            gsap.from("#editor-grid > div", { y: 20, opacity: 0, duration: 1, delay: 0.3, stagger: 0.2, ease: "expo.out" });
-        });
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Coding utilities -->
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
-                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Developer Tools</h3>
-                <ul class="space-y-4">
-                    <li>
-                        <a href="/tools/json-formatter" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JSON Formatter & Editor</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Format, inspect, and validate nested JSON fields locally.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/tools/jwt-decoder" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JWT Token Inspector</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect headers, payload fields, and key algorithms.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/tools/api-tester" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">REST API Client Tester</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Send HTTP variables and payload packets locally.</p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Security utilities -->
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
-                <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Security Tools</h3>
-                <ul class="space-y-4">
-                    <li>
-                        <a href="/tools/sql-optimizer" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">SQL Performance Optimizer</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Analyze database tables and indexing benchmarks.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/base64" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">Base64 Converter</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Encode strings or convert file buffers locally.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/tools/qr-generator" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">QR Vector Code Generator</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Generate static barcode files without leaking destinations.</p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Healthcare utilities -->
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-accentEmerald/25 hover:-translate-y-0.5 transform transition-all duration-300">
-                <h3 class="text-xs font-black text-accentEmerald uppercase tracking-widest border-b border-border pb-3 mb-4">Healthcare Integrations</h3>
-                <ul class="space-y-4">
-                    <li>
-                        <a href="/clinical-parser" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HL7 v2 Message Beautifier</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Parse MSH, PID, and PV1 medical segments locally.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/clinical-parser" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">FHIR JSON Resource Parser</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect complex FHIR patient resource payloads securely.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/clinical-parser" class="block group">
-                            <h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HIPAA Privacy Validator</h4>
-                            <p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Ensure zero client information is transmitted online.</p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+    <div class="border-t border-border bg-slate-50/30 dark:bg-black/40 p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="col-span-1">
+        <h4 class="text-[9px] font-black text-primary uppercase tracking-widest mb-4">Privacy Heuristics</h4>
+        <div class="space-y-3">
+          <label class="flex items-center justify-between group cursor-pointer">
+            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Identifiers</span>
+            <input type="checkbox" id="rule-idents" checked onchange="onInput()" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+          </label>
+          <label class="flex items-center justify-between group cursor-pointer">
+            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Secrets &amp; Tokens</span>
+            <input type="checkbox" id="rule-secrets" checked onchange="onInput()" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+          </label>
+          <label class="flex items-center justify-between group cursor-pointer">
+            <span class="text-xs text-textDim group-hover:text-textMain transition-colors">Mask Sensitive Strings</span>
+            <input type="checkbox" id="rule-strings" onchange="onInput()" class="w-4 h-4 rounded bg-inputBg border border-inputBorder text-primary focus:ring-primary focus:ring-offset-background">
+          </label>
         </div>
-    </section>
-
-    <!-- Structured FAQ Accordion Section -->
-    <section class="max-w-4xl mx-auto px-6 pb-24">
-        <div class="text-center mb-16">
-            <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">FREQUENTLY ASKED QUESTIONS</h2>
-            <p class="text-xs text-textDim mt-2 font-medium">Everything you need to know about AI Code Masker security model.</p>
+      </div>
+      <div class="col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-[9px] font-black text-primary uppercase tracking-widest">Restoration Map</h4>
+          <button onclick="copyMap()" class="text-[8px] font-bold text-textDim hover:text-primary uppercase tracking-widest transition-all">Copy Map JSON</button>
         </div>
+        <div id="map-output" class="h-28 w-full bg-black/5 dark:bg-black/40 rounded-xl border border-border p-4 text-[10px] code-font text-emerald-600 dark:text-emerald-500/80 overflow-auto">Map values will populate here. Use these to restore your code later.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <div class="space-y-4">
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
-                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">How does the Code Masker work offline?</h4>
-                <p class="text-[11px] text-textDim leading-relaxed font-medium">
-                    All character scanning, regular expression matching, mapping tables, and substitutions occur entirely inside your browser's heap memory using client-side JavaScript. Since no fetch requests or network calls are triggered during execution, your code remains fully isolated.
-                </p>
-            </div>
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
-                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">What happens to the Restoration Map?</h4>
-                <p class="text-[11px] text-textDim leading-relaxed font-medium">
-                    The restoration map is compiled locally and printed to the map panel. You can copy it as a local JSON string. To restore your original code later, simply toggle the "Restore" mode, paste the masked code into the input, verify your map JSON is in the restoration panel, and click execute.
-                </p>
-            </div>
-            <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
-                <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">Can I customize the masking options?</h4>
-                <p class="text-[11px] text-textDim leading-relaxed font-medium">
-                    Yes. Under the settings panel, you can choose to mask specific identifiers (functions/variables), secrets & tokens (AWS keys, OpenAI strings), or general literal strings.
-                </p>
-            </div>
-        </div>
-    </section>
-</div>
+<section class="max-w-7xl mx-auto px-6 md:px-12 pb-24">
+  <div class="text-center mb-12">
+    <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">More Privacy-First Utilities</h2>
+    <p class="text-xs text-textDim mt-2 font-medium">Every tool below runs entirely inside your browser.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+      <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Developer Tools</h3>
+      <ul class="space-y-4">
+        <li><a href="/tools/json-formatter" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JSON Formatter &amp; Editor</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Format, inspect, and validate nested JSON fields locally.</p></a></li>
+        <li><a href="/tools/jwt-decoder" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">JWT Token Inspector</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect headers, payload fields, and key algorithms.</p></a></li>
+        <li><a href="/tools/api-tester" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">REST API Client Tester</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Send HTTP variables and payload packets locally.</p></a></li>
+      </ul>
+    </div>
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/25 hover:-translate-y-0.5 transform transition-all duration-300">
+      <h3 class="text-xs font-black text-primary uppercase tracking-widest border-b border-border pb-3 mb-4">Security Tools</h3>
+      <ul class="space-y-4">
+        <li><a href="/tools/sql-optimizer" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">SQL Performance Optimizer</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Analyze database tables and indexing benchmarks.</p></a></li>
+        <li><a href="/base64" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">Base64 Converter</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Encode strings or convert file buffers locally.</p></a></li>
+        <li><a href="/tools/qr-generator" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-primary transition-colors duration-200">QR Vector Code Generator</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Generate static barcode files without leaking destinations.</p></a></li>
+      </ul>
+    </div>
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-accentEmerald/25 hover:-translate-y-0.5 transform transition-all duration-300">
+      <h3 class="text-xs font-black text-accentEmerald uppercase tracking-widest border-b border-border pb-3 mb-4">Healthcare Integrations</h3>
+      <ul class="space-y-4">
+        <li><a href="/clinical-parser" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HL7 v2 Message Beautifier</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Parse MSH, PID, and PV1 medical segments locally.</p></a></li>
+        <li><a href="/clinical-parser" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">FHIR JSON Resource Parser</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Inspect complex FHIR patient resource payloads securely.</p></a></li>
+        <li><a href="/clinical-parser" class="block group"><h4 class="text-xs font-black text-textMain group-hover:text-accentEmerald transition-colors duration-200">HIPAA Privacy Validator</h4><p class="text-[10px] text-textDim mt-0.5 leading-normal font-medium">Ensure zero client information is transmitted online.</p></a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-4xl mx-auto px-6 pb-24">
+  <div class="text-center mb-16">
+    <h2 class="text-2xl md:text-3xl font-black text-textMain uppercase tracking-wider logo-font">FREQUENTLY ASKED QUESTIONS</h2>
+    <p class="text-xs text-textDim mt-2 font-medium">Everything you need to know about AI Code Masker security model.</p>
+  </div>
+  <div class="space-y-4">
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+      <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">How does the Code Masker work offline?</h4>
+      <p class="text-[11px] text-textDim leading-relaxed font-medium">All character scanning, regular expression matching, mapping tables, and substitutions occur entirely inside your browser's heap memory using client-side JavaScript. Since no fetch requests or network calls are triggered during execution, your code remains fully isolated.</p>
+    </div>
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+      <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">What happens to the Restoration Map?</h4>
+      <p class="text-[11px] text-textDim leading-relaxed font-medium">The restoration map is compiled locally and printed to the map panel. You can copy it as a local JSON string. To restore your original code later, simply toggle the "Restore" mode, paste the masked code into the input, verify your map JSON is in the restoration panel, and click execute.</p>
+    </div>
+    <div class="bg-card rounded-2xl p-6 border border-border shadow-premium hover:border-primary/10 transition-all duration-300">
+      <h4 class="text-xs font-black text-textMain uppercase tracking-wider mb-2">Can I customize the masking options?</h4>
+      <p class="text-[11px] text-textDim leading-relaxed font-medium">Yes. Under the settings panel, you can choose to mask specific identifiers (functions/variables), secrets &amp; tokens (AWS keys, OpenAI strings), or general literal strings.</p>
+    </div>
+  </div>
+</section>
+
+<div id="socialbar-anchor" class="socialbar-anchor"></div>
+
+{# ---- AD TAGS: Popunder_1, Smartlink_1, 728x90, SocialBar_1, NativeBanner_1, 728x90_1 ---- #}
+{% include 'partials/ads.html' %}
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/masker.js') }}"></script>
 <script>
-    let currentMode = 'mask';
-    let currentMapping = {};
-
-    function scrollToEditor() {
-        document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
+function mountAdSlots() {
+  const INVISIBLE = ['Popunder_1', 'Smartlink_1'];
+  Array.from(document.querySelectorAll('[data-ad-name]')).forEach((block) => {
+    const name = block.getAttribute('data-ad-name');
+    if (INVISIBLE.includes(name)) return;
+    let target;
+    if (name === 'SocialBar_1') {
+      target = document.getElementById('socialbar-anchor');
+    } else {
+      target = document.querySelector('[data-ad-mount="' + name + '"]');
     }
+    if (!target) return;
+    target.appendChild(block);
+    block.querySelectorAll('script').forEach((oldScript) => {
+      const fresh = document.createElement('script');
+      if (oldScript.src) {
+        fresh.src = oldScript.src;
+        fresh.async = oldScript.async;
+        if (oldScript.getAttribute('data-cfasync')) fresh.setAttribute('data-cfasync', oldScript.getAttribute('data-cfasync'));
+      } else {
+        fresh.text = oldScript.textContent;
+      }
+      oldScript.replaceWith(fresh);
+    });
+  });
+}
 
-    function switchMode(mode) {
-        currentMode = mode;
-        document.getElementById('mode-mask').classList.toggle('bg-indigo-500', mode === 'mask');
-        document.getElementById('mode-mask').classList.toggle('text-white', mode === 'mask');
-        document.getElementById('mode-mask').classList.toggle('text-slate-500', mode !== 'mask');
-        
-        document.getElementById('mode-restore').classList.toggle('bg-indigo-500', mode === 'restore');
-        document.getElementById('mode-restore').classList.toggle('text-white', mode === 'restore');
-        document.getElementById('mode-restore').classList.toggle('text-slate-500', mode !== 'restore');
+function scaleAdSlots() {
+  document.querySelectorAll('.leaderboard-scaler').forEach((host) => {
+    const available = host.parentElement.clientWidth - 16;
+    const ratio = Math.min(1, available / 728);
+    const inner = host.querySelector('.ad-slot');
+    if (!inner) return;
+    inner.style.transform = 'scale(' + ratio + ')';
+    inner.style.transformOrigin = 'top center';
+    host.style.height = Math.round((90 + 18) * ratio) + 'px';
+  });
+}
 
-        document.getElementById('input-label').textContent = mode === 'mask' ? 'Source Input' : 'Masked Input (to restore)';
-        if (mode === 'restore') {
-            const currentResult = document.getElementById('result-pre').querySelector('code').textContent;
-            if (currentResult && !currentResult.includes('Waiting')) {
-                document.getElementById('src-input').value = currentResult;
-                onInput(document.getElementById('src-input'));
-            }
+window.addEventListener('DOMContentLoaded', () => {
+  mountAdSlots();
+  scaleAdSlots();
+  window.addEventListener('resize', scaleAdSlots);
+  setTimeout(scaleAdSlots, 1500);
+});
+</script>
+<script>
+let currentMode = 'mask';
+let currentMapping = {};
+
+function scrollToEditor() {
+  document.getElementById('editor').scrollIntoView({ behavior: 'smooth' });
+}
+
+function switchMode(mode) {
+  currentMode = mode;
+  const maskBtn = document.getElementById('mode-mask');
+  const restoreBtn = document.getElementById('mode-restore');
+  maskBtn.classList.toggle('bg-primary', mode === 'mask');
+  maskBtn.classList.toggle('text-white', mode === 'mask');
+  maskBtn.classList.toggle('text-textDim', mode !== 'mask');
+  restoreBtn.classList.toggle('bg-primary', mode === 'restore');
+  restoreBtn.classList.toggle('text-white', mode === 'restore');
+  restoreBtn.classList.toggle('text-textDim', mode !== 'restore');
+  document.getElementById('input-label').textContent = mode === 'mask' ? 'Source Input' : 'Masked Input (to restore)';
+  if (mode === 'restore') {
+    const cur = document.getElementById('result-input').value;
+    if (cur && !cur.startsWith('Waiting')) {
+      document.getElementById('src-input').value = cur;
+      onInput();
+    }
+  }
+}
+
+function syncScroll(sourceEl, targetId) {
+  const t = document.getElementById(targetId);
+  if (t) { t.scrollTop = sourceEl.scrollTop; t.scrollLeft = sourceEl.scrollLeft; }
+}
+
+function getHeuristicOptions() {
+  return {
+    maskIdentifiers: document.getElementById('rule-idents').checked,
+    maskSecrets: document.getElementById('rule-secrets').checked,
+    maskStrings: document.getElementById('rule-strings').checked
+  };
+}
+
+function onInput() {
+  const src = document.getElementById('src-input');
+  const text = src.value;
+  document.getElementById('char-count').textContent = text.length + ' chars';
+  document.getElementById('src-pre').querySelector('code').textContent = text;
+  syncScroll(src, 'src-pre');
+}
+
+function setLoading(isLoading) {
+  document.getElementById('btn-text').classList.toggle('hidden', isLoading);
+  document.getElementById('btn-spinner').classList.toggle('hidden', !isLoading);
+}
+
+function showResult(result, mapping) {
+  document.getElementById('result-input').value = result;
+  document.getElementById('result-pre').querySelector('code').textContent = result;
+  document.getElementById('map-output').textContent = JSON.stringify(mapping, null, 2);
+  setLoading(false);
+}
+
+function execute() {
+  setLoading(true);
+  const lang = document.getElementById('lang-select').value;
+  const content = document.getElementById('src-input').value;
+  setTimeout(() => {
+    try {
+      if (currentMode === 'mask') {
+        const outcome = maskContent(content, lang, [], getHeuristicOptions());
+        currentMapping = outcome.mapping;
+        showResult(outcome.maskedCode, outcome.mapping);
+      } else {
+        let mapping = currentMapping;
+        if (!mapping || Object.keys(mapping).length === 0) {
+          try { mapping = JSON.parse(document.getElementById('map-output').textContent); } catch (e) { mapping = null; }
         }
-    </script>
-
-    <!-- Ad Slot host: SocialBar_1 (pinned to the bottom edge of the viewport) -->
-    <div id="socialbar-anchor" class="socialbar-anchor"></div>
-</body>
-
-            resultPre.className = `language-${lang}`;
-            resultCode.className = `language-${lang}`;
-            Prism.highlightElement(resultCode);
-            
-            btnText.classList.remove('hidden');
-            btnSpinner.classList.add('hidden');
-            
-            gsap.from(resultPre, { opacity: 0.5, x: 20, duration: 0.4 });
-        });
+        if (!mapping || Object.keys(mapping).length === 0) {
+          showResult('No restoration map available. Mask some code first, or paste the map JSON into the Restoration Map panel.', {});
+          return;
+        }
+        currentMapping = mapping;
+        showResult(unmaskContent(content, mapping, lang), mapping);
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error(err);
     }
+  }, 350);
+}
 
-    function loadSample() {
-        const samples = {
-            python: `import os\n\nAWS_KEY = "AKIAIOSFODNN7EXAMPLE"\n\ndef connect_db(password="admin123"):\n    print(f"Connecting to live-db-cluster...")\n    return os.getenv("API_URL", "https://api.internal.com")`,
-            javascript: `const EMAIL = "admin@company.com";\nconst API_SECRET = "sk-1234567890abcdef";\n\nfunction login(token) {\n  fetch('http://192.168.1.1/auth', {\n    method: 'POST',\n    body: JSON.stringify({ token })\n  });\n}`,
-            java: `public class SecretService {\n    private static final String TOKEN = "GCP_TOKEN_ABC_123";\n\n    public void execute() {\n        System.out.println("Processing secret storage...");\n    }\n}`
-        };
-        
-        scrollToEditor();
-        const langSelect = document.getElementById('lang-select');
-        const lang = langSelect.value === 'javascript' ? 'javascript' : (langSelect.value === 'java' ? 'java' : 'python');
-        
-        document.getElementById('src-input').value = samples[lang];
-        onInput(document.getElementById('src-input'));
-        showClipboardToast("Sample loaded successfully!");
-    }
+function loadSample() {
+  const samples = {
+    python: 'import os\n\nAWS_KEY = "AKIAIOSFODNN7EXAMPLE"\n\ndef connect_db(password="admin123"):\n    print("Connecting to live-db-cluster...")\n    return os.getenv("API_URL", "https://api.internal.com")',
+    javascript: 'const EMAIL = "admin@company.com";\nconst API_SECRET = "sk-1234567890abcdef";\n\nfunction login(token) {\n  fetch(\'http://192.168.1.1/auth\', {\n    method: \'POST\',\n    body: JSON.stringify({ token })\n  });\n}',
+    java: 'public class SecretService {\n    private static final String TOKEN = "GCP_TOKEN_ABC_123";\n\n    public void run() {\n        System.out.println("Processing secret storage...");\n    }\n}'
+  };
+  scrollToEditor();
+  const lang = document.getElementById('lang-select').value;
+  document.getElementById('src-input').value = samples[lang] || samples.python;
+  onInput();
+  showClipboardToast('Sample loaded successfully!');
+}
 
-    function copyOutput() {
-        const text = document.getElementById('result-pre').querySelector('code').textContent;
-        navigator.clipboard.writeText(text);
-        showClipboardToast("Masked code copied!");
-    }
+function copyOutput() {
+  navigator.clipboard.writeText(document.getElementById('result-input').value);
+  showClipboardToast('Masked code copied!');
+}
 
-    function copyMap() {
-        const text = document.getElementById('map-output').textContent;
-        navigator.clipboard.writeText(text);
-        showClipboardToast("Map JSON copied!");
-    }
+function copyMap() {
+  navigator.clipboard.writeText(document.getElementById('map-output').textContent);
+  showClipboardToast('Map JSON copied!');
+}
 
-    function clearAll() {
-        currentMapping = {};
-        document.getElementById('src-input').value = '';
-        document.getElementById('src-pre').querySelector('code').textContent = '';
-        document.getElementById('result-input').value = 'Waiting for logic protection...';
-        document.getElementById('result-pre').querySelector('code').textContent = 'Waiting for logic protection...';
-        document.getElementById('map-output').textContent = 'Map values will populate here. Use these to restore your code later.';
-    }
+function clearAll() {
+  currentMapping = {};
+  document.getElementById('src-input').value = '';
+  document.getElementById('src-pre').querySelector('code').textContent = '';
+  document.getElementById('result-input').value = 'Waiting for logic protection...';
+  document.getElementById('result-pre').querySelector('code').textContent = 'Waiting for logic protection...';
+  document.getElementById('map-output').textContent = 'Map values will populate here. Use these to restore your code later.';
+  document.getElementById('char-count').textContent = '0 chars';
+}
 
-    function downloadOutput() {
-        const text = document.getElementById('result-pre').querySelector('code').textContent;
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'masked_code.txt';
-        a.click();
-    }
+function downloadOutput() {
+  const text = document.getElementById('result-input').value;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'masked_code.txt';
+  a.click();
+}
+
+onInput();
 </script>
 {% endblock %}
